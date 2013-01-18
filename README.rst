@@ -2,8 +2,8 @@ Python Module for APRS-IS.
 
 2013-01-17 WIP
 
-.. image:: https://secure.travis-ci.org/ampledata/aprs.png?branch=develop
-        :target: https://secure.travis-ci.org/ampledata/aprs
+.. image:: https://travis-ci.org/ampledata/aprs.png?branch=develop
+        :target: https://travis-ci.org/ampledata/aprs
 
 Source
 ======
