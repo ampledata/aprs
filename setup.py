@@ -16,5 +16,8 @@ setuptools.setup(
     author_email='gba@gregalbrecht.com',
     license='Creative Commons Attribution 3.0 Unported License',
     url='https://github.com/ampledata/aprs',
-    setup_requires=['nose>=1.0']
+    setup_requires=['nose'],
+    tests_require=['nose', 'httpretty'],
+    install_requires=['requests']
+
 )
