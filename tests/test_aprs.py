@@ -13,6 +13,7 @@ from .context import aprs
 
 ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 NUMBERS = '0123456789'
+POSITIVE_NUMBERS = NUMBERS[1:]
 ALPHANUM = ''.join([ALPHABET, NUMBERS])
 
 
@@ -28,7 +29,7 @@ class APRSTest(unittest.TestCase):
     def setUp(self):
         self.fake_server = ''.join([
             'http://localhost:',
-            self.random(4, '123456789'),
+            self.random(4, POSITIVE_NUMBERS),
             '/'
         ])
 
@@ -37,7 +38,7 @@ class APRSTest(unittest.TestCase):
             self.random(1, NUMBERS),
             self.random(3, ALPHABET),
             '-',
-            self.random(1, '123456789')
+            self.random(1, POSITIVE_NUMBERS)
         ])
 
         self.real_server = 'http://localhost:14580'

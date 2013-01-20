@@ -34,7 +34,7 @@ flake8:
 		awk -F\: '{printf "%s:%s: [E]%s\n", $$1, $$2, $$3}' | tee flake8.log
 
 clonedigger:
-	clonedigger --cpd-output .
+	clonedigger --cpd-output aprs tests
 
 lint:
 	pylint -f parseable -i y -r y aprs/*.py tests/*.py *.py | \

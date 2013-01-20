@@ -17,7 +17,7 @@ setuptools.setup(
     license='Creative Commons Attribution 3.0 Unported License',
     url='https://github.com/ampledata/aprs',
     setup_requires=['nose'],
-    tests_require=['nose', 'httpretty'],
+    tests_require=['coverage', 'httpretty', 'nose'],
     install_requires=['requests']
 
 )
