@@ -6,4 +6,4 @@ __license__ = 'Creative Commons Attribution 3.0 Unported License'
 
 
 from .aprs import APRS
-from .util import *
+import util
