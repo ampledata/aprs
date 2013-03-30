@@ -1,7 +1,5 @@
 Python Module for APRS-IS.
 
-2013-01-17 WIP
-
 .. image:: https://travis-ci.org/ampledata/aprs.png?branch=develop
         :target: https://travis-ci.org/ampledata/aprs
 
@@ -11,7 +9,7 @@ Github: https://github.com/ampledata/aprs
 
 Author
 ======
-Greg Albrecht <mailto:gba@gregalbrecht.com>
+Greg Albrecht W2GMD <gba@gregalbrecht.com>
 
 Copyright
 =========
