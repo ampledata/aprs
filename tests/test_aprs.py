@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+__author__ = 'Greg Albrecht W2GMD <gba@gregalbrecht.com>'
+__copyright__ = 'Copyright 2013 Greg Albrecht'
+__license__ = 'Creative Commons Attribution 3.0 Unported License'
+
 
 import random
 import unittest
@@ -93,6 +97,7 @@ class APRSTest(unittest.TestCase):
 
         self.assertFalse(result)
 
+    @unittest.skip('Test only works with real server.')
     def test_more(self):
         aprs_conn = aprs.APRS(
             user=self.real_callsign,
