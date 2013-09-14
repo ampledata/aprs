@@ -1,8 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-__author__ = 'Greg Albrecht W2GMD <gba@gregalbrecht.com>'
-__copyright__ = 'Copyright 2013 Greg Albrecht'
-__license__ = 'Creative Commons Attribution 3.0 Unported License'
+__author__ = 'Greg Albrecht W2GMD <gba@onbeep.com>'
+__copyright__ = 'Copyright 2013 OnBeep, Inc.'
+__license__ = 'Apache 2.0'
 
 
 import random
@@ -24,8 +25,14 @@ ALPHANUM = ''.join([ALPHABET, NUMBERS])
 class APRSTest(unittest.TestCase):
     """Tests for Python APRS Bindings."""
 
-    logger = logging.getLogger('aprs.tests')
-    logger.addHandler(logging.StreamHandler())
+    logger = logging.getLogger(__name__)
+    logger.setLevel(aprs.constants.LOG_LEVEL)
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(aprs.constants.LOG_LEVEL)
+    formatter = logging.Formatter(aprs.constants.LOG_FORMAT)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    logger.propagate = False
 
     def random(self, length=8, alphabet=ALPHANUM):
         return ''.join(random.choice(alphabet) for _ in xrange(length))

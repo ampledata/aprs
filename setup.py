@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 __author__ = 'Greg Albrecht W2GMD <gba@gregalbrecht.com>'
 __copyright__ = 'Copyright 2013 Greg Albrecht'
