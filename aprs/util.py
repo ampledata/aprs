@@ -4,14 +4,15 @@
 """Utilities for the APRS Python Module."""
 
 __author__ = 'Greg Albrecht W2GMD <gba@onbeep.com>'
+__license__ = 'Apache License, Version 2.0'
 __copyright__ = 'Copyright 2013 OnBeep, Inc.'
-__license__ = 'Apache 2.0'
 
 
 import logging
 
 import aprs.constants
 import aprs.decimaldegrees
+import aprs.util
 import kiss.constants
 
 
@@ -72,6 +73,7 @@ def dec2dm_lng(dec):
     return ''.join([str(abs_deg), "%.2f" % dm[1], suffix])
 
 
+# TODO: Convert doctest to unittest.
 def decode_aprs_ascii_frame(ascii_frame):
     """
     Breaks an ASCII APRS Frame down to it's constituent parts.
@@ -214,7 +216,6 @@ def format_path(start, raw_frame):
 
 def encode_callsign(callsign):
     call_sign = callsign['callsign']
-    digi = False
 
     ct = (callsign['ssid'] << 1) | 0x60
 
@@ -233,7 +234,8 @@ def encode_frame(frame):
     enc_frame = ''.join([
         encode_callsign(create_callsign(frame['destination'])),
         encode_callsign(create_callsign(frame['source'])),
-        ''.join([encode_callsign(create_callsign(p)) for p in frame['path'].split(',')])
+        ''.join([encode_callsign(create_callsign(p))
+                 for p in frame['path'].split(',')])
     ])
 
     return ''.join([
@@ -258,10 +260,12 @@ def decode_frame(raw_frame):
                 # Less than 2 callsigns?
                 if 2 < n < 10:
                     if (ord(raw_frame[raw_slice + 1]) & 0x03 == 0x03 and
-                        ord(raw_frame[raw_slice + 2]) == 0xf0):
+                            ord(raw_frame[raw_slice + 2]) == 0xf0):
                         frame['text'] = raw_frame[raw_slice + 3:]
-                        frame['destination'] = full_callsign(extract_callsign(raw_frame))
-                        frame['source'] = full_callsign(extract_callsign(raw_frame[7:]))
+                        frame['destination'] = full_callsign(
+                            extract_callsign(raw_frame))
+                        frame['source'] = full_callsign(
+                            extract_callsign(raw_frame[7:]))
                         frame['path'] = format_path(n, raw_frame)
 
     logging.debug('frame=%s', frame)

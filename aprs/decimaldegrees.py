@@ -1,4 +1,6 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 """
 PyDecimalDegrees - geographic coordinates conversion utility.
 
@@ -45,9 +47,13 @@ To run doctest units just execut this module script as follows
 $ python decimaldegrees.py [-v]
 
 """
-__revision__ = "$Revision: 1.1 $"
+
+
+__revision__ = '$Revision: 1.1 $'
+
 
 import decimal as libdecimal
+
 from decimal import Decimal as D
 
 
@@ -59,39 +65,45 @@ def decimal2dms(decimal_degrees):
     minutes (2nd element) and seconds (3rd element) will always be positive.
 
     Example:
-    >>> decimal2dms(121.135)
-    (Decimal('121'), Decimal('8'), Decimal('6.000'))
-    >>> decimal2dms(-121.135)
-    (Decimal('-121'), Decimal('8'), Decimal('6.000'))
-    
+
+        >>> decimal2dms(121.135)
+        (Decimal('121'), Decimal('8'), Decimal('6.000'))
+        >>> decimal2dms(-121.135)
+        (Decimal('-121'), Decimal('8'), Decimal('6.000'))
+
     """
 
     degrees = D(int(decimal_degrees))
-    decimal_minutes = libdecimal.getcontext().multiply(\
+    decimal_minutes = libdecimal.getcontext().multiply(
         (D(str(decimal_degrees)) - degrees).copy_abs(), D(60))
     minutes = D(int(decimal_minutes))
-    seconds = libdecimal.getcontext().multiply(\
+    seconds = libdecimal.getcontext().multiply(
         (decimal_minutes - minutes), D(60))
     return (degrees, minutes, seconds)
 
 
 def decimal2dm(decimal_degrees):
-    """ Converts a floating point number of degrees to the equivalent
-    number of degrees and minutes, which are returned as a 2-element tuple of decimals.
-    If 'decimal_degrees' is negative, only degrees (1st element of returned tuple)
-    will be negative, minutes (2nd element) will always be positive.
+    """
+    Converts a floating point number of degrees to the degress & minutes.
+
+    Returns a 2-element tuple of decimals.
+
+    If 'decimal_degrees' is negative, only degrees (1st element of returned
+    tuple) will be negative, minutes (2nd element) will always be positive.
 
     Example:
-    >>> decimal2dm(121.135)
-    (Decimal('121'), Decimal('8.100'))
-    >>> decimal2dm(-121.135)
-    (Decimal('-121'), Decimal('8.100'))
-    
-    """
 
+        >>> decimal2dm(121.135)
+        (Decimal('121'), Decimal('8.100'))
+        >>> decimal2dm(-121.135)
+        (Decimal('-121'), Decimal('8.100'))
+
+    """
     degrees = D(int(decimal_degrees))
-    minutes = libdecimal.getcontext().multiply(\
+
+    minutes = libdecimal.getcontext().multiply(
         (D(str(decimal_degrees)) - degrees).copy_abs(), D(60))
+
     return (degrees, minutes)
 
 
@@ -101,24 +113,25 @@ def dms2decimal(degrees, minutes, seconds):
     then returned decimal-degrees will also be negative.
 
     NOTE: this method returns a decimal.Decimal
-    
+
     Example:
-    >>> dms2decimal(121, 8, 6)
-    Decimal('121.135')
-    >>> dms2decimal(-121, 8, 6)
-    Decimal('-121.135')
-    
+
+        >>> dms2decimal(121, 8, 6)
+        Decimal('121.135')
+        >>> dms2decimal(-121, 8, 6)
+        Decimal('-121.135')
+
     """
-    
     decimal = D(0)
     deg = D(str(degrees))
     min = libdecimal.getcontext().divide(D(str(minutes)), D(60))
     sec = libdecimal.getcontext().divide(D(str(seconds)), D(3600))
-    if (degrees >= D(0)):
+
+    if degrees >= D(0):
         decimal = deg + min + sec
     else:
         decimal = deg - min - sec
-        
+
     return libdecimal.getcontext().normalize(decimal)
 
 
@@ -126,22 +139,23 @@ def dm2decimal(degrees, minutes):
     """ Converts degrees and minutes to the equivalent number of decimal
     degrees. If parameter 'degrees' is negative, then returned decimal-degrees
     will also be negative.
-    
+
     Example:
-    >>> dm2decimal(121, 8.1)
-    Decimal('121.135')
-    >>> dm2decimal(-121, 8.1)
-    Decimal('-121.135')
-    
+
+        >>> dm2decimal(121, 8.1)
+        Decimal('121.135')
+        >>> dm2decimal(-121, 8.1)
+        Decimal('-121.135')
+
     """
     return dms2decimal(degrees, minutes, 0)
 
 
-# Run doctest
-def _test():
-    import doctest, decimaldegrees
+def run_doctest():
+    import doctest
+    import decimaldegrees
     return doctest.testmod(decimaldegrees)
 
-if __name__ == "__main__":
-    _test()
 
+if __name__ == '__main__':
+    run_doctest()
