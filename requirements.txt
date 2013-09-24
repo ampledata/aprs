@@ -3,4 +3,3 @@ clonedigger
 httpretty
 nose
 requests
-pyserial

@@ -123,14 +123,14 @@ def dms2decimal(degrees, minutes, seconds):
 
     """
     decimal = D(0)
-    deg = D(str(degrees))
-    min = libdecimal.getcontext().divide(D(str(minutes)), D(60))
-    sec = libdecimal.getcontext().divide(D(str(seconds)), D(3600))
+    degs = D(str(degrees))
+    mins = libdecimal.getcontext().divide(D(str(minutes)), D(60))
+    secs = libdecimal.getcontext().divide(D(str(seconds)), D(3600))
 
     if degrees >= D(0):
-        decimal = deg + min + sec
+        decimal = degs + mins + secs
     else:
-        decimal = deg - min - sec
+        decimal = degs - mins - secs
 
     return libdecimal.getcontext().normalize(decimal)
 
@@ -151,11 +151,12 @@ def dm2decimal(degrees, minutes):
     return dms2decimal(degrees, minutes, 0)
 
 
-def run_doctest():
+def run_doctest():  # pragma: no cover
+    """Runs doctests for this module."""
     import doctest
-    import decimaldegrees
+    import decimaldegrees  # pylint: disable=W0406
     return doctest.testmod(decimaldegrees)
 
 
 if __name__ == '__main__':
-    run_doctest()
+    run_doctest()  # pragma: no cover

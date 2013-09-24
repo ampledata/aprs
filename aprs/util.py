@@ -12,7 +12,6 @@ import logging
 
 import aprs.constants
 import aprs.decimaldegrees
-import aprs.util
 import kiss.constants
 
 
@@ -20,16 +19,17 @@ logger = logging.getLogger(__name__)
 logger.setLevel(aprs.constants.LOG_LEVEL)
 console_handler = logging.StreamHandler()
 console_handler.setLevel(aprs.constants.LOG_LEVEL)
-formatter = logging.Formatter(aprs.constants.LOG_FORMAT)
-console_handler.setFormatter(formatter)
+console_handler.setFormatter(
+    logging.Formatter(aprs.constants.LOG_FORMAT))
 logger.addHandler(console_handler)
 logger.propagate = False
 
 
-# http://stackoverflow.com/questions/2056750/lat-long-to-minutes-and-seconds
 def dec2dm_lat(dec):
     """Converts DecDeg to APRS Coord format.
     See: http://ember2ash.com/lat.htm
+
+    Source: http://stackoverflow.com/questions/2056750
 
     Example:
         >>> test_lat = 37.7418096
@@ -37,9 +37,9 @@ def dec2dm_lat(dec):
         >>> aprs_lat
         '3744.51N'
     """
-    dm = aprs.decimaldegrees.decimal2dm(dec)
+    dec_min = aprs.decimaldegrees.decimal2dm(dec)
 
-    deg = dm[0]
+    deg = dec_min[0]
     abs_deg = abs(deg)
 
     if not deg == abs_deg:
@@ -47,7 +47,7 @@ def dec2dm_lat(dec):
     else:
         suffix = 'N'
 
-    return ''.join([str(abs_deg), "%.2f" % dm[1], suffix])
+    return ''.join([str(abs_deg), "%.2f" % dec_min[1], suffix])
 
 
 def dec2dm_lng(dec):
@@ -60,9 +60,9 @@ def dec2dm_lng(dec):
         >>> aprs_lng
         '12223.30W'
     """
-    dm = aprs.decimaldegrees.decimal2dm(dec)
+    dec_min = aprs.decimaldegrees.decimal2dm(dec)
 
-    deg = dm[0]
+    deg = dec_min[0]
     abs_deg = abs(deg)
 
     if not deg == abs_deg:
@@ -70,21 +70,12 @@ def dec2dm_lng(dec):
     else:
         suffix = 'E'
 
-    return ''.join([str(abs_deg), "%.2f" % dm[1], suffix])
+    return ''.join([str(abs_deg), "%.2f" % dec_min[1], suffix])
 
 
-# TODO: Convert doctest to unittest.
 def decode_aprs_ascii_frame(ascii_frame):
     """
     Breaks an ASCII APRS Frame down to it's constituent parts.
-
-    Test & Example
-    ~~~~
-
-        >>> frame = 'W2GMD-9>APOTC1,WIDE1-1,WIDE2-1:!3745.94N/12228.05W>118/010/A=000269 38C=Temp http://w2gmd.org/ Twitter: @ampledata'
-        >>> decode_aprs_ascii_frame(frame)
-        {'source': 'W2GMD-9', 'destination': 'APOTC1', 'text': '!3745.94N/12228.05W>118/010/A=000269 38C=Temp http://w2gmd.org/ Twitter: @ampledata', 'path': 'APOTC1,WIDE1-1,WIDE2-1'}
-
 
     :param frame: ASCII APRS Frame.
     :type frame: str
@@ -96,15 +87,15 @@ def decode_aprs_ascii_frame(ascii_frame):
     decoded_frame = {}
     frame_so_far = ''
 
-    for c in ascii_frame:
-        if '>' in c and not 'source' in decoded_frame:
+    for char in ascii_frame:
+        if '>' in char and not 'source' in decoded_frame:
             decoded_frame['source'] = frame_so_far
             frame_so_far = ''
-        elif ':' in c and not 'path' in decoded_frame:
+        elif ':' in char and not 'path' in decoded_frame:
             decoded_frame['path'] = frame_so_far
             frame_so_far = ''
         else:
-            frame_so_far = ''.join([frame_so_far, c])
+            frame_so_far = ''.join([frame_so_far, char])
 
     decoded_frame['text'] = frame_so_far
     decoded_frame['destination'] = decoded_frame['path'].split(',')[0]
@@ -113,6 +104,15 @@ def decode_aprs_ascii_frame(ascii_frame):
 
 
 def format_aprs_frame(frame):
+    """
+    Formats APRS frame-as-dict into APRS frame-as-string.
+
+    :param frame: APRS frame-as-dict
+    :type frame: dict
+
+    :return: APRS frame-as-string.
+    :rtype: str
+    """
     formatted_frame = '>'.join([frame['source'], frame['destination']])
     formatted_frame = ','.join([formatted_frame, frame['path']])
     formatted_frame = ':'.join([formatted_frame, frame['text']])
@@ -120,6 +120,15 @@ def format_aprs_frame(frame):
 
 
 def create_callsign(raw_callsign):
+    """
+    Creates callsign-as-dict from callsign-as-string.
+
+    :param raw_callsign: Callsign-as-string (with or without ssid).
+    :type raw_callsign: str
+
+    :return: Callsign-as-dict.
+    :rtype: dict
+    """
     if '-' in raw_callsign:
         call_sign, ssid = raw_callsign.split('-')
     else:
@@ -165,14 +174,12 @@ def valid_callsign(callsign):
 
     logger.debug('callsign=%s ssid=%s', callsign, ssid)
 
-    if len(callsign) < 2 or len(callsign) > 6:
+    if (len(callsign) < 2 or len(callsign) > 6 or len(str(ssid)) < 1 or
+                len(str(ssid)) > 2):
         return False
 
-    if len(str(ssid)) < 1 or len(str(ssid)) > 2:
-        return False
-
-    for c in callsign:
-        if not (c.isalpha() or c.isdigit()):
+    for char in callsign:
+        if not (char.isalpha() or char.isdigit()):
             return False
 
     if not str(ssid).isdigit():
@@ -198,6 +205,14 @@ def extract_callsign(raw_frame):
 
 
 def extract_path(start, raw_frame):
+    """Extracts path from raw APRS KISS frame.
+
+    :param start:
+    :param raw_frame: Raw APRS frame from a KISS device.
+
+    :return: Full path from APRS frame.
+    :rtype: list
+    """
     full_path = []
 
     for i in range(2, start):
@@ -207,30 +222,58 @@ def extract_path(start, raw_frame):
                 full_path.append(''.join([path, '*']))
             else:
                 full_path.append(path)
+
     return full_path
 
 
 def format_path(start, raw_frame):
+    """
+    Formats path from raw APRS KISS frame.
+
+    :param start:
+    :param raw_frame: Raw APRS KISS frame.
+
+    :return: Formatted APRS path.
+    :rtype: str
+    """
     return ','.join(extract_path(start, raw_frame))
 
 
 def encode_callsign(callsign):
+    """
+    Encodes a callsign-dict within a KISS frame.
+
+    :param callsign: Callsign-dict to encode.
+    :type callsign: dict
+
+    :return: KISS-encoded callsign.
+    :rtype: str
+    """
     call_sign = callsign['callsign']
 
-    ct = (callsign['ssid'] << 1) | 0x60
+    enc_ssid = (callsign['ssid'] << 1) | 0x60
 
     if '*' in call_sign:
         call_sign = call_sign.replace('*', '')
-        ct |= 0x80
+        enc_ssid |= 0x80
 
     while len(call_sign) < 6:
         call_sign = ''.join([call_sign, ' '])
 
     encoded = ''.join([chr(ord(p) << 1) for p in call_sign])
-    return ''.join([encoded, chr(ct)])
+    return ''.join([encoded, chr(enc_ssid)])
 
 
 def encode_frame(frame):
+    """
+    Encodes an APRS frame-as-dict as a KISS frame.
+
+    :param frame: APRS frame-as-dict to encode.
+    :type frame: dict
+
+    :return: KISS-encoded APRS frame.
+    :rtype: str
+    """
     enc_frame = ''.join([
         encode_callsign(create_callsign(frame['destination'])),
         encode_callsign(create_callsign(frame['source'])),
@@ -248,6 +291,15 @@ def encode_frame(frame):
 
 
 def decode_frame(raw_frame):
+    """
+    Decodes a KISS-encoded APRS frame.
+
+    :param raw_frame: KISS-encoded frame to decode.
+    :type raw_frame: str
+
+    :return: APRS frame-as-dict.
+    :rtype: dict
+    """
     logging.debug('raw_frame=%s', raw_frame)
     frame = {}
     frame_len = len(raw_frame)
@@ -256,9 +308,9 @@ def decode_frame(raw_frame):
         for raw_slice in range(0, frame_len):
             # Is address field length correct?
             if ord(raw_frame[raw_slice]) & 0x01 and ((raw_slice + 1) % 7) == 0:
-                n = (raw_slice + 1) / 7
+                i = (raw_slice + 1) / 7
                 # Less than 2 callsigns?
-                if 2 < n < 10:
+                if 2 < i < 10:
                     if (ord(raw_frame[raw_slice + 1]) & 0x03 == 0x03 and
                             ord(raw_frame[raw_slice + 2]) == 0xf0):
                         frame['text'] = raw_frame[raw_slice + 3:]
@@ -266,17 +318,18 @@ def decode_frame(raw_frame):
                             extract_callsign(raw_frame))
                         frame['source'] = full_callsign(
                             extract_callsign(raw_frame[7:]))
-                        frame['path'] = format_path(n, raw_frame)
+                        frame['path'] = format_path(i, raw_frame)
 
     logging.debug('frame=%s', frame)
     return frame
 
 
-def run_doctest():
+def run_doctest():  # pragma: no cover
+    """Runs doctests for this module."""
     import doctest
-    import aprs.util
+    import aprs.util  # pylint: disable=W0406
     return doctest.testmod(aprs.util)
 
 
 if __name__ == '__main__':
-    run_doctest()
+    run_doctest()  # pragma: no cover
