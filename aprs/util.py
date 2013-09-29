@@ -175,7 +175,7 @@ def valid_callsign(callsign):
     logger.debug('callsign=%s ssid=%s', callsign, ssid)
 
     if (len(callsign) < 2 or len(callsign) > 6 or len(str(ssid)) < 1 or
-                len(str(ssid)) > 2):
+            len(str(ssid)) > 2):
         return False
 
     for char in callsign:
