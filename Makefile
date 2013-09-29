@@ -1,8 +1,13 @@
-# TODO: add boilerplate to Makefile.
+# Makefile for APRS Python Module.
+#
+# Source:: https://github.com/ampledata/aprs
+# Author:: Greg Albrecht W2GMD <gba@onbeep.com>
+# Copyright:: Copyright 2013 OnBeep, Inc.
+# License:: Apache License, Version 2.0
 #
 
 
-all: install_requirements develop todo
+all: install_requirements develop
 
 develop:
 	python setup.py develop
@@ -16,13 +21,10 @@ install:
 uninstall:
 	pip uninstall -y aprs
 
-todo:
-	grep \#\ TODO Makefile
-
 clean:
 	rm -rf *.egg* build dist *.py[oc] */*.py[co] cover doctest_pypi.cfg \
 	 	nosetests.xml pylint.log *.egg output.xml flake8.log tests.log \
-		test-result.xml htmlcov fab.log
+		test-result.xml htmlcov fab.log .coverage
 
 publish:
 	python setup.py register sdist upload
@@ -41,7 +43,6 @@ clonedigger:
 	clonedigger --cpd-output aprs tests
 
 lint:
-	pylint -f parseable -i y -r y aprs/*.py tests/*.py *.py | \
-		tee pylint.log
+	pylint  -i y -r n aprs/*.py tests/*.py *.py # -f colorized
 
 test: install_requirements lint clonedigger flake8 nosetests

@@ -1,9 +1,41 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-__author__ = 'Greg Albrecht W2GMD <gba@gregalbrecht.com>'
-__copyright__ = 'Copyright 2013 Greg Albrecht'
-__license__ = 'Creative Commons Attribution 3.0 Unported License'
+# APRS Python Module.
+
+"""
+APRS Python Module.
+~~~~
 
 
-from .aprs import APRS
-import util
+:author: Greg Albrecht W2GMD <gba@onbeep.com>
+:copyright: Copyright 2013 OnBeep, Inc.
+:license: Apache License, Version 2.0
+:source: <https://github.com/ampledata/aprs>
+
+"""
+
+__title__ = 'aprs'
+__version__ = '1.0.0'
+__build__ = '0x010000'
+__author__ = 'Greg Albrecht W2GMD <gba@onbeep.com>'
+__license__ = 'Apache License, Version 2.0'
+__copyright__ = 'Copyright 2013 OnBeep, Inc.'
+
+
+import logging
+
+from .classes import APRS, APRSKISS
+
+
+# Set default logging handler to avoid "No handler found" warnings.
+try:  # Python 2.7+
+    from logging import NullHandler
+except ImportError:
+    class NullHandler(logging.Handler):
+        """Default logging handler to avoid "No handler found" warnings."""
+        def emit(self, record):
+            """Default logging handler to avoid "No handler found" warnings."""
+            pass
+
+logging.getLogger(__name__).addHandler(NullHandler())
