@@ -1,3 +1,5 @@
+pylint
+clonedigger
 httpretty
 nose
 requests
