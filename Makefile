@@ -7,13 +7,16 @@
 #
 
 
+.DEFAULT_GOAL := all
+
+
 all: install_requirements develop
 
 develop:
 	python setup.py develop
 
 install_requirements:
-	pip install -r requirements.txt --use-mirrors
+	pip install -r requirements.txt
 
 install:
 	python setup.py install
@@ -22,8 +25,8 @@ uninstall:
 	pip uninstall -y aprs
 
 clean:
-	rm -rf *.egg* build dist *.py[oc] */*.py[co] cover doctest_pypi.cfg \
-	 	nosetests.xml pylint.log *.egg output.xml flake8.log tests.log \
+	@rm -rf *.egg* build dist *.py[oc] */*.py[co] cover doctest_pypi.cfg \
+		nosetests.xml pylint.log output.xml flake8.log tests.log \
 		test-result.xml htmlcov fab.log .coverage
 
 publish:
@@ -32,17 +35,11 @@ publish:
 nosetests:
 	python setup.py nosetests
 
-pep8:
-	flake8
+pep8: install_requirements
+	flake8 --max-complexity 12 --exit-zero aprs/*.py tests/*.py
 
-flake8:
-	flake8 --exit-zero  --max-complexity 12 aprs/*.py tests/*.py *.py | \
-		awk -F\: '{printf "%s:%s: [E]%s\n", $$1, $$2, $$3}' | tee flake8.log
+lint: install_requirements
+	pylint --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" \
+		-r n aprs/*.py tests/*.py || exit 0
 
-clonedigger:
-	clonedigger --cpd-output aprs tests
-
-lint:
-	pylint  -i y -r n aprs/*.py tests/*.py *.py # -f colorized
-
-test: install_requirements lint clonedigger flake8 nosetests
+test: lint pep8 nosetests

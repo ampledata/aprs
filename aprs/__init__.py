@@ -15,14 +15,6 @@ APRS Python Module.
 
 """
 
-__title__ = 'aprs'
-__version__ = '2.0.0'
-__build__ = '0x020000'
-__author__ = 'Greg Albrecht W2GMD <gba@onbeep.com>'
-__license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2013 OnBeep, Inc.'
-
-
 import logging
 
 from .classes import APRS, APRSKISS
