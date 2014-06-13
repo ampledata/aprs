@@ -10,7 +10,6 @@ __copyright__ = 'Copyright 2013 OnBeep, Inc.'
 
 import logging
 import logging.handlers
-import select
 import socket
 import time
 
@@ -97,11 +96,10 @@ class APRS(object):
                     lines = recvd_data.split('\r\n')
                     recvd_data = str(lines.pop(-1))
 
-                self.logger.debug('len(lines)=%s', len(lines))
                 for line in lines:
                     if line.startswith('#'):
                         if 'logresp' in line:
-                            self.logger.info('logresp=%s', line)
+                            self.logger.debug('logresp=%s', line)
                     else:
                         self.logger.debug('line=%s', line)
                         if callback:
