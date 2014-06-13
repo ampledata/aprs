@@ -18,8 +18,12 @@ APRSIS_HTTP_HEADERS = {
     'content-type': 'application/octet-stream',
     'accept': 'text/plain'
 }
+APRSIS_SERVER = 'rotate.aprs.net'
+APRSIS_FILTER_PORT = 14580
+
+RECV_BUFFER = 1024
 
 
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.INFO
 LOG_FORMAT = ('%(asctime)s %(levelname)s %(name)s.%(funcName)s:%(lineno)d'
               ' - %(message)s')
