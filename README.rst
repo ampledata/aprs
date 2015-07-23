@@ -19,8 +19,11 @@ sent to my callback *my_cb* and printed.
         print line
 
     a = aprs.APRS('W2GMD', '12345')
+
     a.connect()
+
     a.send('W2GMD>APRS:>Test!')
+
     a.receive(callback=my_callback)
 
 
