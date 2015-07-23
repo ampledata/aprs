@@ -3,9 +3,9 @@
 
 """Utilities for the APRS Python Module."""
 
-__author__ = 'Greg Albrecht W2GMD <gba@onbeep.com>'
+__author__ = 'Greg Albrecht W2GMD <gba@orionlabs.co>'
 __license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2013 OnBeep, Inc.'
+__copyright__ = 'Copyright 2015 Orion Labs, Inc.'
 
 
 import logging
@@ -13,16 +13,6 @@ import logging
 import aprs.constants
 import aprs.decimaldegrees
 import kiss.constants
-
-
-logger = logging.getLogger(__name__)
-logger.setLevel(aprs.constants.LOG_LEVEL)
-console_handler = logging.StreamHandler()
-console_handler.setLevel(aprs.constants.LOG_LEVEL)
-console_handler.setFormatter(
-    logging.Formatter(aprs.constants.LOG_FORMAT))
-logger.addHandler(console_handler)
-logger.propagate = False
 
 
 def dec2dm_lat(dec):
@@ -83,15 +73,15 @@ def decode_aprs_ascii_frame(ascii_frame):
     :returns: Dictionary of APRS Frame parts: source, destination, path, text.
     :rtype: dict
     """
-    logger.debug('frame=%s', ascii_frame)
+    logging.debug('frame=%s', ascii_frame)
     decoded_frame = {}
     frame_so_far = ''
 
     for char in ascii_frame:
-        if '>' in char and not 'source' in decoded_frame:
+        if '>' in char and 'source' not in decoded_frame:
             decoded_frame['source'] = frame_so_far
             frame_so_far = ''
-        elif ':' in char and not 'path' in decoded_frame:
+        elif ':' in char and 'path' not in decoded_frame:
             decoded_frame['path'] = frame_so_far
             frame_so_far = ''
         else:
@@ -162,7 +152,7 @@ def valid_callsign(callsign):
     :returns: True if valid, False otherwise.
     :rtype: bool
     """
-    logger.debug('callsign=%s', callsign)
+    logging.debug('callsign=%s', callsign)
 
     if '-' in callsign:
         if not callsign.count('-') == 1:
@@ -172,7 +162,7 @@ def valid_callsign(callsign):
     else:
         ssid = 0
 
-    logger.debug('callsign=%s ssid=%s', callsign, ssid)
+    logging.debug('callsign=%s ssid=%s', callsign, ssid)
 
     if (len(callsign) < 2 or len(callsign) > 6 or len(str(ssid)) < 1 or
             len(str(ssid)) > 2):
@@ -327,7 +317,7 @@ def decode_frame(raw_frame):
 def run_doctest():  # pragma: no cover
     """Runs doctests for this module."""
     import doctest
-    import aprs.util  # pylint: disable=W0406
+    import aprs.util  # pylint: disable=W0406,W0621
     return doctest.testmod(aprs.util)
 
 

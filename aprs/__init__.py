@@ -8,8 +8,8 @@ APRS Python Module.
 ~~~~
 
 
-:author: Greg Albrecht W2GMD <gba@onbeep.com>
-:copyright: Copyright 2013 OnBeep, Inc.
+:author: Greg Albrecht W2GMD <gba@orionlabs.co>
+:copyright: Copyright 2015 Orion Labs, Inc.
 :license: Apache License, Version 2.0
 :source: <https://github.com/ampledata/aprs>
 

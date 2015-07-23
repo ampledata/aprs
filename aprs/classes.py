@@ -3,15 +3,14 @@
 
 """APRS Class Definitions"""
 
-__author__ = 'Greg Albrecht W2GMD <gba@onbeep.com>'
+__author__ = 'Greg Albrecht W2GMD <gba@orionlabs.co>'
 __license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2013 OnBeep, Inc.'
+__copyright__ = 'Copyright 2015 Orion Labs, Inc.'
 
 
 import logging
 import logging.handlers
 import socket
-import time
 
 import requests
 
@@ -37,30 +36,21 @@ class APRS(object):
     def __init__(self, user, password='-1', input_url=None):
         self.user = user
         self._url = input_url or aprs.constants.APRSIS_URL
-        self._auth = ' '.join(['user', user, 'pass', password])
+        self._auth = ' '.join(
+            ['user', user, 'pass', password, 'vers', 'APRS Python Module v2'])
+        self.aprsis_sock = None
 
-    def send(self, message, headers=None):
+    def connect(self, server=None, port=None, filter=None):
         """
-        Sends message to APRS-IS send-only interface.
+        Connects & logs in to APRS-IS.
 
-        :param message: Message to send to APRS-IS.
-        :param headers: Optional headers to post.
-        :type message: str
-        :type headers: dict
-
-        :return: True on 204 success, False otherwise.
-        :rtype: bool
+        :param server: Optional alternative APRS-IS erver.
+        :param port: Optional APRS-IS port.
+        :param filter: Optional filter to use.
+        :type server: str
+        :type port: int
+        :type filte: str
         """
-        self.logger.debug('message=%s headers=%s', message, headers)
-
-        headers = headers or aprs.constants.APRSIS_HTTP_HEADERS
-        content = "\n".join([self._auth, message])
-
-        result = requests.post(self._url, data=content, headers=headers)
-
-        return result.status_code == 204
-
-    def receive(self, server=None, port=None, filter=None, callback=None):
         if not server:
             server = aprs.constants.APRSIS_SERVER
         if not port:
@@ -68,19 +58,60 @@ class APRS(object):
         if not filter:
             filter = "p/%s" % self.user
 
-        full_auth = ' '.join([self._auth, 'vers omg 1.0', 'filter', filter])
+        full_auth = ' '.join([self._auth, 'filter', filter])
 
-        recvd_data = ''
-
-        aprsis_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        aprsis_sock.connect((server, int(port)))
+        self.aprsis_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.aprsis_sock.connect((server, int(port)))
         self.logger.info('Connected to server=%s port=%s', server, port)
         self.logger.debug('Sending full_auth=%s', full_auth)
-        aprsis_sock.sendall(full_auth + '\n\r')
+        self.aprsis_sock.sendall(full_auth + '\n\r')
+
+    def send(self, message, headers=None, protocol='TCP'):
+        """
+        Sends message to APRS-IS.
+
+        :param message: Message to send to APRS-IS.
+        :param headers: Optional HTTP headers to post.
+        :param protocol: Protocol to use: One of TCP, HTTP or UDP.
+        :type message: str
+        :type headers: dict
+
+        :return: True on success, False otherwise.
+        :rtype: bool
+        """
+        self.logger.debug(
+            'message=%s headers=%s protocol=%s', message, headers, protocol)
+
+        if protocol == 'TCP':
+            self.logger.debug('sending message=%s', message)
+            self.aprsis_sock.sendall(message + '\n\r')
+            return True
+        elif protocol == 'HTTP':
+            content = "\n".join([self._auth, message])
+            headers = headers or aprs.constants.APRSIS_HTTP_HEADERS
+            result = requests.post(self._url, data=content, headers=headers)
+            return result.status_code == 204
+        elif protocol == 'UDP':
+            content = "\n".join([self._auth, message])
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.sendto(
+                content,
+                (aprs.constants.APRSIS_SERVER, aprs.constants.APRSIS_RX_PORT)
+            )
+            return True
+
+    def receive(self, callback=None):
+        """
+        Receives from APRS-IS.
+
+        :param callback: Optional callback to deliver data to.
+        :type callback: func
+        """
+        recvd_data = ''
 
         try:
             while 1:
-                recv_data = aprsis_sock.recv(aprs.constants.RECV_BUFFER)
+                recv_data = self.aprsis_sock.recv(aprs.constants.RECV_BUFFER)
 
                 if not recv_data:
                     break

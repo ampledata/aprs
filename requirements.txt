@@ -1,8 +1,8 @@
 # Python Distribution Package Requirements for APRS.
 #
 # Source:: https://github.com/ampledata/aprs
-# Author:: Greg Albrecht W2GMD <gba@onbeep.com>
-# Copyright:: Copyright 2013 OnBeep, Inc. and Contributors
+# Author:: Greg Albrecht W2GMD <gba@orionlabs.co>
+# Copyright:: Copyright 2015 Orion Labs, Inc.
 # License:: Apache License, Version 2.0
 
 

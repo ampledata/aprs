@@ -3,9 +3,9 @@
 
 """Tests for Python APRS-IS Bindings."""
 
-__author__ = 'Greg Albrecht W2GMD <gba@onbeep.com>'
+__author__ = 'Greg Albrecht W2GMD <gba@orionlabs.co>'
 __license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2013 OnBeep, Inc.'
+__copyright__ = 'Copyright 2015 Orion Labs, Inc.'
 
 
 import random
@@ -36,7 +36,8 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
     logger.addHandler(console_handler)
     logger.propagate = False
 
-    def random(self, length=8, alphabet=ALPHANUM):
+    @classmethod
+    def random(cls, length=8, alphabet=ALPHANUM):
         """
         Generates a random string for test cases.
 
@@ -65,8 +66,11 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
         self.real_server = 'http://localhost:14580'
         self.real_callsign = '-'.join(['W2GMD', self.random(1, '123456789')])
 
-        self.logger.debug("fake_server=%s fake_callsign=%s"
-                          % (self.fake_server, self.fake_callsign))
+        self.logger.debug(
+            "fake_server=%s fake_callsign=%s",
+            self.fake_server,
+            self.fake_callsign
+        )
 
     @httpretty.httprettified
     def test_fake_good_auth(self):
@@ -83,6 +87,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
             user=self.fake_callsign,
             input_url=self.fake_server
         )
+        aprs_conn.connect()
 
         msg = '>'.join([
             self.fake_callsign,
@@ -95,7 +100,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(result)
 
     @httpretty.httprettified
-    def test_fake_bad_auth(self):
+    def test_fake_bad_auth_http(self):
         """
         Tests authenticating against APRS-IS using an invalid call+pass.
         """
@@ -109,6 +114,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
             user=self.fake_callsign,
             input_url=self.fake_server
         )
+        aprs_conn.connect()
 
         msg = '>'.join([
             self.fake_callsign,
@@ -116,7 +122,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
         ])
         self.logger.debug(locals())
 
-        result = aprs_conn.send(msg)
+        result = aprs_conn.send(msg, protocol='HTTP')
 
         self.assertFalse(result)
 
@@ -129,6 +135,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
             user=self.real_callsign,
             input_url=self.real_server
         )
+        aprs_conn.connect()
 
         msg = '>'.join([
             self.real_callsign,

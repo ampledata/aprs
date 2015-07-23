@@ -10,9 +10,9 @@ Source:: https://github.com/ampledata/aprs
 
 __title__ = 'aprs'
 __version__ = '2.2.0'
-__author__ = 'Greg Albrecht W2GMD <gba@onbeep.com>'
+__author__ = 'Greg Albrecht W2GMD <gba@orionlabs.co>'
 __license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2014 OnBeep, Inc.'
+__copyright__ = 'Copyright 2015 Orion Labs, Inc.'
 
 
 import os
@@ -39,7 +39,7 @@ setup(
     version=__version__,
     description='Python Bindings for APRS-IS API.',
     author='Greg Albrecht',
-    author_email='gba@onbeep.com',
+    author_email='gba@orionlabs.co',
     packages=['aprs'],
     package_data={'': ['LICENSE']},
     license=open('LICENSE').read(),

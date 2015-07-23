@@ -15,12 +15,13 @@ sent to my callback *my_cb* and printed.
 
     import aprs
 
-    a = aprs.APRS('W2GMD')
-
-    def my_cb(line):
+    def my_callback(line):
         print line
 
-    a.receive(callback=my_cb)
+    a = aprs.APRS('W2GMD', '12345')
+    a.connect()
+    a.send('W2GMD>APRS:>Test!')
+    a.receive(callback=my_callback)
 
 
 Example output:
@@ -33,12 +34,12 @@ Github: https://github.com/ampledata/aprs
 
 Author
 ======
-Greg Albrecht W2GMD <gba@gregalbrecht.com>
+Greg Albrecht W2GMD <gba@orionlabs.co>
 
 Copyright
 =========
-Copyright 2013 Greg Albrecht
+Copyright 2015 Orion Labs, Inc.
 
 License
 =======
-Creative Commons Attribution 3.0 Unported License
+Apache License, Version 2.0

@@ -3,9 +3,9 @@
 
 """Tests for Python APRS util methods."""
 
-__author__ = 'Greg Albrecht W2GMD <gba@onbeep.com>'
-__copyright__ = 'Copyright 2013 OnBeep, Inc.'
+__author__ = 'Greg Albrecht W2GMD <gba@orionlabs.co>'
 __license__ = 'Apache License, Version 2.0'
+__copyright__ = 'Copyright 2015 Orion Labs, Inc.'
 
 
 import unittest
@@ -72,7 +72,7 @@ class APRSUtilTestCase(unittest.TestCase):  # pylint: disable=R0904
         self.logger.debug('aprs_lat=%s', aprs_lat)
 
         lat_deg = int(aprs_lat.split('.')[0][:1])
-        #lat_hsec = aprs_lat.split('.')[1]
+        # lat_hsec = aprs_lat.split('.')[1]
 
         self.assertTrue(len(aprs_lat) == 8)
         self.assertTrue(lat_deg >= 00)
@@ -103,7 +103,7 @@ class APRSUtilTestCase(unittest.TestCase):  # pylint: disable=R0904
         self.logger.debug('aprs_lat=%s', aprs_lat)
 
         lat_deg = int(aprs_lat.split('.')[0][:1])
-        #lat_hsec = aprs_lat.split('.')[1]
+        # lat_hsec = aprs_lat.split('.')[1]
 
         self.assertTrue(len(aprs_lat) == 8)
         self.assertTrue(lat_deg >= 00)
@@ -136,7 +136,7 @@ class APRSUtilTestCase(unittest.TestCase):  # pylint: disable=R0904
         self.logger.debug('aprs_lng=%s', aprs_lng)
 
         lng_deg = int(aprs_lng.split('.')[0][:2])
-        #lng_hsec = aprs_lng.split('.')[1]
+        # lng_hsec = aprs_lng.split('.')[1]
 
         self.assertTrue(len(aprs_lng) == 9)
         self.assertTrue(lng_deg >= 000)
@@ -169,7 +169,7 @@ class APRSUtilTestCase(unittest.TestCase):  # pylint: disable=R0904
         self.logger.debug('aprs_lng=%s', aprs_lng)
 
         lng_deg = int(aprs_lng.split('.')[0][:2])
-        #lng_hsec = aprs_lng.split('.')[1]
+        # lng_hsec = aprs_lng.split('.')[1]
 
         self.assertTrue(len(aprs_lng) == 9)
         self.assertTrue(lng_deg >= 000)
