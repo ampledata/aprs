@@ -37,7 +37,7 @@ class APRS(object):
         self.user = user
         self._url = input_url or aprs.constants.APRSIS_URL
         self._auth = ' '.join(
-            ['user', user, 'pass', password, 'vers', 'APRS Python Module v2'])
+            ['user', user, 'pass', password, 'vers', 'APRS Python Module v3'])
         self.aprsis_sock = None
 
     def connect(self, server=None, port=None, filter=None):
