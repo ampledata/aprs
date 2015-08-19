@@ -300,15 +300,16 @@ def decode_frame(raw_frame):
             if ord(raw_frame[raw_slice]) & 0x01 and ((raw_slice + 1) % 7) == 0:
                 i = (raw_slice + 1) / 7
                 # Less than 2 callsigns?
-                if 2 < i < 10:
+                if 1 < i < 11:
                     if (ord(raw_frame[raw_slice + 1]) & 0x03 == 0x03 and
-                            ord(raw_frame[raw_slice + 2]) == 0xf0):
+                            ord(raw_frame[raw_slice + 2]) in [0xf0, 0xcf]):
                         frame['text'] = raw_frame[raw_slice + 3:]
                         frame['destination'] = full_callsign(
                             extract_callsign(raw_frame))
                         frame['source'] = full_callsign(
                             extract_callsign(raw_frame[7:]))
                         frame['path'] = format_path(i, raw_frame)
+                        return frame
 
     logging.debug('frame=%s', frame)
     return frame
