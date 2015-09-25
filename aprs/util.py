@@ -337,7 +337,7 @@ def create_location_frame(source, latitude, longitude, altitude, course, speed,
     :return: APRS location frame.
     :rtype: str
     """
-    comment = comment or 'APRS Python Module v3'
+    comment = comment or 'APRS Python Module'
 
     location_text = ''.join([
         '!',
@@ -361,6 +361,7 @@ def create_location_frame(source, latitude, longitude, altitude, course, speed,
         'text': location_text
     }
     return format_aprs_frame(frame_dict)
+
 
 def run_doctest():  # pragma: no cover
     """Runs doctests for this module."""

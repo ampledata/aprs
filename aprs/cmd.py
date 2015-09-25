@@ -12,7 +12,6 @@ import argparse
 import logging
 import logging.handlers
 import time
-import sys
 
 import aprs.classes
 import aprs.constants
@@ -20,6 +19,14 @@ import aprs.util
 
 
 def setup_logging(log_level=None):
+    """
+    Sets up logging.
+
+    :param log_level: Log level to setup.
+    :type param: `logger` level.
+    :returns: logger instance
+    :rtype: instance
+    """
     log_level = log_level or aprs.constants.LOG_LEVEL
 
     logger = logging.getLogger(__name__)
@@ -35,7 +42,7 @@ def setup_logging(log_level=None):
 
 def tracker():
     """Tracker Command Line interface for APRS."""
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-d', '--debug', help='Enable debug logging', action='store_true'
@@ -80,31 +87,38 @@ def tracker():
 
     try:
         while 1:
-            aprs_latitude = aprs.util.dec2dm_lat(gps_p.latitude)
-            aprs_longitude = aprs.util.dec2dm_lng(gps_p.longitude)
+            aprs_latitude = None
+            aprs_longitude = None
+            gps_latitude = gps_p.gps_props['latitude']
+            gps_longitude = gps_p.gps_props['longitude']
 
-            frame = aprs.util.create_location_frame(
-                source=src_callsign,
-                destination='APRS',
-                latitude=aprs_latitude,
-                longitude=aprs_longitude,
-                course=0,
-                speed=0,
-                altitude=getattr(gps_p, 'altitude', 0),
-                symboltable='/',
-                symbolcode='>',
-            )
+            if gps_latitude is not None:
+                aprs_latitude = aprs.util.dec2dm_lat(gps_latitude)
+            if gps_longitude is not None:
+                aprs_longitude = aprs.util.dec2dm_lng(gps_longitude)
 
-            print frame
-            aprs_i.send(frame)
+            if aprs_latitude is not None and aprs_longitude is not None:
+                frame = aprs.util.create_location_frame(
+                    source=src_callsign,
+                    destination='APRS',
+                    latitude=aprs_latitude,
+                    longitude=aprs_longitude,
+                    course=0,
+                    speed=0,
+                    altitude=gps_p.gps_props.get('altitude', 0),
+                    symboltable='/',
+                    symbolcode='>',
+                )
 
-            if opts.interval == 0:
-                break
-            else:
-                time.sleep(opts.interval)
+                logger.debug('frame=%s', frame)
+                aprs_i.send(frame)
+
+                if opts.interval == 0:
+                    break
+                else:
+                    time.sleep(opts.interval)
 
     except KeyboardInterrupt:
         gps_p.stop()
-        pass
     finally:
         gps_p.stop()

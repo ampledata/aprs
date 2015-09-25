@@ -41,7 +41,7 @@ class APRS(object):
             ['user', user, 'pass', password, 'vers', 'APRS Python Module'])
         self.aprsis_sock = None
 
-    def connect(self, server=None, port=None, filter=None):
+    def connect(self, server=None, port=None, aprs_filter=None):
         """
         Connects & logs in to APRS-IS.
 
@@ -52,14 +52,11 @@ class APRS(object):
         :type port: int
         :type filte: str
         """
-        if not server:
-            server = aprs.constants.APRSIS_SERVER
-        if not port:
-            port = aprs.constants.APRSIS_FILTER_PORT
-        if not filter:
-            filter = '/'.join(['p', self.user])
+        server = server or aprs.constants.APRSIS_SERVER
+        port = port or aprs.constants.APRSIS_FILTER_PORT
+        aprs_filter = aprs_filter or '/'.join(['p', self.user])
 
-        full_auth = ' '.join([self._auth, 'filter', filter])
+        full_auth = ' '.join([self._auth, 'filter', aprs_filter])
 
         self.aprsis_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.aprsis_sock.connect((server, int(port)))
@@ -160,7 +157,7 @@ class SerialGPSPoller(threading.Thread):
 
     """Threadable Object for polling a serial NMEA-compatible GPS."""
 
-    NMEA_PROPERTIES =[
+    NMEA_PROPERTIES = [
         'timestamp',
         'lat',
         'latitude',
@@ -187,21 +184,26 @@ class SerialGPSPoller(threading.Thread):
         'fix'
     ]
 
-    logger = logging.getLogger(__name__)
-    logger.setLevel(aprs.constants.LOG_LEVEL)
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(aprs.constants.LOG_LEVEL)
-    console_handler.setFormatter(aprs.constants.LOG_FORMAT)
-    logger.addHandler(console_handler)
-    logger.propagate = False
+    _logger = logging.getLogger(__name__)
+    _logger.setLevel(aprs.constants.LOG_LEVEL)
+    _console_handler = logging.StreamHandler()
+    _console_handler.setLevel(aprs.constants.LOG_LEVEL)
+    _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+    _logger.addHandler(_console_handler)
+    _logger.propagate = False
 
     def __init__(self, serial_port, serial_speed):
         threading.Thread.__init__(self)
-        self.serial_port = serial_port
-        self.serial_speed = serial_speed
+        self._serial_port = serial_port
+        self._serial_speed = serial_speed
         self._stopped = False
+
+        self.gps_props = {}
+        for prop in self.NMEA_PROPERTIES:
+            self.gps_props[prop] = None
+
         self._serial_int = serial.Serial(
-            self.serial_port, self.serial_speed, timeout=1)
+            self._serial_port, self._serial_speed, timeout=1)
 
     def stop(self):
         """
@@ -217,8 +219,8 @@ class SerialGPSPoller(threading.Thread):
                 for msg in streamreader.next():
                     for prop in self.NMEA_PROPERTIES:
                         if getattr(msg, prop, None) is not None:
-                            setattr(self, prop, getattr(msg, prop))
-                            self.logger.debug(
-                                '%s=%s', prop, getattr(self, prop))
+                            self.gps_props[prop] = getattr(msg, prop)
+                            self._logger.debug(
+                                '%s=%s', prop, self.gps_props[prop])
         except StopIteration:
             pass
