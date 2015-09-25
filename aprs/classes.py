@@ -91,7 +91,7 @@ class APRS(object):
             content = "\n".join([self._auth, message])
             headers = headers or aprs.constants.APRSIS_HTTP_HEADERS
             result = requests.post(self._url, data=content, headers=headers)
-            return result.status_code is 204
+            return 204 in result.status_code
         elif 'UDP' in protocol:
             content = "\n".join([self._auth, message])
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
