@@ -37,7 +37,7 @@ publish()
 setup(
     name='aprs',
     version=__version__,
-    description='Python Bindings for APRS-IS API.',
+    description='Python Bindings for APRS.',
     author='Greg Albrecht',
     author_email='gba@orionlabs.co',
     packages=['aprs'],
@@ -46,12 +46,18 @@ setup(
     long_description=open('README.rst').read(),
     url='https://github.com/ampledata/aprs',
     setup_requires=[
-      'coverage==3.7.1',
-      'httpretty',
-      'nose==1.3.1'
+      'coverage >= 3.7.1',
+      'httpretty >= 0.8.10',
+      'nose >= 1.3.7'
     ],
-    install_requires=['requests', 'kiss==2.0.2'],
+    install_requires=[
+        'kiss >= 2.0.2',
+        'pynmea2 >= 1.4.2',
+        'pyserial >= 2.7',
+        'requests >= 2.7.0'
+    ],
     package_dir={'aprs': 'aprs'},
     zip_safe=False,
-    include_package_data=True
+    include_package_data=True,
+    entry_points={'console_scripts': ['aprs_tracker = aprs.cmd:tracker']}
 )

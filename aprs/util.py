@@ -104,7 +104,8 @@ def format_aprs_frame(frame):
     :rtype: str
     """
     formatted_frame = '>'.join([frame['source'], frame['destination']])
-    formatted_frame = ','.join([formatted_frame, frame['path']])
+    if frame['path']:
+        formatted_frame = ','.join([formatted_frame, frame['path']])
     formatted_frame = ':'.join([formatted_frame, frame['text']])
     return formatted_frame
 
@@ -314,6 +315,52 @@ def decode_frame(raw_frame):
     logging.debug('frame=%s', frame)
     return frame
 
+
+def create_location_frame(source, latitude, longitude, altitude, course, speed,
+                          symboltable, symbolcode, comment=None,
+                          destination='APRS', path=None):
+    """
+    Creates an APRS Location frame.
+
+    :param source: Source callsign (or callsign + SSID).
+    :param latitude: Latitude.
+    :param longitude: Longitude.
+    :param altitude: Altitude.
+    :param course: Course.
+    :param speed: Speed.
+    :param symboltable: APRS Symboltable.
+    :param symbolcode: APRS Symbolcode.
+    :param comment: Comment field. Default: Module + version.
+    :param destination: Destination callsign. Default: 'APRS'.
+    :param path: APRS Path.
+
+    :return: APRS location frame.
+    :rtype: str
+    """
+    comment = comment or 'APRS Python Module v3'
+
+    location_text = ''.join([
+        '!',
+        latitude,
+        symboltable,
+        longitude,
+        symbolcode,
+        "%03d" % course,
+        '/',
+        "%03d" % speed,
+        '/',
+        'A=',
+        "%06d" % altitude,
+        ' ',
+        comment
+    ])
+    frame_dict = {
+        'source': source,
+        'destination': destination,
+        'path': path,
+        'text': location_text
+    }
+    return format_aprs_frame(frame_dict)
 
 def run_doctest():  # pragma: no cover
     """Runs doctests for this module."""

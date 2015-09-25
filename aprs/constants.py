@@ -26,5 +26,7 @@ RECV_BUFFER = 1024
 
 
 LOG_LEVEL = logging.INFO
-LOG_FORMAT = ('%(asctime)s %(levelname)s %(name)s.%(funcName)s:%(lineno)d'
-              ' - %(message)s')
+LOG_FORMAT = logging.Formatter(('%(asctime)s %(levelname)s '
+    '%(name)s.%(funcName)s:%(lineno)d - %(message)s'))
+
+GPS_WARM_UP = 5
