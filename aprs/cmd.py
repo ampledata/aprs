@@ -165,10 +165,10 @@ def safecast_tracker():
 
     src_callsign = aprs.util.full_callsign(
         {'callsign': opts.callsign, 'ssid': opts.ssid})
-    mock_sentence = '$BNRDD,2359,2015-10-02T05:49:59Z,34,5,4189,A,3745.6023,N,12229.8562,W,41.90,A,7,118*6F'
-    sc_p.str_buf = mock_sentence
-    sc_p.store('', '$')
-    print sc_p.bgn_props
+    #mock_sentence = '$BNRDD,2359,2015-10-02T05:49:59Z,34,5,4189,A,3745.6023,N,12229.8562,W,41.90,A,7,118*6F'
+    #sc_p.str_buf = mock_sentence
+    #sc_p.store('', '$')
+    #print sc_p.bgn_props
     i = 0
     try:
         while 1:

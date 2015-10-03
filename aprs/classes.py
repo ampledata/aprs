@@ -270,7 +270,7 @@ class BGeigieNanoPoller(threading.Thread):
 
         self.str_buf = ''
         self.bgn = None
-        #self._connect()
+        self._connect()
 
     def _connect(self):
         pygatt.util.reset_bluetooth_controller()
@@ -300,5 +300,4 @@ class BGeigieNanoPoller(threading.Thread):
             self.str_buf = ''.join([self.str_buf, str_y])
 
     def run(self):
-        #self.bgn.run()
-        pass
+        self.bgn.run()
