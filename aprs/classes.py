@@ -292,6 +292,8 @@ class BGeigieNanoPoller(threading.Thread):
             if self.bgn_props['longitude'] is not None:
                 self.bgn_props['longitude'] = float(
                     self.bgn_props['longitude'])
+            if self.bgn_props['rad_1_min'] is not None:
+                self.bgn_props['rad_1_min'] = int(self.bgn_props['rad_1_min'])
 
             self.str_buf = str_y
         else:

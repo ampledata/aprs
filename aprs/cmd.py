@@ -197,8 +197,8 @@ def safecast_tracker():
                         course=0,
                         speed=0,
                         altitude=sc_p.bgn_props.get('altitude', 0),
-                        symboltable='R',
-                        symbolcode='H',
+                        symboltable='\',
+                        symbolcode='c',
                         comment="Safecast did=%s rtc=%s cp5s=%s cpm=%s" % (
                             sc_p.bgn_props['device_id'],
                             sc_p.bgn_props['rad_total_count'],
@@ -206,7 +206,12 @@ def safecast_tracker():
                             sc_p.bgn_props['rad_1_min']
                         )
                     )
-
+                    frame = aprs.util.create_telemetry_frame(
+                        source=src_callsign,
+                        destination='APRS',
+                        sequence=i,
+                        val1=sc_p.bgn_props['rad_1_min'] / 350
+                    )
                     logger.info('frame=%s', frame)
                     aprs_i.send(frame)
 
