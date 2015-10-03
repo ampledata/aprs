@@ -165,10 +165,11 @@ def safecast_tracker():
 
     src_callsign = aprs.util.full_callsign(
         {'callsign': opts.callsign, 'ssid': opts.ssid})
-    #mock_sentence = '$BNRDD,2359,2015-10-02T05:49:59Z,34,5,4189,A,3745.6023,N,12229.8562,W,41.90,A,7,118*6F'
-    #sc_p.str_buf = mock_sentence
-    #sc_p.store('', '$')
-    #print sc_p.bgn_props
+    mock_sentence = '$BNRDD,2359,2015-10-02T05:49:59Z,34,5,4189,A,3745.6023,N,12229.8562,W,41.90,A,7,118*6F'
+    sc_p.str_buf = mock_sentence
+    sc_p.store('', '$')
+    print sc_p.bgn_props
+    i = 0
     try:
         while 1:
             gps_valid = sc_p.bgn_props['gps_valid'] == 'A'
@@ -197,7 +198,7 @@ def safecast_tracker():
                         course=0,
                         speed=0,
                         altitude=sc_p.bgn_props.get('altitude', 0),
-                        symboltable='\',
+                        symboltable='\\',
                         symbolcode='c',
                         comment="Safecast did=%s rtc=%s cp5s=%s cpm=%s" % (
                             sc_p.bgn_props['device_id'],
@@ -206,15 +207,20 @@ def safecast_tracker():
                             sc_p.bgn_props['rad_1_min']
                         )
                     )
-                    frame = aprs.util.create_telemetry_frame(
-                        source=src_callsign,
-                        destination='APRS',
-                        sequence=i,
-                        val1=sc_p.bgn_props['rad_1_min'] / 350
-                    )
+                    #frame = aprs.util.create_telemetry_frame(
+                    #    source=src_callsign,
+                    #    destination='APRS',
+                    #    sequence=i,
+                    #    val1=sc_p.bgn_props['rad_1_min'] / 350,
+                    #    val2=0,
+                    #    val3=0,
+                    #    val4=0,
+                    #    val5=0,
+                    #    bits=0
+                    #)
                     logger.info('frame=%s', frame)
                     aprs_i.send(frame)
-
+                    i += 1
                     if opts.interval == 0:
                         break
                     else:
