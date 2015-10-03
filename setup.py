@@ -52,6 +52,7 @@ setup(
     ],
     install_requires=[
         'kiss >= 2.0.2',
+        'pygatt',
         'pynmea2 >= 1.4.2',
         'pyserial >= 2.7',
         'requests >= 2.7.0'
@@ -59,5 +60,10 @@ setup(
     package_dir={'aprs': 'aprs'},
     zip_safe=False,
     include_package_data=True,
-    entry_points={'console_scripts': ['aprs_tracker = aprs.cmd:tracker']}
+    entry_points={
+        'console_scripts': [
+            'aprs_tracker = aprs.cmd:tracker',
+            'safecast_tracker = aprs.cmd:safecast_tracker'
+        ],
+    }
 )
