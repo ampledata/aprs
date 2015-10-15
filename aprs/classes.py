@@ -224,3 +224,80 @@ class SerialGPSPoller(threading.Thread):
                                 '%s=%s', prop, self.gps_props[prop])
         except StopIteration:
             pass
+
+
+import pygatt
+# $BNRDD,2359,2015-10-02T05:49:59Z,34,5,4189,A,3745.6023,N,12229.8562,W,41.90,A,7,118*6F
+class BGeigieNanoPoller(threading.Thread):
+
+    """Threadable Object for polling a Safecast Nano."""
+
+    BGN_PROPERTIES = [
+        'stype',
+        'device_id',
+        'date',
+        'rad_1_min',
+        'rad_5_secs',
+        'rad_total_count',
+        'rad_valid',
+        'latitude',
+        'hemisphere',
+        'longitude',
+        'east_west',
+        'altitude',
+        'gps_valid',
+        'hdop',
+        'checksum'
+    ]
+
+    SUB = 'a1e8f5b1-696b-4e4c-87c6-69dfe0b0093b'
+
+    _logger = logging.getLogger(__name__)
+    _logger.setLevel(aprs.constants.LOG_LEVEL)
+    _console_handler = logging.StreamHandler()
+    _console_handler.setLevel(aprs.constants.LOG_LEVEL)
+    _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+    _logger.addHandler(_console_handler)
+    _logger.propagate = False
+
+    def __init__(self, mac):
+        threading.Thread.__init__(self)
+        self.mac = mac
+
+        self.bgn_props = {}
+        for prop in self.BGN_PROPERTIES:
+            self.bgn_props[prop] = None
+
+        self.str_buf = ''
+        self.bgn = None
+        self._connect()
+
+    def _connect(self):
+        pygatt.util.reset_bluetooth_controller()
+        self.bgn = pygatt.pygatt.BluetoothLEDevice(self.mac)
+        self.bgn.connect()
+        self.bgn.char_write(32, bytearray([0x03, 0x00]))
+        self.bgn.subscribe(self.SUB, self.store)
+
+    def store(self, x, y):
+        str_y = str(y)
+        if '$' in str_y:
+            self.bgn_props.update(
+                dict(zip(self.BGN_PROPERTIES, self.str_buf.split(','))))
+
+            if self.bgn_props['altitude'] is not None:
+                self.bgn_props['altitude'] = float(self.bgn_props['altitude'])
+            if self.bgn_props['latitude'] is not None:
+                self.bgn_props['latitude'] = float(self.bgn_props['latitude'])
+            if self.bgn_props['longitude'] is not None:
+                self.bgn_props['longitude'] = float(
+                    self.bgn_props['longitude'])
+            if self.bgn_props['rad_1_min'] is not None:
+                self.bgn_props['rad_1_min'] = int(self.bgn_props['rad_1_min'])
+
+            self.str_buf = str_y
+        else:
+            self.str_buf = ''.join([self.str_buf, str_y])
+
+    def run(self):
+        self.bgn.run()

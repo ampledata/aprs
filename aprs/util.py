@@ -363,6 +363,43 @@ def create_location_frame(source, latitude, longitude, altitude, course, speed,
     return format_aprs_frame(frame_dict)
 
 
+def create_telemetry_frame(source, sequence, val1, val2, val3, val4, val5, bits,
+                           destination='APRS', path=None):
+    """
+    Creates an APRS Location frame.
+
+    :param source: Source callsign (or callsign + SSID).
+    :param latitude: Latitude.
+    :param longitude: Longitude.
+    :param altitude: Altitude.
+    :param course: Course.
+    :param speed: Speed.
+    :param symboltable: APRS Symboltable.
+    :param symbolcode: APRS Symbolcode.
+    :param comment: Comment field. Default: Module + version.
+    :param destination: Destination callsign. Default: 'APRS'.
+    :param path: APRS Path.
+
+    :return: APRS location frame.
+    :rtype: str
+    """
+    frame_text = ','.join([
+        'T#%d' % val1,
+        val2,
+        val3,
+        val4,
+        val5,
+        bits
+    ])
+    frame_dict = {
+        'source': source,
+        'destination': destination,
+        'path': path,
+        'text': frame_text
+    }
+    return format_aprs_frame(frame_dict)
+
+
 def run_doctest():  # pragma: no cover
     """Runs doctests for this module."""
     import doctest
