@@ -37,7 +37,8 @@ def dec2dm_lat(dec):
     else:
         suffix = 'N'
 
-    return ''.join([str(abs_deg), "%.2f" % dec_min[1], suffix])
+    return "%02d%05.2f%s" % (abs_deg,dec_min[1],suffix)
+
 
 
 def dec2dm_lng(dec):
@@ -60,7 +61,7 @@ def dec2dm_lng(dec):
     else:
         suffix = 'E'
 
-    return ''.join([str(abs_deg), "%.2f" % dec_min[1], suffix])
+    return "%03d%05.2f%s" % (abs_deg,dec_min[1],suffix)
 
 
 def decode_aprs_ascii_frame(ascii_frame):
