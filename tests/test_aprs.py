@@ -27,14 +27,14 @@ ALPHANUM = ''.join([ALPHABET, NUMBERS])
 class APRSTest(unittest.TestCase):  # pylint: disable=R0904
     """Tests for Python APRS-IS Bindings."""
 
-    logger = logging.getLogger(__name__)
-    logger.setLevel(aprs.constants.LOG_LEVEL)
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(aprs.constants.LOG_LEVEL)
-    formatter = logging.Formatter(aprs.constants.LOG_FORMAT)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
-    logger.propagate = False
+    _logger = logging.getLogger(__name__)
+    if not _logger.handlers:
+        _logger.setLevel(aprs.constants.LOG_LEVEL)
+        _console_handler = logging.StreamHandler()
+        _console_handler.setLevel(aprs.constants.LOG_LEVEL)
+        _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+        _logger.addHandler(_console_handler)
+        _logger.propagate = False
 
     @classmethod
     def random(cls, length=8, alphabet=ALPHANUM):
@@ -66,7 +66,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
         self.real_server = 'http://localhost:14580'
         self.real_callsign = '-'.join(['W2GMD', self.random(1, '123456789')])
 
-        self.logger.debug(
+        self._logger.debug(
             "fake_server=%s fake_callsign=%s",
             self.fake_server,
             self.fake_callsign
@@ -93,7 +93,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
             self.fake_callsign,
             'APRS,TCPIP*:=3745.00N/12227.00W-Simulated Location'
         ])
-        self.logger.debug(locals())
+        self._logger.debug(locals())
 
         result = aprs_conn.send(msg)
 
@@ -120,7 +120,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
             self.fake_callsign,
             'APRS,TCPIP*:=3745.00N/12227.00W-Simulated Location'
         ])
-        self.logger.debug(locals())
+        self._logger.debug(locals())
 
         result = aprs_conn.send(msg, protocol='HTTP')
 
@@ -141,7 +141,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
             self.real_callsign,
             'APRS,TCPIP*:=3745.00N/12227.00W-Simulated Location'
         ])
-        self.logger.debug(locals())
+        self._logger.debug(locals())
 
         result = aprs_conn.send(msg)
 

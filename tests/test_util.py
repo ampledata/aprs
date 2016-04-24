@@ -30,14 +30,14 @@ INVALID_CALLSIGNS = ['xW2GMDx', 'W2GMD-16', 'W2GMD-A', 'W', 'W2GMD-1-0',
 class APRSUtilTestCase(unittest.TestCase):  # pylint: disable=R0904
     """Tests for Python APRS Utils."""
 
-    logger = logging.getLogger(__name__)
-    logger.setLevel(aprs.constants.LOG_LEVEL)
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(aprs.constants.LOG_LEVEL)
-    formatter = logging.Formatter(aprs.constants.LOG_FORMAT)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
-    logger.propagate = False
+    _logger = logging.getLogger(__name__)
+    if not _logger.handlers:
+        _logger.setLevel(aprs.constants.LOG_LEVEL)
+        _console_handler = logging.StreamHandler()
+        _console_handler.setLevel(aprs.constants.LOG_LEVEL)
+        _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+        _logger.addHandler(_console_handler)
+        _logger.propagate = False
 
     def setUp(self):  # pylint: disable=C0103
         """Setup."""

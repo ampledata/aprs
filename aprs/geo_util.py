@@ -8,8 +8,6 @@ __license__ = 'Apache License, Version 2.0'
 __copyright__ = 'Copyright 2016 Orion Labs, Inc.'
 
 
-import logging
-
 import aprs.constants
 import aprs.decimaldegrees
 
@@ -25,6 +23,10 @@ def dec2dm_lat(dec):
         >>> aprs_lat = dec2dm_lat(test_lat)
         >>> aprs_lat
         '3744.51N'
+        >>> test_lat = -8.01
+        >>> aprs_lat = dec2dm_lat(test_lat)
+        >>> aprs_lat
+        '0800.60S'
     """
     dec_min = aprs.decimaldegrees.decimal2dm(dec)
 
@@ -44,10 +46,14 @@ def dec2dm_lng(dec):
     See: http://ember2ash.com/lat.htm
 
     Example:
-        >>> test_lng = -122.38833
+        >>> test_lng = 122.38833
         >>> aprs_lng = dec2dm_lng(test_lng)
         >>> aprs_lng
-        '12223.30W'
+        '12223.30E'
+        >>> test_lng = -99.01
+        >>> aprs_lng = dec2dm_lng(test_lng)
+        >>> aprs_lng
+        '09900.60W'
     """
     dec_min = aprs.decimaldegrees.decimal2dm(dec)
 

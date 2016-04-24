@@ -59,19 +59,20 @@ from . import constants
 class APRSGeoTestCase(unittest.TestCase):  # pylint: disable=R0904
     """Tests for Python APRS Utils."""
 
-    logger = logging.getLogger(__name__)
-    logger.setLevel(aprs.constants.LOG_LEVEL)
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(aprs.constants.LOG_LEVEL)
-    console_handler.setFormatter(aprs.constants.LOG_FORMAT)
-    logger.addHandler(console_handler)
-    logger.propagate = False
+    _logger = logging.getLogger(__name__)
+    if not _logger.handlers:
+        _logger.setLevel(aprs.constants.LOG_LEVEL)
+        _console_handler = logging.StreamHandler()
+        _console_handler.setLevel(aprs.constants.LOG_LEVEL)
+        _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+        _logger.addHandler(_console_handler)
+        _logger.propagate = False
 
     def test_latitude_north(self):
         """Test Decimal to APRS Latitude conversion."""
         test_lat = 37.7418096
         aprs_lat = aprs.geo_util.dec2dm_lat(test_lat)
-        self.logger.info('test_lat=%s aprs_lat=%s', test_lat, aprs_lat)
+        self._logger.info('test_lat=%s aprs_lat=%s', test_lat, aprs_lat)
 
         lat_deg = int(aprs_lat.split('.')[0][:1])
         # lat_hsec = aprs_lat.split('.')[1]
@@ -85,7 +86,7 @@ class APRSGeoTestCase(unittest.TestCase):  # pylint: disable=R0904
         """Test Decimal to APRS Latitude conversion."""
         test_lat = -37.7418096
         aprs_lat = aprs.geo_util.dec2dm_lat(test_lat)
-        self.logger.info('test_lat=%s aprs_lat=%s', test_lat, aprs_lat)
+        self._logger.info('test_lat=%s aprs_lat=%s', test_lat, aprs_lat)
 
         lat_deg = int(aprs_lat.split('.')[0][:1])
 
@@ -103,7 +104,7 @@ class APRSGeoTestCase(unittest.TestCase):  # pylint: disable=R0904
         """
         test_lat = -38.01
         aprs_lat = aprs.geo_util.dec2dm_lat(test_lat)
-        self.logger.info('test_lat=%s aprs_lat=%s', test_lat, aprs_lat)
+        self._logger.info('test_lat=%s aprs_lat=%s', test_lat, aprs_lat)
 
         lat_deg = int(aprs_lat.split('.')[0][:1])
 
@@ -121,7 +122,7 @@ class APRSGeoTestCase(unittest.TestCase):  # pylint: disable=R0904
         """
         test_lat = -8.01
         aprs_lat = aprs.geo_util.dec2dm_lat(test_lat)
-        self.logger.info('test_lat=%s aprs_lat=%s', test_lat, aprs_lat)
+        self._logger.info('test_lat=%s aprs_lat=%s', test_lat, aprs_lat)
 
         lat_deg = int(aprs_lat.split('.')[0][:1])
 
@@ -134,7 +135,7 @@ class APRSGeoTestCase(unittest.TestCase):  # pylint: disable=R0904
         """Test Decimal to APRS Longitude conversion."""
         test_lng = -122.38833
         aprs_lng = aprs.geo_util.dec2dm_lng(test_lng)
-        self.logger.info('test_lng=%s aprs_lng=%s', test_lng, aprs_lng)
+        self._logger.info('test_lng=%s aprs_lng=%s', test_lng, aprs_lng)
 
         lng_deg = int(aprs_lng.split('.')[0][:2])
         # lng_hsec = aprs_lng.split('.')[1]
@@ -153,7 +154,7 @@ class APRSGeoTestCase(unittest.TestCase):  # pylint: disable=R0904
         """
         test_lng = -122.01
         aprs_lng = aprs.geo_util.dec2dm_lng(test_lng)
-        self.logger.info('test_lng=%s aprs_lng=%s', test_lng, aprs_lng)
+        self._logger.info('test_lng=%s aprs_lng=%s', test_lng, aprs_lng)
 
         lng_deg = int(aprs_lng.split('.')[0][:2])
         # lng_hsec = aprs_lng.split('.')[1]
@@ -172,7 +173,7 @@ class APRSGeoTestCase(unittest.TestCase):  # pylint: disable=R0904
         """
         test_lng = -99.01
         aprs_lng = aprs.geo_util.dec2dm_lng(test_lng)
-        self.logger.info('test_lng=%s aprs_lng=%s', test_lng, aprs_lng)
+        self._logger.info('test_lng=%s aprs_lng=%s', test_lng, aprs_lng)
 
         lng_deg = int(aprs_lng.split('.')[0][:2])
         # lng_hsec = aprs_lng.split('.')[1]
@@ -186,7 +187,7 @@ class APRSGeoTestCase(unittest.TestCase):  # pylint: disable=R0904
         """Test Decimal to APRS Longitude conversion."""
         test_lng = 122.38833
         aprs_lng = aprs.geo_util.dec2dm_lng(test_lng)
-        self.logger.info('test_lng=%s aprs_lng=%s', test_lng, aprs_lng)
+        self._logger.info('test_lng=%s aprs_lng=%s', test_lng, aprs_lng)
 
         lng_deg = int(aprs_lng.split('.')[0][:2])
         # lng_hsec = aprs_lng.split('.')[1]
