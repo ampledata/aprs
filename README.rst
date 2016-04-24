@@ -77,6 +77,20 @@ Example 3 Code
     a.send('W2GMD>APRS:>Hello World!')
 
 
+Build Status
+============
+
+Master:
+
+.. image:: https://travis-ci.org/ampledata/aprs.svg?branch=master
+    :target: https://travis-ci.org/ampledata/aprs
+
+Develop:
+
+.. image:: https://travis-ci.org/ampledata/aprs.svg?branch=develop
+    :target: https://travis-ci.org/ampledata/aprs
+
+
 Source
 ======
 Github: https://github.com/ampledata/aprs
