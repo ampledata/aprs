@@ -3,9 +3,9 @@
 
 """APRS Class Definitions"""
 
-__author__ = 'Greg Albrecht W2GMD <gba@orionlabs.co>'
+__author__ = 'Greg Albrecht W2GMD <gba@orionlabs.io>'
 __license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2015 Orion Labs, Inc.'
+__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
 
 
 import logging
@@ -26,13 +26,14 @@ class APRS(object):
 
     """APRS Object."""
 
-    logger = logging.getLogger(__name__)
-    logger.setLevel(aprs.constants.LOG_LEVEL)
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(aprs.constants.LOG_LEVEL)
-    console_handler.setFormatter(aprs.constants.LOG_FORMAT)
-    logger.addHandler(console_handler)
-    logger.propagate = False
+    _logger = logging.getLogger(__name__)
+    if not _logger.handlers:
+        _logger.setLevel(aprs.constants.LOG_LEVEL)
+        _console_handler = logging.StreamHandler()
+        _console_handler.setLevel(aprs.constants.LOG_LEVEL)
+        _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+        _logger.addHandler(_console_handler)
+        _logger.propagate = False
 
     def __init__(self, user, password='-1', input_url=None):
         self.user = user
@@ -60,8 +61,8 @@ class APRS(object):
 
         self.aprsis_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.aprsis_sock.connect((server, int(port)))
-        self.logger.info('Connected to server=%s port=%s', server, port)
-        self.logger.debug('Sending full_auth=%s', full_auth)
+        self._logger.info('Connected to server=%s port=%s', server, port)
+        self._logger.debug('Sending full_auth=%s', full_auth)
         self.aprsis_sock.sendall(full_auth + '\n\r')
 
     def send(self, message, headers=None, protocol='TCP'):
@@ -77,18 +78,18 @@ class APRS(object):
         :return: True on success, False otherwise.
         :rtype: bool
         """
-        self.logger.debug(
+        self._logger.debug(
             'message=%s headers=%s protocol=%s', message, headers, protocol)
 
         if 'TCP' in protocol:
-            self.logger.debug('sending message=%s', message)
+            self._logger.debug('sending message=%s', message)
             self.aprsis_sock.sendall(message + '\n\r')
             return True
         elif 'HTTP' in protocol:
             content = "\n".join([self._auth, message])
             headers = headers or aprs.constants.APRSIS_HTTP_HEADERS
             result = requests.post(self._url, data=content, headers=headers)
-            return 204 in result.status_code
+            return result.status_code == 204
         elif 'UDP' in protocol:
             content = "\n".join([self._auth, message])
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -116,7 +117,7 @@ class APRS(object):
 
                 recvd_data += recv_data
 
-                self.logger.debug('recv_data=%s', recv_data.strip())
+                self._logger.debug('recv_data=%s', recv_data.strip())
 
                 if recvd_data.endswith('\r\n'):
                     lines = recvd_data.strip().split('\r\n')
@@ -128,14 +129,14 @@ class APRS(object):
                 for line in lines:
                     if line.startswith('#'):
                         if 'logresp' in line:
-                            self.logger.debug('logresp=%s', line)
+                            self._logger.debug('logresp=%s', line)
                     else:
-                        self.logger.debug('line=%s', line)
+                        self._logger.debug('line=%s', line)
                         if callback:
                             callback(line)
 
         except socket.error as sock_err:
-            self.logger.error(sock_err)
+            self._logger.error(sock_err)
             raise
 
 
@@ -185,12 +186,13 @@ class SerialGPSPoller(threading.Thread):
     ]
 
     _logger = logging.getLogger(__name__)
-    _logger.setLevel(aprs.constants.LOG_LEVEL)
-    _console_handler = logging.StreamHandler()
-    _console_handler.setLevel(aprs.constants.LOG_LEVEL)
-    _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
-    _logger.addHandler(_console_handler)
-    _logger.propagate = False
+    if not _logger.handlers:
+        _logger.setLevel(aprs.constants.LOG_LEVEL)
+        _console_handler = logging.StreamHandler()
+        _console_handler.setLevel(aprs.constants.LOG_LEVEL)
+        _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+        _logger.addHandler(_console_handler)
+        _logger.propagate = False
 
     def __init__(self, serial_port, serial_speed):
         threading.Thread.__init__(self)

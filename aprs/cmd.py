@@ -3,8 +3,8 @@
 
 """APRS commands."""
 
-__author__ = 'Greg Albrecht W2GMD <gba@orionlabs.co>'
-__copyright__ = 'Copyright 2015 Orion Labs, Inc.'
+__author__ = 'Greg Albrecht W2GMD <gba@orionlabs.io>'
+__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
 __license__ = 'All rights reserved. Do not redistribute.'
 
 
@@ -15,6 +15,7 @@ import time
 
 import aprs.classes
 import aprs.constants
+import aprs.geo_util
 import aprs.util
 
 
@@ -93,9 +94,9 @@ def tracker():
             gps_longitude = gps_p.gps_props['longitude']
 
             if gps_latitude is not None:
-                aprs_latitude = aprs.util.dec2dm_lat(gps_latitude)
+                aprs_latitude = aprs.geo_util.dec2dm_lat(gps_latitude)
             if gps_longitude is not None:
-                aprs_longitude = aprs.util.dec2dm_lng(gps_longitude)
+                aprs_longitude = aprs.geo_util.dec2dm_lng(gps_longitude)
 
             if aprs_latitude is not None and aprs_longitude is not None:
                 frame = aprs.util.create_location_frame(
