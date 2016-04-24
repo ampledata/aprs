@@ -1,7 +1,8 @@
 Python Module for APRS-IS
 *************************
 
-Includes Python module with bindings for APRS as well as ``aprs_tracker`` command-line APRS location tracking utility.
+Includes Python module with bindings for APRS as well as ``aprs_tracker``
+command-line APRS location tracking utility.
 
 
 Examples
@@ -62,7 +63,8 @@ Example 2 Output
 Example 3: Library Usage - Send
 ----------------------------------
 
-The following example connects to APRS-IS as W2GMD (me!) and sends an APRS frame.
+The following example connects to APRS-IS as W2GMD (me!) and sends an APRS
+frame.
 
 Example 3 Code
 ^^^^^^^^^^^^^^
@@ -81,11 +83,11 @@ Github: https://github.com/ampledata/aprs
 
 Author
 ======
-Greg Albrecht W2GMD <gba@orionlabs.co>
+Greg Albrecht W2GMD <gba@orionlabs.io>
 
 Copyright
 =========
-Copyright 2015 Orion Labs, Inc.
+Copyright 2016 Orion Labs, Inc.
 
 License
 =======
