@@ -3,7 +3,7 @@
 
 """APRS commands."""
 
-__author__ = 'Greg Albrecht W2GMD <gba@orionlabs.io>'
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __copyright__ = 'Copyright 2016 Orion Labs, Inc.'
 __license__ = 'All rights reserved. Do not redistribute.'
 

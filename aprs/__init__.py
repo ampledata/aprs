@@ -8,7 +8,7 @@ APRS Python Module.
 ~~~~
 
 
-:author: Greg Albrecht W2GMD <gba@orionlabs.io>
+:author: Greg Albrecht W2GMD <oss@undef.net>
 :copyright: Copyright 2016 Orion Labs, Inc.
 :license: Apache License, Version 2.0
 :source: <https://github.com/ampledata/aprs>
