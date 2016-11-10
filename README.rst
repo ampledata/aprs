@@ -47,12 +47,10 @@ Example 2 Code
 
     import aprs
 
-    def my_callback(line):
-        print line
-
-    a = aprs.APRS('W2GMD', '12345')
-    a.connect()
-    a.receive(callback=my_callback)
+    a = aprs.TCPAPRS('W2GMD', '12345')
+    a.start()
+    def p(x): print(x)
+    a.receive(callback=p)
 
 Example 2 Output
 ^^^^^^^^^^^^^^^^
@@ -72,8 +70,8 @@ Example 3 Code
 
     import aprs
 
-    a = aprs.APRS('W2GMD', '12345')
-    a.connect()
+    a = aprs.TCPAPRS('W2GMD', '12345')
+    a.start()
     a.send('W2GMD>APRS:>Hello World!')
 
 
