@@ -7,17 +7,15 @@ Setup for the APRS Python Module.
 Source:: https://github.com/ampledata/aprs
 """
 
-
-__title__ = 'aprs'
-__version__ = '4.1.0'
-__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
-__license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
-
-
 import os
 import setuptools
 import sys
+
+__title__ = 'aprs'
+__version__ = '5.0.0b1'
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
+__license__ = 'Apache License, Version 2.0'
+__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
 
 
 def publish():

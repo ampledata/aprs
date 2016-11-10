@@ -10,19 +10,24 @@
 .DEFAULT_GOAL := all
 
 
-all: install_requirements develop
+all: develop
 
-develop:
+develop: remember
 	python setup.py develop
 
 install_requirements:
 	pip install -r requirements.txt
 
-install:
+install: remember
 	python setup.py install
 
 uninstall:
 	pip uninstall -y aprs
+
+reinstall: uninstall install
+
+remember:
+	@echo "Don't forget to 'make install_requirements'"
 
 clean:
 	@rm -rf *.egg* build dist *.py[oc] */*.py[co] cover doctest_pypi.cfg \
@@ -35,11 +40,15 @@ publish:
 nosetests:
 	python setup.py nosetests
 
-pep8: install_requirements
+pep8: remember
 	flake8 --max-complexity 12 --exit-zero aprs/*.py tests/*.py
 
-lint: install_requirements
+flake8: pep8
+
+lint: remember
 	pylint --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" \
 		-r n aprs/*.py tests/*.py || exit 0
+
+pylint: lint
 
 test: lint pep8 nosetests

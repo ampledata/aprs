@@ -3,11 +3,6 @@
 
 """Tests for Python APRS-IS Bindings."""
 
-__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
-__license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
-
-
 import random
 import unittest
 import logging
@@ -16,6 +11,10 @@ import logging.handlers
 import httpretty
 
 from .context import aprs
+
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
+__license__ = 'Apache License, Version 2.0'
+__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
 
 
 ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -83,11 +82,11 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
             status=204
         )
 
-        aprs_conn = aprs.APRS(
+        aprs_conn = aprs.HTTPAPRS(
             user=self.fake_callsign,
-            input_url=self.fake_server
+            url=self.fake_server
         )
-        aprs_conn.connect()
+        aprs_conn.start()
 
         msg = '>'.join([
             self.fake_callsign,
@@ -110,11 +109,11 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
             status=401
         )
 
-        aprs_conn = aprs.APRS(
+        aprs_conn = aprs.HTTPAPRS(
             user=self.fake_callsign,
-            input_url=self.fake_server
+            url=self.fake_server
         )
-        aprs_conn.connect()
+        aprs_conn.start()
 
         msg = '>'.join([
             self.fake_callsign,
@@ -122,7 +121,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
         ])
         self._logger.debug(locals())
 
-        result = aprs_conn.send(msg, protocol='HTTP')
+        result = aprs_conn.send(msg)
 
         self.assertFalse(result)
 
@@ -131,11 +130,11 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
         """
         Tests APRS-IS binding against a real APRS-IS server.
         """
-        aprs_conn = aprs.APRS(
+        aprs_conn = aprs.HTTPAPRS(
             user=self.real_callsign,
-            input_url=self.real_server
+            url=self.real_server
         )
-        aprs_conn.connect()
+        aprs_conn.start()
 
         msg = '>'.join([
             self.real_callsign,

@@ -48,13 +48,11 @@ $ python decimaldegrees.py [-v]
 
 """
 
-
-__revision__ = '$Revision: 1.1 $'
-
-
 import decimal as libdecimal
 
 from decimal import Decimal as D
+
+__revision__ = '$Revision: 1.1 $'
 
 
 def decimal2dms(decimal_degrees):

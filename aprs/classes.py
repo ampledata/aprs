@@ -3,11 +3,6 @@
 
 """APRS Class Definitions"""
 
-__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
-__license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
-
-
 import logging
 import logging.handlers
 import socket
@@ -20,6 +15,10 @@ import serial
 
 import aprs.constants
 import aprs.util
+
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
+__license__ = 'Apache License, Version 2.0'
+__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
 
 
 class APRS(object):
@@ -35,69 +34,93 @@ class APRS(object):
         _logger.addHandler(_console_handler)
         _logger.propagate = False
 
-    def __init__(self, user, password='-1', input_url=None):
+    def __init__(self, user, password='-1'):
         self.user = user
-        self._url = input_url or aprs.constants.APRSIS_URL
         self._auth = ' '.join(
             ['user', user, 'pass', password, 'vers', 'APRS Python Module'])
-        self.aprsis_sock = None
+        self._full_auth = None
+        self.interface = None
 
-    def connect(self, server=None, port=None, aprs_filter=None):
+    def start(self):
         """
-        Connects & logs in to APRS-IS.
+        Abstract method for starting connection to APRS-IS.
+        """
+        pass
 
-        :param server: Optional alternative APRS-IS server.
-        :param port: Optional APRS-IS port.
-        :param filter: Optional filter to use.
-        :type server: str
-        :type port: int
-        :type filte: str
+    def send(self, message):
         """
+        Abstract method for sending messages to APRS-IS.
+        """
+        pass
+
+    def receive(self, callback=None):
+        """
+        Abstract method for receiving messages from APRS-IS.
+        """
+        pass
+
+
+class APRSSerialKISS(kiss.SerialKISS):
+
+    """APRS interface for KISS serial devices."""
+
+    def write(self, frame):
+        """Writes APRS-encoded frame to KISS device.
+
+        :param frame: APRS frame to write to KISS device.
+        :type frame: str
+        """
+        encoded_frame = aprs.encode_frame(frame)
+        super(APRSSerialKISS, self).write(encoded_frame)
+
+
+class APRSTCPKISS(kiss.TCPKISS):
+
+    """APRS interface for KISS serial devices."""
+
+    def write(self, frame):
+        """Writes APRS-encoded frame to KISS device.
+
+        :param frame: APRS frame to write to KISS device.
+        :type frame: str
+        """
+        encoded_frame = aprs.encode_frame(frame)
+        super(APRSTCPKISS, self).write(encoded_frame)
+
+
+class TCPAPRS(APRS):
+
+    """APRS-IS TCP Class."""
+
+    def __init__(self, user, password='-1', server=None, port=None,
+                 aprs_filter=None):
+        super(TCPAPRS, self).__init__(user, password)
         server = server or aprs.constants.APRSIS_SERVER
         port = port or aprs.constants.APRSIS_FILTER_PORT
-        aprs_filter = aprs_filter or '/'.join(['p', self.user])
+        self._addr = (server, int(port))
+        aprs_filter = aprs_filter or '/'.join(['p', user])
+        self._full_auth = ' '.join([self._auth, 'filter', aprs_filter])
 
-        full_auth = ' '.join([self._auth, 'filter', aprs_filter])
+    def start(self):
+        """
+        Connects & logs in to APRS-IS.
+        """
+        self.interface = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._logger.info('Connecting to to "%s"', self._addr)
+        self.interface.connect(self._addr)
 
-        self.aprsis_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.aprsis_sock.connect((server, int(port)))
-        self._logger.info('Connected to server=%s port=%s', server, port)
-        self._logger.debug('Sending full_auth=%s', full_auth)
-        self.aprsis_sock.sendall(full_auth + '\n\r')
+        self._logger.debug('Sending full_auth=%s', self._full_auth)
+        self.interface.sendall(self._full_auth + '\n\r')
 
-    def send(self, message, headers=None, protocol='TCP'):
+    def send(self, message):
         """
         Sends message to APRS-IS.
 
         :param message: Message to send to APRS-IS.
-        :param headers: Optional HTTP headers to post.
-        :param protocol: Protocol to use: One of TCP, HTTP or UDP.
         :type message: str
-        :type headers: dict
-
-        :return: True on success, False otherwise.
-        :rtype: bool
         """
-        self._logger.debug(
-            'message=%s headers=%s protocol=%s', message, headers, protocol)
-
-        if 'TCP' in protocol:
-            self._logger.debug('sending message=%s', message)
-            self.aprsis_sock.sendall(message + '\n\r')
-            return True
-        elif 'HTTP' in protocol:
-            content = "\n".join([self._auth, message])
-            headers = headers or aprs.constants.APRSIS_HTTP_HEADERS
-            result = requests.post(self._url, data=content, headers=headers)
-            return result.status_code == 204
-        elif 'UDP' in protocol:
-            content = "\n".join([self._auth, message])
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.sendto(
-                content,
-                (aprs.constants.APRSIS_SERVER, aprs.constants.APRSIS_RX_PORT)
-            )
-            return True
+        self._logger.debug('message="%s"', message)
+        return self.interface.sendall(message + '\n\r')
 
     def receive(self, callback=None):
         """
@@ -110,7 +133,7 @@ class APRS(object):
 
         try:
             while 1:
-                recv_data = self.aprsis_sock.recv(aprs.constants.RECV_BUFFER)
+                recv_data = self.interface.recv(aprs.constants.RECV_BUFFER)
 
                 if not recv_data:
                     break
@@ -140,18 +163,59 @@ class APRS(object):
             raise
 
 
-class APRSKISS(kiss.KISS):
+class UDPAPRS(APRS):
 
-    """APRS interface for KISS serial devices."""
+    """APRS-IS UDP Class."""
 
-    def write(self, frame):
-        """Writes APRS-encoded frame to KISS device.
+    def __init__(self, user, password='-1', server=None, port=None):
+        super(UDPAPRS, self).__init__(user, password)
+        server = server or aprs.constants.APRSIS_SERVER
+        port = port or aprs.constants.APRSIS_RX_PORT
+        self._addr = (server, int(port))
 
-        :param frame: APRS frame to write to KISS device.
-        :type frame: str
+    def start(self):
         """
-        encoded_frame = aprs.util.encode_frame(frame)
-        super(APRSKISS, self).write(encoded_frame)
+        Connects & logs in to APRS-IS.
+        """
+        self.interface = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    def send(self, message):
+        """
+        Sends message to APRS-IS.
+
+        :param message: Message to send to APRS-IS.
+        :type message: str
+        """
+        self._logger.debug('message="%s"', message)
+        content = "\n".join([self._auth, message])
+        return self.interface.sendto(content, self._addr)
+
+
+class HTTPAPRS(APRS):
+
+    """APRS-IS HTTP Class."""
+
+    def __init__(self, user, password='-1', url=None, headers=None):
+        super(HTTPAPRS, self).__init__(user, password)
+        self.url = url or aprs.constants.APRSIS_URL
+        self.headers = headers or aprs.constants.APRSIS_HTTP_HEADERS
+
+    def start(self):
+        """
+        Connects & logs in to APRS-IS.
+        """
+        self.interface = requests.post
+
+    def send(self, message):
+        """
+        Sends message to APRS-IS.
+
+        :param message: Message to send to APRS-IS.
+        :type message: str
+        """
+        content = "\n".join([self._auth, message])
+        result = self.interface(self.url, data=content, headers=self.headers)
+        return result.status_code == 204
 
 
 class SerialGPSPoller(threading.Thread):

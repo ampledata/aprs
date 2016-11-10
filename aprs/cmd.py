@@ -3,20 +3,17 @@
 
 """APRS commands."""
 
-__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
-__license__ = 'All rights reserved. Do not redistribute.'
-
-
 import argparse
 import logging
 import logging.handlers
 import time
 
-import aprs.classes
+import aprs
 import aprs.constants
-import aprs.geo_util
-import aprs.util
+
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
+__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
+__license__ = 'All rights reserved. Do not redistribute.'
 
 
 def setup_logging(log_level=None):
@@ -80,8 +77,8 @@ def tracker():
     gps_p.start()
     time.sleep(aprs.constants.GPS_WARM_UP)
 
-    aprs_i = aprs.APRS(opts.callsign, opts.passcode)
-    aprs_i.connect()
+    aprs_i = aprs.TCPAPRS(opts.callsign, opts.passcode)
+    aprs_i.start()
 
     src_callsign = aprs.util.full_callsign(
         {'callsign': opts.callsign, 'ssid': opts.ssid})
