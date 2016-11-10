@@ -32,13 +32,14 @@ def decode_aprs_ascii_frame(ascii_frame):
             decoded_frame['source'] = frame_so_far
             frame_so_far = ''
         elif ':' in char and 'path' not in decoded_frame:
-            decoded_frame['path'] = frame_so_far
+            decoded_frame['raw_path'] = frame_so_far
             frame_so_far = ''
         else:
             frame_so_far = ''.join([frame_so_far, char])
 
     decoded_frame['text'] = frame_so_far
-    decoded_frame['destination'] = decoded_frame['path'].split(',')[0]
+    decoded_frame['path'] = decoded_frame['_path'].split(',')
+    decoded_frame['destination'] = decoded_frame['path'][0]
 
     return decoded_frame
 
