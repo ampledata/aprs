@@ -3,15 +3,14 @@
 
 """Utilities for the APRS Python Module."""
 
-__author__ = 'Greg Albrecht W2GMD <gba@orionlabs.io>'
-__license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
-
-
 import logging
 
 import aprs.constants
 import kiss.constants
+
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
+__license__ = 'Apache License, Version 2.0'
+__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
 
 
 def decode_aprs_ascii_frame(ascii_frame):
@@ -24,24 +23,8 @@ def decode_aprs_ascii_frame(ascii_frame):
     :returns: Dictionary of APRS Frame parts: source, destination, path, text.
     :rtype: dict
     """
-    logging.debug('frame=%s', ascii_frame)
-    decoded_frame = {}
-    frame_so_far = ''
-
-    for char in ascii_frame:
-        if '>' in char and 'source' not in decoded_frame:
-            decoded_frame['source'] = frame_so_far
-            frame_so_far = ''
-        elif ':' in char and 'path' not in decoded_frame:
-            decoded_frame['path'] = frame_so_far
-            frame_so_far = ''
-        else:
-            frame_so_far = ''.join([frame_so_far, char])
-
-    decoded_frame['text'] = frame_so_far
-    decoded_frame['destination'] = decoded_frame['path'].split(',')[0]
-
-    return decoded_frame
+    print 'DEPRECATED(decode_aprs_ascii_frame): Please use `APRSFrame`.'
+    return aprs.APRSFrame(frame)
 
 
 def format_aprs_frame(frame):
@@ -54,11 +37,8 @@ def format_aprs_frame(frame):
     :return: APRS frame-as-string.
     :rtype: str
     """
-    formatted_frame = '>'.join([frame['source'], frame['destination']])
-    if frame['path']:
-        formatted_frame = ','.join([formatted_frame, frame['path']])
-    formatted_frame = ':'.join([formatted_frame, frame['text']])
-    return formatted_frame
+    print 'DEPRECATED(format_aprs_frame): Please use `APRSFrame`.'
+    return str(aprs.APRSFrame(frame))
 
 
 def create_callsign(raw_callsign):
@@ -158,7 +138,7 @@ def extract_path(start, raw_frame):
     full_path = []
 
     for i in range(2, start):
-        path = aprs.util.full_callsign(extract_callsign(raw_frame[i * 7:]))
+        path = aprs.full_callsign(extract_callsign(raw_frame[i * 7:]))
         if path:
             if ord(raw_frame[i * 7 + 6]) & 0x80:
                 full_path.append(''.join([path, '*']))
@@ -317,7 +297,7 @@ def create_location_frame(source, latitude, longitude, altitude, course, speed,
 def run_doctest():  # pragma: no cover
     """Runs doctests for this module."""
     import doctest
-    import aprs.util  # pylint: disable=W0406,W0621
+    import aprs  # pylint: disable=W0406,W0621
     return doctest.testmod(aprs.util)
 
 

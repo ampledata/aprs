@@ -8,26 +8,19 @@ APRS Python Module.
 ~~~~
 
 
-:author: Greg Albrecht W2GMD <gba@orionlabs.io>
+:author: Greg Albrecht W2GMD <oss@undef.net>
 :copyright: Copyright 2016 Orion Labs, Inc.
 :license: Apache License, Version 2.0
 :source: <https://github.com/ampledata/aprs>
 
 """
 
-import logging
+from .classes import (APRS, APRSFrame, APRSTCPKISS, APRSSerialKISS, TCPAPRS, UDPAPRS,
+                      HTTPAPRS, SerialGPSPoller)
 
-from .classes import APRS, APRSKISS, SerialGPSPoller
+from .util import (decode_aprs_ascii_frame, format_aprs_frame, create_callsign,
+                   full_callsign, valid_callsign, extract_callsign,
+                   extract_path, format_path, encode_callsign, encode_frame,
+                   decode_frame, create_location_frame)
 
-
-# Set default logging handler to avoid "No handler found" warnings.
-try:  # Python 2.7+
-    from logging import NullHandler
-except ImportError:
-    class NullHandler(logging.Handler):
-        """Default logging handler to avoid "No handler found" warnings."""
-        def emit(self, record):
-            """Default logging handler to avoid "No handler found" warnings."""
-            pass
-
-logging.getLogger(__name__).addHandler(NullHandler())
+from .geo_util import (dec2dm_lat, dec2dm_lng)

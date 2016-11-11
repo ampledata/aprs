@@ -5,12 +5,11 @@
 Constants for APRS Module.
 """
 
-__author__ = 'Greg Albrecht W2GMD <gba@orionlabs.io>'
+import logging
+
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __license__ = 'Apache License, Version 2.0'
 __copyright__ = 'Copyright 2016 Orion Labs, Inc.'
-
-
-import logging
 
 
 APRSIS_URL = 'http://srvr.aprs-is.net:8080'
@@ -27,7 +26,7 @@ RECV_BUFFER = 1024
 
 LOG_LEVEL = logging.INFO
 LOG_FORMAT = logging.Formatter(
-    ('%(asctime)s %(levelname)s %(name)s.%(funcName)s:%(lineno)d - '
+    ('%(asctime)s aprs %(levelname)s %(name)s.%(funcName)s:%(lineno)d - '
      '%(message)s'))
 
 GPS_WARM_UP = 5

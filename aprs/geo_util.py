@@ -3,13 +3,12 @@
 
 """Geo Utilities for the APRS Python Module."""
 
-__author__ = 'Greg Albrecht W2GMD <gba@orionlabs.io>'
-__license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
-
-
 import aprs.constants
 import aprs.decimaldegrees
+
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
+__license__ = 'Apache License, Version 2.0'
+__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
 
 
 def dec2dm_lat(dec):
@@ -71,7 +70,7 @@ def dec2dm_lng(dec):
 def run_doctest():  # pragma: no cover
     """Runs doctests for this module."""
     import doctest
-    import aprs.util  # pylint: disable=W0406,W0621
+    import aprs  # pylint: disable=W0406,W0621
     return doctest.testmod(aprs.util)
 
 
