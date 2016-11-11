@@ -23,25 +23,8 @@ def decode_aprs_ascii_frame(ascii_frame):
     :returns: Dictionary of APRS Frame parts: source, destination, path, text.
     :rtype: dict
     """
-    logging.debug('frame=%s', ascii_frame)
-    decoded_frame = {}
-    frame_so_far = ''
-
-    for char in ascii_frame:
-        if '>' in char and 'source' not in decoded_frame:
-            decoded_frame['source'] = frame_so_far
-            frame_so_far = ''
-        elif ':' in char and 'path' not in decoded_frame:
-            decoded_frame['raw_path'] = frame_so_far
-            frame_so_far = ''
-        else:
-            frame_so_far = ''.join([frame_so_far, char])
-
-    decoded_frame['text'] = frame_so_far
-    decoded_frame['path'] = decoded_frame['_path'].split(',')
-    decoded_frame['destination'] = decoded_frame['path'][0]
-
-    return decoded_frame
+    print 'DEPRECATED(decode_aprs_ascii_frame): Please use `APRSFrame`.'
+    return aprs.APRSFrame(frame)
 
 
 def format_aprs_frame(frame):
@@ -54,11 +37,8 @@ def format_aprs_frame(frame):
     :return: APRS frame-as-string.
     :rtype: str
     """
-    formatted_frame = '>'.join([frame['source'], frame['destination']])
-    if frame['path']:
-        formatted_frame = ','.join([formatted_frame, frame['path']])
-    formatted_frame = ':'.join([formatted_frame, frame['text']])
-    return formatted_frame
+    print 'DEPRECATED(format_aprs_frame): Please use `APRSFrame`.'
+    return str(aprs.APRSFrame(frame))
 
 
 def create_callsign(raw_callsign):

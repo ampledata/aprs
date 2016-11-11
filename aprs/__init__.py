@@ -15,7 +15,7 @@ APRS Python Module.
 
 """
 
-from .classes import (APRS, APRSTCPKISS, APRSSerialKISS, TCPAPRS, UDPAPRS,
+from .classes import (APRS, APRSFrame, APRSTCPKISS, APRSSerialKISS, TCPAPRS, UDPAPRS,
                       HTTPAPRS, SerialGPSPoller)
 
 from .util import (decode_aprs_ascii_frame, format_aprs_frame, create_callsign,

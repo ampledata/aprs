@@ -60,6 +60,54 @@ class APRS(object):
         pass
 
 
+class APRSFrame(object):
+
+    _logger = logging.getLogger(__name__)
+    if not _logger.handlers:
+        _logger.setLevel(aprs.constants.LOG_LEVEL)
+        _console_handler = logging.StreamHandler()
+        _console_handler.setLevel(aprs.constants.LOG_LEVEL)
+        _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+        _logger.addHandler(_console_handler)
+        _logger.propagate = False
+
+    def __init__(self, frame):
+        self.source = None
+        self.destination = None
+        self.path = []
+        self.text = None
+        self.parse(frame)
+
+    def parse(self, frame):
+        """
+        Parse APRS Frame.
+        """
+        frame_so_far = ''
+
+        for char in frame:
+            if '>' in char and not self.source:
+                self.source = frame_so_far
+                frame_so_far = ''
+            elif ':' in char and not self.path:
+                if ',' in frame_so_far:
+                    self.path = frame_so_far.split(',')[1:]
+                    self.destination = frame_so_far.split(',')[0]
+                else:
+                    self.destination = frame_so_far
+                frame_so_far = ''
+            else:
+                frame_so_far = ''.join([frame_so_far, char])
+
+        self.text = frame_so_far
+
+    def __repr__(self):
+        return "%s>%s:%s" % (
+            self.source,
+            ','.join([self.destination] + self.path),
+            self.text
+        )
+
+
 class APRSSerialKISS(kiss.SerialKISS):
 
     """APRS interface for KISS serial devices."""
