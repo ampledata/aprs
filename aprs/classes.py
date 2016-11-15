@@ -84,7 +84,7 @@ class APRSFrame(object):
         """
         frame_so_far = ''
 
-        for char in frame:
+        for char in frame.decode('ISO-8859-1'):
             if '>' in char and not self.source:
                 self.source = frame_so_far
                 frame_so_far = ''
@@ -101,11 +101,12 @@ class APRSFrame(object):
         self.text = frame_so_far
 
     def __repr__(self):
-        return "%s>%s:%s" % (
+        frame = "%s>%s:%s" % (
             self.source,
             ','.join([self.destination] + self.path),
             self.text
         )
+        return frame.encode('ISO-8859-1')
 
 
 class APRSSerialKISS(kiss.SerialKISS):
