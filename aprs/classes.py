@@ -81,7 +81,12 @@ class APRSFrame(object):
 
     def parse(self, frame):
         self._parse_text(frame)
-        self._parse_kiss(frame)
+        try:
+            self._parse_kiss(frame)
+        except Exception as ex:
+            self._logger.exception(
+                'Caught Exception="%s" on frame="%s"', ex, frame.encode('hex'))
+            pass
 
     def _parse_kiss(self, frame):
         # Remove \x00 from beginning of frame
