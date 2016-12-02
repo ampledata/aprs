@@ -13,6 +13,7 @@ import pynmea2
 import requests
 import serial
 
+import aprs
 import aprs.constants
 import aprs.util
 
@@ -72,15 +73,44 @@ class APRSFrame(object):
         _logger.propagate = False
 
     def __init__(self, frame):
-        self.source = None
-        self.destination = None
+        self.source = ''
+        self.destination = ''
         self.path = []
-        self.text = None
+        self.text = ''
         self.parse(frame)
 
     def parse(self, frame):
+        self._parse_text(frame)
+        self._parse_kiss(frame)
+
+    def _parse_kiss(self, frame):
+        # Remove \x00 from beginning of frame
+        if frame[0] == '\x00':
+            frame = frame[1:]
+        # Also works for Hex frames:
+        elif frame[:2] == '00':
+            frame = frame.decode('hex')[1:]
+
+        frame_so_far = ''
+        frame_len = len(frame)
+
+        if frame_len > 16:
+            for raw_slice in range(0, frame_len):
+                # Is address field length correct?
+                if ord(frame[raw_slice]) & 0x01 and ((raw_slice + 1) % 7) == 0:
+                    i = (raw_slice + 1) / 7
+                    # Less than 2 callsigns?
+                    if 1 < i < 11:
+                        if (ord(frame[raw_slice + 1]) & 0x03 == 0x03 and
+                                ord(frame[raw_slice + 2]) in [0xf0, 0xcf]):
+                            self.text = frame[raw_slice + 3:]
+                            self.destination = aprs.full_callsign(aprs.extract_callsign(frame))
+                            self.source = aprs.full_callsign(aprs.extract_callsign(frame[7:]))
+                            self.path = aprs.format_path(i, frame).split(',')
+
+    def _parse_text(self, frame):
         """
-        Parse APRS Frame.
+        Parse APRS Frame in
         """
         frame_so_far = ''
 
