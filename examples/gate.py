@@ -77,7 +77,7 @@ class GateIn(threading.Thread):
 
     def handle_frame(self, frame):
         aprs_frame = aprs.APRSFrame(frame)
-        aprs_frame.path.extend(['qAR', 'W2GMD-15'])
+        aprs_frame.path.extend(['qAR', 'AMPLDT'])
         self._logger.debug('Adding to Queue aprs_frame="%s"', aprs_frame)
         self.queue.put(aprs_frame)
 
