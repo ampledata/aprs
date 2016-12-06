@@ -89,29 +89,28 @@ class APRSFrame(object):
             pass
 
     def _parse_kiss(self, frame):
-        # Remove \x00 from beginning of frame
-        if frame[0] == '\x00':
-            frame = frame[1:]
-        # Also works for Hex frames:
-        elif frame[:2] == '00':
-            frame = frame.decode('hex')[1:]
-
-        frame_so_far = ''
+        frame = kiss.strip_df_start(frame)
         frame_len = len(frame)
 
         if frame_len > 16:
             for raw_slice in range(0, frame_len):
                 # Is address field length correct?
+                # Find the first ODD Byte followed by the next boundary:
                 if ord(frame[raw_slice]) & 0x01 and ((raw_slice + 1) % 7) == 0:
                     i = (raw_slice + 1) / 7
                     # Less than 2 callsigns?
                     if 1 < i < 11:
-                        if (ord(frame[raw_slice + 1]) & 0x03 == 0x03 and
-                                ord(frame[raw_slice + 2]) in [0xf0, 0xcf]):
-                            self.text = frame[raw_slice + 3:]
-                            self.destination = aprs.full_callsign(aprs.extract_callsign(frame))
-                            self.source = aprs.full_callsign(aprs.extract_callsign(frame[7:]))
-                            self.path = aprs.format_path(i, frame).split(',')
+                        # For frames <= 70 bytes
+                        if len(frame) >= raw_slice + 2:
+                            if (ord(frame[raw_slice + 1]) & 0x03 == 0x03 and
+                                    ord(frame[raw_slice + 2]) in [0xf0, 0xcf]):
+                                self.text = frame[raw_slice + 3:]
+                                self.destination = aprs.full_callsign(
+                                    aprs.extract_callsign(frame))
+                                self.source = aprs.full_callsign(
+                                    aprs.extract_callsign(frame[7:]))
+                                self.path = aprs.format_path(
+                                    i, frame).split(',')
 
     def _parse_text(self, frame):
         """
