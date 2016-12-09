@@ -24,7 +24,7 @@ APRSIS_RX_PORT = 8080
 RECV_BUFFER = 1024
 
 
-LOG_LEVEL = logging.INFO
+LOG_LEVEL = logging.DEBUG
 LOG_FORMAT = logging.Formatter(
     ('%(asctime)s aprs %(levelname)s %(name)s.%(funcName)s:%(lineno)d - '
      '%(message)s'))

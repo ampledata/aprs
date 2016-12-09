@@ -24,3 +24,5 @@ from .util import (decode_aprs_ascii_frame, format_aprs_frame, create_callsign,
                    decode_frame, create_location_frame)
 
 from .geo_util import (dec2dm_lat, dec2dm_lng)
+
+from .constants import LOG_FORMAT, LOG_LEVEL
