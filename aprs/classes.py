@@ -88,6 +88,21 @@ class APRSFrame(object):
                 'Caught Exception="%s" on frame="%s"', ex, frame.encode('hex'))
             pass
 
+    def kiss_encode(self):
+        enc_frame = ''.join([
+            aprs.encode_callsign(aprs.create_callsign(self.destination)),
+            aprs.encode_callsign(aprs.create_callsign(self.source)),
+            ''.join([aprs.encode_callsign(aprs.create_callsign(p))
+                     for p in self.path])
+        ])
+        return ''.join([
+            enc_frame[:-1],
+            chr(ord(enc_frame[-1]) | 0x01),
+            kiss.SLOT_TIME,
+            chr(0xF0),
+            self.text.encode('UTF-8')
+        ])
+
     def _parse_kiss(self, frame):
         frame = kiss.strip_df_start(frame)
         frame_len = len(frame)
@@ -118,7 +133,7 @@ class APRSFrame(object):
         """
         frame_so_far = ''
 
-        for char in frame.decode('ISO-8859-1'):
+        for char in frame.decode('UTF-8'):
             if '>' in char and not self.source:
                 self.source = frame_so_far
                 frame_so_far = ''
@@ -132,7 +147,7 @@ class APRSFrame(object):
             else:
                 frame_so_far = ''.join([frame_so_far, char])
 
-        self.text = frame_so_far
+        self.text = frame_so_far.encode('UTF-8')
 
     def __repr__(self):
         frame = "%s>%s:%s" % (
@@ -140,12 +155,20 @@ class APRSFrame(object):
             ','.join([self.destination] + self.path),
             self.text
         )
-        return frame.encode('ISO-8859-1')
+        return frame.encode('UTF-8')
 
 
 class APRSSerialKISS(kiss.SerialKISS):
 
     """APRS interface for KISS serial devices."""
+
+    def __init__(self, port, speed, strip_df_start=False):
+        self.port = port
+        self.speed = speed
+        self.strip_df_start = strip_df_start
+        super(APRSSerialKISS, self).__init__(port, speed, strip_df_start)
+        self.send = self.write
+        self.receive = self.read
 
     def write(self, frame):
         """Writes APRS-encoded frame to KISS device.
@@ -153,16 +176,21 @@ class APRSSerialKISS(kiss.SerialKISS):
         :param frame: APRS frame to write to KISS device.
         :type frame: str
         """
-        encoded_frame = aprs.encode_frame(frame)
-        super(APRSSerialKISS, self).write(encoded_frame)
+        super(APRSSerialKISS, self).write(frame.kiss_encode())
 
 
 class APRSTCPKISS(kiss.TCPKISS):
 
     """APRS interface for KISS serial devices."""
 
+    def __init__(self, host, port, strip_df_start=False):
+        super(APRSTCPKISS, self).__init__(host, port, strip_df_start)
+        self.send = self.write
+        self.receive = self.read
+
     def write(self, frame):
-        """Writes APRS-encoded frame to KISS device.
+        """
+        Writes APRS-encoded frame to KISS device.
 
         :param frame: APRS frame to write to KISS device.
         :type frame: str
@@ -183,6 +211,7 @@ class TCPAPRS(APRS):
         self._addr = (server, int(port))
         aprs_filter = aprs_filter or '/'.join(['p', user])
         self._full_auth = ' '.join([self._auth, 'filter', aprs_filter])
+        self.read = self.receive
 
     def start(self):
         """
@@ -203,7 +232,7 @@ class TCPAPRS(APRS):
         :type message: str
         """
         self._logger.debug('message="%s"', message)
-        return self.interface.sendall(message + '\n\r')
+        return self.interface.sendall(str(message) + '\n\r')
 
     def receive(self, callback=None):
         """
