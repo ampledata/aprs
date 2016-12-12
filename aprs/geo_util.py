@@ -3,7 +3,6 @@
 
 """Geo Utilities for the APRS Python Module."""
 
-import aprs.constants
 import aprs.decimaldegrees
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
@@ -12,7 +11,9 @@ __copyright__ = 'Copyright 2016 Orion Labs, Inc.'
 
 
 def dec2dm_lat(dec):
-    """Converts DecDeg to APRS Coord format.
+    """
+    Converts DecDeg to APRS Coord format.
+
     See: http://ember2ash.com/lat.htm
 
     Source: http://stackoverflow.com/questions/2056750
@@ -41,7 +42,9 @@ def dec2dm_lat(dec):
 
 
 def dec2dm_lng(dec):
-    """Converts DecDeg to APRS Coord format.
+    """
+    Converts DecDeg to APRS Coord format.
+
     See: http://ember2ash.com/lat.htm
 
     Example:
@@ -71,7 +74,7 @@ def run_doctest():  # pragma: no cover
     """Runs doctests for this module."""
     import doctest
     import aprs  # pylint: disable=W0406,W0621
-    return doctest.testmod(aprs.util)
+    return doctest.testmod(aprs.geo_util)
 
 
 if __name__ == '__main__':

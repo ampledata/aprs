@@ -9,7 +9,6 @@ import logging.handlers
 import time
 
 import aprs
-import aprs.constants
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __copyright__ = 'Copyright 2016 Orion Labs, Inc.'
@@ -25,13 +24,13 @@ def setup_logging(log_level=None):
     :returns: logger instance
     :rtype: instance
     """
-    log_level = log_level or aprs.constants.LOG_LEVEL
+    log_level = log_level or aprs.LOG_LEVEL
 
     logger = logging.getLogger(__name__)
     logger.setLevel(log_level)
     console_handler = logging.StreamHandler()
     console_handler.setLevel(log_level)
-    console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+    console_handler.setFormatter(aprs.LOG_FORMAT)
     logger.addHandler(console_handler)
     logger.propagate = False
 
@@ -75,7 +74,7 @@ def tracker():
 
     gps_p = aprs.SerialGPSPoller(opts.serial_port, opts.serial_speed)
     gps_p.start()
-    time.sleep(aprs.constants.GPS_WARM_UP)
+    time.sleep(aprs.GPS_WARM_UP)
 
     aprs_i = aprs.TCPAPRS(opts.callsign, opts.passcode)
     aprs_i.start()

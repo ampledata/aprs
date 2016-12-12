@@ -11,16 +11,11 @@ import logging.handlers
 import httpretty
 
 from .context import aprs
+from .constants import *
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __license__ = 'Apache License, Version 2.0'
 __copyright__ = 'Copyright 2016 Orion Labs, Inc.'
-
-
-ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-NUMBERS = '0123456789'
-POSITIVE_NUMBERS = NUMBERS[1:]
-ALPHANUM = ''.join([ALPHABET, NUMBERS])
 
 
 class APRSTest(unittest.TestCase):  # pylint: disable=R0904
@@ -28,10 +23,10 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
 
     _logger = logging.getLogger(__name__)
     if not _logger.handlers:
-        _logger.setLevel(aprs.constants.LOG_LEVEL)
+        _logger.setLevel(aprs.LOG_LEVEL)
         _console_handler = logging.StreamHandler()
-        _console_handler.setLevel(aprs.constants.LOG_LEVEL)
-        _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+        _console_handler.setLevel(aprs.LOG_LEVEL)
+        _console_handler.setFormatter(aprs.LOG_FORMAT)
         _logger.addHandler(_console_handler)
         _logger.propagate = False
 

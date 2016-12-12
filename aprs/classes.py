@@ -14,8 +14,6 @@ import requests
 import serial
 
 import aprs
-import aprs.constants
-import aprs.util
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __license__ = 'Apache License, Version 2.0'
@@ -28,17 +26,17 @@ class APRS(object):
 
     _logger = logging.getLogger(__name__)
     if not _logger.handlers:
-        _logger.setLevel(aprs.constants.LOG_LEVEL)
+        _logger.setLevel(aprs.LOG_LEVEL)
         _console_handler = logging.StreamHandler()
-        _console_handler.setLevel(aprs.constants.LOG_LEVEL)
-        _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+        _console_handler.setLevel(aprs.LOG_LEVEL)
+        _console_handler.setFormatter(aprs.LOG_FORMAT)
         _logger.addHandler(_console_handler)
         _logger.propagate = False
 
     def __init__(self, user, password='-1'):
         self.user = user
         self._auth = ' '.join(
-            ['user', user, 'pass', password, 'vers', 'APRS Python Module'])
+            ['user', user, 'pass', password, 'vers', aprs.APRSIS_SW_VERSION])
         self._full_auth = None
         self.interface = None
 
@@ -63,37 +61,79 @@ class APRS(object):
 
 class APRSFrame(object):
 
+    """
+    APRSFrame Class.
+    Defines parts of an APRS Frame decoded from either ASCII or KISS.
+    """
+
+    __slots__ = ['frame', 'source', 'destination', 'path', 'text']
+
     _logger = logging.getLogger(__name__)
     if not _logger.handlers:
-        _logger.setLevel(aprs.constants.LOG_LEVEL)
+        _logger.setLevel(aprs.LOG_LEVEL)
         _console_handler = logging.StreamHandler()
-        _console_handler.setLevel(aprs.constants.LOG_LEVEL)
-        _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+        _console_handler.setLevel(aprs.LOG_LEVEL)
+        _console_handler.setFormatter(aprs.LOG_FORMAT)
         _logger.addHandler(_console_handler)
         _logger.propagate = False
 
     def __init__(self, frame):
-        self.source = ''
-        self.destination = ''
+        self.frame = kiss.strip_df_start(frame)
+        self.source = None
+        self.destination = None
         self.path = []
-        self.text = ''
-        self.parse(frame)
+        self.text = None
+        self.parse()
 
-    def parse(self, frame):
-        self._parse_text(frame)
+    def __repr__(self):
+        self._logger.debug('path=%s', self.path)
+        full_path = [self.destination.to_s()]
+        full_path.extend([p.to_s() for p in self.path])
+        frame = "%s>%s:%s" % (
+            self.source.to_s(),
+            ','.join(full_path),
+            self.text
+        )
+        return frame#.encode('UTF-8')
+
+    def to_s(self):
+        """
+        Returns an APRSFrame as a String (as opposed to a Class Name, which,
+        as it turns out and to the chagrin of Unittest asserts, IS NOT A STR).
+        """
+        return str(self)
+
+    def to_h(self):
+        """
+        Returns a APRSFrame as a Hex String.
+        """
+        return self.to_s().encode('hex')
+
+    def parse(self):
+        """
+        Parses an APRSFrame from either ASCII or KISS Encoded frame.
+        """
         try:
-            self._parse_kiss(frame)
-        except Exception as ex:
-            self._logger.exception(
-                'Caught Exception="%s" on frame="%s"', ex, frame.encode('hex'))
-            pass
+            self._parse_kiss()
+        except IndexError as exc:
+            self._logger.info('Not a KISS Frame? %s', self.frame.encode('hex'))
 
-    def kiss_encode(self):
+        if not self.source or not self.destination:
+            try:
+                self._parse_text()
+            except UnicodeDecodeError as exc:
+                self._logger.info(
+                    'Cannot decode frame=%s', self.frame.encode('hex'))
+                self._logger.exception(exc)
+
+    def encode_kiss(self):
+        """
+        Encodes a APRSFrame as KISS.
+        """
         enc_frame = ''.join([
-            aprs.encode_callsign(aprs.create_callsign(self.destination)),
-            aprs.encode_callsign(aprs.create_callsign(self.source)),
-            ''.join([aprs.encode_callsign(aprs.create_callsign(p))
-                     for p in self.path])
+            self.destination.encode_kiss(),
+            self.source.encode_kiss(),
+            ''.join([path_call.encode_kiss() for path_call in self.path])
         ])
         return ''.join([
             enc_frame[:-1],
@@ -103,59 +143,211 @@ class APRSFrame(object):
             self.text.encode('UTF-8')
         ])
 
-    def _parse_kiss(self, frame):
-        frame = kiss.strip_df_start(frame)
-        frame_len = len(frame)
-
-        if frame_len > 16:
-            for raw_slice in range(0, frame_len):
-                # Is address field length correct?
-                # Find the first ODD Byte followed by the next boundary:
-                if ord(frame[raw_slice]) & 0x01 and ((raw_slice + 1) % 7) == 0:
-                    i = (raw_slice + 1) / 7
-                    # Less than 2 callsigns?
-                    if 1 < i < 11:
-                        # For frames <= 70 bytes
-                        if len(frame) >= raw_slice + 2:
-                            if (ord(frame[raw_slice + 1]) & 0x03 == 0x03 and
-                                    ord(frame[raw_slice + 2]) in [0xf0, 0xcf]):
-                                self.text = frame[raw_slice + 3:]
-                                self.destination = aprs.full_callsign(
-                                    aprs.extract_callsign(frame))
-                                self.source = aprs.full_callsign(
-                                    aprs.extract_callsign(frame[7:]))
-                                self.path = aprs.format_path(
-                                    i, frame).split(',')
-
-    def _parse_text(self, frame):
+    def _parse_text(self):
         """
-        Parse APRS Frame in
+        Parses and Extracts the components of an ASCII-Encoded APRSFrame.
         """
         frame_so_far = ''
 
-        for char in frame.decode('UTF-8'):
+        for char in self.frame.decode('UTF-8'):
             if '>' in char and not self.source:
-                self.source = frame_so_far
+                self.source = Callsign(frame_so_far)
                 frame_so_far = ''
             elif ':' in char and not self.path:
                 if ',' in frame_so_far:
-                    self.path = frame_so_far.split(',')[1:]
-                    self.destination = frame_so_far.split(',')[0]
+                    self.path = []
+                    for path in frame_so_far.split(',')[1:]:
+                        self.path.append(Callsign(path))
+
+                    self.destination = Callsign(frame_so_far.split(',')[0])
                 else:
-                    self.destination = frame_so_far
+                    self.destination = Callsign(frame_so_far)
                 frame_so_far = ''
             else:
                 frame_so_far = ''.join([frame_so_far, char])
 
         self.text = frame_so_far.encode('UTF-8')
 
+    def _parse_kiss(self):
+        """
+        Parses and Extracts the components of an KISS-Encoded APRSFrame.
+        """
+        frame_len = len(self.frame)
+
+        if frame_len < 16:
+            self._logger.debug('Frame len(%s) < 16, Exiting.', frame_len)
+            return
+
+        for raw_slice in range(0, frame_len):
+
+            # Is address field length correct?
+            # Find the first ODD Byte followed by the next boundary:
+            if (ord(self.frame[raw_slice]) & 0x01
+                    and ((raw_slice + 1) % 7) == 0):
+
+                i = (raw_slice + 1) / 7
+
+                # Less than 2 callsigns?
+                if 1 < i < 11:
+                    # For frames <= 70 bytes
+                    if frame_len >= raw_slice + 2:
+                        if (ord(self.frame[raw_slice + 1]) & 0x03 == 0x03 and
+                                ord(self.frame[raw_slice + 2]) in
+                                [0xf0, 0xcf]):
+                            self._extract_text(raw_slice)
+                            self._extract_destination()
+                            self._extract_source()
+                            self._extract_path(i)
+
+    def _extract_text(self, raw_slice):
+        """
+        Extracts a Text portion of a KISS-Encoded APRSFrame.
+        """
+        self.text = self.frame[raw_slice + 3:]
+
+    def _extract_source(self):
+        """
+        Extracts a Source Callsign of a KISS-Encoded APRSFrame.
+        """
+        self.source = Callsign(self.frame[7:])
+
+    def _extract_destination(self):
+        """
+        Extracts a Destination Callsign of a KISS-Encoded APRSFrame.
+        """
+        self.destination = Callsign(self.frame)
+
+    def _extract_path(self, start):
+        """
+        Extracts path from raw APRS KISS frame.
+        """
+        for i in range(2, start):
+            path_call = Callsign(self.frame[i * 7:])
+
+            if path_call:
+                if ord(self.frame[i * 7 + 6]) & 0x80:
+                    path_call.digi = True
+
+                self.path.append(path_call)
+
+
+class Callsign(object):
+
+    """
+    Callsign Class.
+    Defines parts of a Callsign decoded from either ASCII or KISS.
+    """
+
+    _logger = logging.getLogger(__name__)
+    if not _logger.handlers:
+        _logger.setLevel(aprs.LOG_LEVEL)
+        _console_handler = logging.StreamHandler()
+        _console_handler.setLevel(aprs.LOG_LEVEL)
+        _console_handler.setFormatter(aprs.LOG_FORMAT)
+        _logger.addHandler(_console_handler)
+        _logger.propagate = False
+
+    __slots__ = ['callsign', 'ssid', 'digi']
+
+    def __init__(self, callsign):
+        self.callsign = ''
+        self.ssid = str(0)
+        self.digi = False
+        self.parse(callsign)
+
     def __repr__(self):
-        frame = "%s>%s:%s" % (
-            self.source,
-            ','.join([self.destination] + self.path),
-            self.text
-        )
-        return frame.encode('UTF-8')
+        if int(self.ssid) > 0:
+            call_repr = '-'.join([self.callsign, str(self.ssid)])
+        else:
+            call_repr = self.callsign
+
+        if self.digi:
+            return ''.join([call_repr, '*'])
+        else:
+            return call_repr
+
+    def to_s(self):
+        """
+        Returns a Callsign as a String.
+        """
+        return str(self)
+
+    def to_h(self):
+        """
+        Returns a Callsign as a Hex String.
+        """
+        return self.to_s().encode('hex')
+
+    def encode_kiss(self):
+        """
+        Encodes Callsign (or Callsign-SSID) as KISS.
+        """
+        encoded_ssid = (int(self.ssid) << 1) | 0x60
+        _callsign = self.callsign
+
+        if self.digi:
+            #_callsign = ''.join([_callsign, '*'])
+            encoded_ssid |= 0x80
+
+        # Pad the callsign to at least 6 characters.
+        while len(_callsign) < 6:
+            _callsign = ''.join([_callsign, ' '])
+
+        encoded_callsign = ''.join([chr(ord(p) << 1) for p in _callsign])
+
+        return ''.join([encoded_callsign, chr(encoded_ssid)])
+
+    def parse(self, callsign):
+        """
+        Parse and extract the components of a Callsign from ASCII or KISS.
+        """
+        try:
+            self._extract_callsign_from_kiss_frame(callsign)
+        except IndexError as exc:
+            self._logger.info(
+                'Not a KISS Callsign? %s', callsign.encode('hex'))
+
+        if not aprs.valid_callsign(self.callsign):
+            self._parse_text(callsign)
+
+        if not aprs.valid_callsign(self.callsign):
+            raise aprs.BadCallsignError(
+                'Could not extract callsign from %s',
+                self.callsign.encode('hex'))
+
+    def _extract_callsign_from_kiss_frame(self, frame):
+        """
+        Extracts a Callsign and SSID from a KISS-Encoded APRS Frame.
+
+        :param frame: KISS-Encoded APRS Frame as str of octs.
+        :type frame: str
+        """
+        self._logger.debug('frame=%s', frame.encode('hex'))
+        callsign = ''.join([chr(ord(x) >> 1) for x in frame[:6]])
+        self.callsign = callsign.lstrip().rstrip()
+        self.ssid = str((ord(frame[6]) >> 1) & 0x0F)
+
+    def _parse_text(self, callsign):
+        """
+        Parses and extracts a Callsign and SSID from an ASCII-Encoded APRS
+        Callsign or Callsign-SSID.
+
+        :param callsign: ASCII-Encoded APRS Callsign
+        :type callsign: str
+        """
+        self._logger.debug('callsign=%s', callsign.encode('hex'))
+        _callsign = callsign
+        ssid = str(0)
+
+        if '-' in callsign:
+            _callsign, ssid = callsign.split('-')
+
+        if _callsign[-1] == '*':
+            _callsign = _callsign[:-1]
+            self.digi = True
+
+        self.callsign = _callsign.lstrip().rstrip()
+        self.ssid = ssid.lstrip().rstrip()
 
 
 class APRSSerialKISS(kiss.SerialKISS):
@@ -185,18 +377,16 @@ class APRSTCPKISS(kiss.TCPKISS):
 
     def __init__(self, host, port, strip_df_start=False):
         super(APRSTCPKISS, self).__init__(host, port, strip_df_start)
-        self.send = self.write
         self.receive = self.read
 
-    def write(self, frame):
+    def send(self, frame):
         """
         Writes APRS-encoded frame to KISS device.
 
         :param frame: APRS frame to write to KISS device.
         :type frame: str
         """
-        encoded_frame = aprs.encode_frame(frame)
-        super(APRSTCPKISS, self).write(encoded_frame)
+        super(APRSTCPKISS, self).write(frame.encode_kiss())
 
 
 class TCPAPRS(APRS):
@@ -206,20 +396,19 @@ class TCPAPRS(APRS):
     def __init__(self, user, password='-1', server=None, port=None,
                  aprs_filter=None):
         super(TCPAPRS, self).__init__(user, password)
-        server = server or aprs.constants.APRSIS_SERVER
-        port = port or aprs.constants.APRSIS_FILTER_PORT
-        self._addr = (server, int(port))
+        server = server or aprs.APRSIS_SERVER
+        port = port or aprs.APRSIS_FILTER_PORT
+        self.address = (server, int(port))
         aprs_filter = aprs_filter or '/'.join(['p', user])
         self._full_auth = ' '.join([self._auth, 'filter', aprs_filter])
-        self.read = self.receive
 
     def start(self):
         """
         Connects & logs in to APRS-IS.
         """
         self.interface = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._logger.info('Connecting to to "%s"', self._addr)
-        self.interface.connect(self._addr)
+        self._logger.info('Connecting to to "%s"', self.address)
+        self.interface.connect(self.address)
 
         self._logger.debug('Sending full_auth=%s', self._full_auth)
         self.interface.sendall(self._full_auth + '\n\r')
@@ -245,7 +434,7 @@ class TCPAPRS(APRS):
 
         try:
             while 1:
-                recv_data = self.interface.recv(aprs.constants.RECV_BUFFER)
+                recv_data = self.interface.recv(aprs.RECV_BUFFER)
 
                 if not recv_data:
                     break
@@ -281,8 +470,8 @@ class UDPAPRS(APRS):
 
     def __init__(self, user, password='-1', server=None, port=None):
         super(UDPAPRS, self).__init__(user, password)
-        server = server or aprs.constants.APRSIS_SERVER
-        port = port or aprs.constants.APRSIS_RX_PORT
+        server = server or aprs.APRSIS_SERVER
+        port = port or aprs.APRSIS_RX_PORT
         self._addr = (server, int(port))
 
     def start(self):
@@ -309,8 +498,8 @@ class HTTPAPRS(APRS):
 
     def __init__(self, user, password='-1', url=None, headers=None):
         super(HTTPAPRS, self).__init__(user, password)
-        self.url = url or aprs.constants.APRSIS_URL
-        self.headers = headers or aprs.constants.APRSIS_HTTP_HEADERS
+        self.url = url or aprs.APRSIS_URL
+        self.headers = headers or aprs.APRSIS_HTTP_HEADERS
 
     def start(self):
         """
@@ -363,10 +552,10 @@ class SerialGPSPoller(threading.Thread):
 
     _logger = logging.getLogger(__name__)
     if not _logger.handlers:
-        _logger.setLevel(aprs.constants.LOG_LEVEL)
+        _logger.setLevel(aprs.LOG_LEVEL)
         _console_handler = logging.StreamHandler()
-        _console_handler.setLevel(aprs.constants.LOG_LEVEL)
-        _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+        _console_handler.setLevel(aprs.LOG_LEVEL)
+        _console_handler.setFormatter(aprs.LOG_FORMAT)
         _logger.addHandler(_console_handler)
         _logger.propagate = False
 

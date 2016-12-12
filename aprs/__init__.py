@@ -15,14 +15,15 @@ APRS Python Module.
 
 """
 
-from .classes import (APRS, APRSFrame, APRSTCPKISS, APRSSerialKISS, TCPAPRS, UDPAPRS,
-                      HTTPAPRS, SerialGPSPoller)
+from .constants import (LOG_FORMAT, LOG_LEVEL, APRSIS_SW_VERSION,  # NOQA
+                        APRSIS_HTTP_HEADERS, APRSIS_SERVER, APRSIS_FILTER_PORT,
+                        APRSIS_RX_PORT, RECV_BUFFER, APRSIS_URL, GPS_WARM_UP)
 
-from .util import (decode_aprs_ascii_frame, format_aprs_frame, create_callsign,
-                   full_callsign, valid_callsign, extract_callsign,
-                   extract_path, format_path, encode_callsign, encode_frame,
-                   decode_frame, create_location_frame)
+from .exceptions import BadCallsignError  # NOQA
 
-from .geo_util import (dec2dm_lat, dec2dm_lng)
+from .util import valid_callsign, create_location_frame  # NOQA
 
-from .constants import LOG_FORMAT, LOG_LEVEL
+from .geo_util import dec2dm_lat, dec2dm_lng  # NOQA
+
+from .classes import (APRS, APRSFrame, APRSTCPKISS, APRSSerialKISS, TCPAPRS,  # NOQA
+                      UDPAPRS, HTTPAPRS, SerialGPSPoller, Callsign)
