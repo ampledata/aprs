@@ -12,11 +12,11 @@
 
 all: develop
 
-develop: remember
-	python setup.py develop
-
 install_requirements:
 	pip install -r requirements.txt
+
+develop: remember
+	python setup.py develop
 
 install: remember
 	python setup.py install
@@ -27,7 +27,10 @@ uninstall:
 reinstall: uninstall install
 
 remember:
-	@echo "Don't forget to 'make install_requirements'"
+	@echo
+	@echo "Hello from the Makefile..."
+	@echo "Don't forget to run: 'make install_requirements'"
+	@echo
 
 clean:
 	@rm -rf *.egg* build dist *.py[oc] */*.py[co] cover doctest_pypi.cfg \
@@ -37,7 +40,7 @@ clean:
 publish:
 	python setup.py register sdist upload
 
-nosetests:
+nosetests: remember
 	python setup.py nosetests
 
 pep8: remember
