@@ -9,7 +9,8 @@ import random
 import unittest
 
 from .context import aprs
-from .constants import *
+
+from . import constants
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __license__ = 'Apache License, Version 2.0'
@@ -30,7 +31,7 @@ class APRSFrameTestCase(unittest.TestCase):  # pylint: disable=R0904
         _logger.propagate = False
 
     @classmethod
-    def random(cls, length=8, alphabet=ALPHANUM):
+    def random(cls, length=8, alphabet=constants.ALPHANUM):
         """
         Generates a random string for test cases.
 
@@ -43,18 +44,19 @@ class APRSFrameTestCase(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):  # pylint: disable=C0103
         """Setup."""
-        self.test_frames = open(TEST_FRAMES, 'r')
+        self.test_frames = open(constants.TEST_FRAMES, 'r')
         self.test_frame = self.test_frames.readlines()[0].strip()
 
         self.fake_callsign = ''.join([
             self.random(1, 'KWN'),
-            self.random(1, NUMBERS),
-            self.random(3, ALPHABET),
+            self.random(1, constants.NUMBERS),
+            self.random(3, constants.ALPHABET),
             '-',
-            self.random(1, POSITIVE_NUMBERS)
+            self.random(1, constants.POSITIVE_NUMBERS)
         ])
 
-        self.real_callsign = '-'.join(['W2GMD', self.random(1, '123456789')])
+        self.real_callsign = '-'.join(
+            ['W2GMD', self.random(1, constants.POSITIVE_NUMBERS)])
 
         self._logger.debug(
             "fake_callsign=%s real_callsign=%s",
@@ -76,7 +78,7 @@ class APRSFrameTestCase(unittest.TestCase):  # pylint: disable=R0904
 
         formatted_frame = aprs.APRSFrame(frame)
 
-        self.assertEqual(formatted_frame.to_s(), frame)
+        self.assertEqual(str(formatted_frame), frame)
 
     def test_decode_aprs_ascii_frame(self):
         """
@@ -90,11 +92,11 @@ class APRSFrameTestCase(unittest.TestCase):  # pylint: disable=R0904
 
         aprs_frame = aprs.APRSFrame(ascii_frame)
 
-        self.assertEqual(aprs_frame.to_s(), ascii_frame)
-        self.assertEqual(aprs_frame.source.to_s(), self.real_callsign)
-        self.assertEqual(aprs_frame.destination.to_s(), 'APOTC1')
-        self.assertEqual(aprs_frame.path[0].to_s(), 'WIDE1-1')
-        self.assertEqual(aprs_frame.path[1].to_s(), 'WIDE2-1')
+        self.assertEqual(str(aprs_frame), ascii_frame)
+        self.assertEqual(str(aprs_frame.source), self.real_callsign)
+        self.assertEqual(str(aprs_frame.destination), 'APOTC1')
+        self.assertEqual(str(aprs_frame.path[0]), 'WIDE1-1')
+        self.assertEqual(str(aprs_frame.path[1]), 'WIDE2-1')
 
     def test_encode_ascii_frame_as_kiss(self):
         """
@@ -105,9 +107,9 @@ class APRSFrameTestCase(unittest.TestCase):  # pylint: disable=R0904
             '9e9a8e40404060ae648e9a884062ae92888a62406303f074657'
             '3745f656e636f64655f6672616d65')
 
-        encoded_frame = aprs.APRSFrame(frame)
+        aprs_frame = aprs.APRSFrame(frame)
 
-        self.assertEqual(kiss_frame.decode('hex'), encoded_frame.encode_kiss())
+        self.assertEqual(kiss_frame.decode('hex'), aprs_frame.encode_kiss())
 
 
 if __name__ == '__main__':

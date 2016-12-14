@@ -21,9 +21,9 @@ from .constants import (LOG_FORMAT, LOG_LEVEL, APRSIS_SW_VERSION,  # NOQA
 
 from .exceptions import BadCallsignError  # NOQA
 
-from .util import valid_callsign, create_location_frame  # NOQA
+from .util import valid_callsign  # NOQA
 
 from .geo_util import dec2dm_lat, dec2dm_lng  # NOQA
 
-from .classes import (APRS, APRSFrame, APRSTCPKISS, APRSSerialKISS, TCPAPRS,  # NOQA
-                      UDPAPRS, HTTPAPRS, SerialGPSPoller, Callsign)
+from .classes import (APRS, APRSFrame, APRSTCPKISS, APRSSerialKISS,  # NOQA
+                      TCPAPRS, UDPAPRS, HTTPAPRS, Callsign)

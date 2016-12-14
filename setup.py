@@ -46,8 +46,6 @@ setuptools.setup(
     ],
     install_requires=[
         'kiss >= 2.0.2',
-        'pynmea2 >= 1.4.2',
-        'pyserial >= 2.7',
         'requests >= 2.7.0'
     ],
     package_dir={'aprs': 'aprs'},

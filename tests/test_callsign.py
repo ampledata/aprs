@@ -8,7 +8,8 @@ import logging.handlers
 import unittest
 
 from .context import aprs
-from .constants import *
+
+from . import constants
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __license__ = 'Apache License, Version 2.0'
@@ -30,7 +31,7 @@ class CallsignTestCase(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):  # pylint: disable=C0103
         """Setup."""
-        self.test_frames = open(TEST_FRAMES, 'r')
+        self.test_frames = open(constants.TEST_FRAMES, 'r')
         self.test_frame = self.test_frames.readlines()[0].strip()
 
     def tearDown(self):  # pylint: disable=C0103
@@ -46,9 +47,10 @@ class CallsignTestCase(unittest.TestCase):  # pylint: disable=R0904
         ssid = str(6)
         full = '-'.join([callsign, ssid])
 
-        extracted_callsign = aprs.Callsign(TEST_FRAME.decode('hex')[7:])
+        extracted_callsign = aprs.Callsign(
+            constants.TEST_FRAME.decode('hex')[7:])
 
-        self.assertEqual(full, extracted_callsign.to_s())
+        self.assertEqual(full, str(extracted_callsign))
         self.assertEqual(callsign, extracted_callsign.callsign)
         self.assertEqual(ssid, extracted_callsign.ssid)
 
@@ -57,7 +59,7 @@ class CallsignTestCase(unittest.TestCase):  # pylint: disable=R0904
         Tests extracting the destination callsign from a KISS-encoded APRS
         frame using `aprs.Callsign`.
         """
-        extracted_callsign = aprs.Callsign(TEST_FRAME.decode('hex'))
+        extracted_callsign = aprs.Callsign(constants.TEST_FRAME.decode('hex'))
         self.assertEqual(extracted_callsign.callsign, 'APRX24')
 
     def test_full_callsign_with_ssid(self):
@@ -67,7 +69,7 @@ class CallsignTestCase(unittest.TestCase):  # pylint: disable=R0904
         """
         callsign = 'W2GMD-1'
         full_callsign = aprs.Callsign(callsign)
-        self.assertEqual(full_callsign.to_s(), callsign)
+        self.assertEqual(str(full_callsign), callsign)
 
     def test_full_callsign_with_ssid_0(self):
         """
@@ -76,7 +78,7 @@ class CallsignTestCase(unittest.TestCase):  # pylint: disable=R0904
         """
         callsign = 'W2GMD-0'
         full_callsign = aprs.Callsign(callsign)
-        self.assertEqual(full_callsign.to_s(), callsign.split('-')[0])
+        self.assertEqual(str(full_callsign), callsign.split('-')[0])
 
     def test_full_callsign_sans_ssid(self):
         """
@@ -84,7 +86,7 @@ class CallsignTestCase(unittest.TestCase):  # pylint: disable=R0904
         """
         callsign = 'W2GMD'
         full_callsign = aprs.Callsign(callsign)
-        self.assertEqual(full_callsign.to_s(), callsign)
+        self.assertEqual(str(full_callsign), callsign)
 
     def test_encode_kiss(self):
         """
@@ -102,7 +104,7 @@ class CallsignTestCase(unittest.TestCase):  # pylint: disable=R0904
         callsign_obj = aprs.Callsign(callsign)
         print callsign_obj.encode_kiss().encode('hex')
         print '\xaed\x8e\x9a\x88@\xe2'.encode('hex')
-        #self.assertEqual('\xaed\x8e\x9a\x88@\xe2', callsign_obj.encode_kiss())
+        #s elf.assertEqual('\xaed\x8e\x9a\x88@\xe2', callsign_obj.encode_kiss())
 
 
 if __name__ == '__main__':

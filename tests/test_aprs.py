@@ -11,7 +11,8 @@ import logging.handlers
 import httpretty
 
 from .context import aprs
-from .constants import *
+
+from . import constants
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __license__ = 'Apache License, Version 2.0'
@@ -31,7 +32,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
         _logger.propagate = False
 
     @classmethod
-    def random(cls, length=8, alphabet=ALPHANUM):
+    def random(cls, length=8, alphabet=constants.ALPHANUM):
         """
         Generates a random string for test cases.
 
@@ -45,16 +46,16 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
     def setUp(self):  # pylint: disable=C0103
         self.fake_server = ''.join([
             'http://localhost:',
-            self.random(4, POSITIVE_NUMBERS),
+            self.random(4, constants.POSITIVE_NUMBERS),
             '/'
         ])
 
         self.fake_callsign = ''.join([
             self.random(1, 'KWN'),
-            self.random(1, NUMBERS),
-            self.random(3, ALPHABET),
+            self.random(1, constants.NUMBERS),
+            self.random(3, constants.ALPHABET),
             '-',
-            self.random(1, POSITIVE_NUMBERS)
+            self.random(1, constants.POSITIVE_NUMBERS)
         ])
 
         self.real_server = 'http://localhost:14580'

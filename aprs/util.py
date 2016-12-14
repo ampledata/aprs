@@ -3,8 +3,6 @@
 
 """Utilities for the APRS Python Module."""
 
-import logging
-
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __license__ = 'Apache License, Version 2.0'
 __copyright__ = 'Copyright 2016 Orion Labs, Inc.'
@@ -20,7 +18,6 @@ def valid_callsign(callsign):
     :returns: True if valid, False otherwise.
     :rtype: bool
     """
-    #logging.debug('callsign=%s', callsign)
     callsign = callsign.lstrip().rstrip()
 
     if '-' in callsign:
@@ -30,8 +27,6 @@ def valid_callsign(callsign):
             callsign, ssid = callsign.split('-')
     else:
         ssid = 0
-
-    #logging.debug('callsign=%s ssid=%s', callsign, ssid)
 
     # Test length, call should be <6.
     if (len(callsign) < 2 or len(callsign) > 6 or len(str(ssid)) < 1 or
@@ -52,53 +47,6 @@ def valid_callsign(callsign):
         return False
 
     return True
-
-
-def create_location_frame(source, latitude, longitude, altitude, course, speed,
-                          symboltable, symbolcode, comment=None,
-                          destination='APRS', path=None):
-    """
-    Creates an APRS Location frame.
-
-    :param source: Source callsign (or callsign + SSID).
-    :param latitude: Latitude.
-    :param longitude: Longitude.
-    :param altitude: Altitude.
-    :param course: Course.
-    :param speed: Speed.
-    :param symboltable: APRS Symboltable.
-    :param symbolcode: APRS Symbolcode.
-    :param comment: Comment field. Default: Module + version.
-    :param destination: Destination callsign. Default: 'APRS'.
-    :param path: APRS Path.
-
-    :return: APRS location frame.
-    :rtype: str
-    """
-    comment = comment or 'APRS Python Module'
-
-    location_text = ''.join([
-        '!',
-        latitude,
-        symboltable,
-        longitude,
-        symbolcode,
-        "%03d" % course,
-        '/',
-        "%03d" % speed,
-        '/',
-        'A=',
-        "%06d" % altitude,
-        ' ',
-        comment
-    ])
-    frame_dict = {
-        'source': source,
-        'destination': destination,
-        'path': path,
-        'text': location_text
-    }
-    return format_aprs_frame(frame_dict)  # FIXME
 
 
 def run_doctest():  # pragma: no cover

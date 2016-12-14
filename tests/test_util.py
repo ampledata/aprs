@@ -8,7 +8,8 @@ import logging.handlers
 import unittest
 
 from .context import aprs
-from .constants import *
+
+from . import constants
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __license__ = 'Apache License, Version 2.0'
@@ -29,7 +30,7 @@ class APRSUtilTestCase(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):  # pylint: disable=C0103
         """Setup."""
-        self.test_frames = open(TEST_FRAMES, 'r')
+        self.test_frames = open(constants.TEST_FRAMES, 'r')
         self.test_frame = self.test_frames.readlines()[0].strip()
 
     def tearDown(self):  # pylint: disable=C0103
@@ -40,7 +41,7 @@ class APRSUtilTestCase(unittest.TestCase):  # pylint: disable=R0904
         """
         Tests valid callsigns using `aprs.valid_callsign()`.
         """
-        for i in VALID_CALLSIGNS:
+        for i in constants.VALID_CALLSIGNS:
             self.assertTrue(
                 aprs.valid_callsign(i), "%s is a valid call" % i)
 
@@ -48,7 +49,7 @@ class APRSUtilTestCase(unittest.TestCase):  # pylint: disable=R0904
         """
         Tests invalid callsigns using `aprs.valid_callsign()`.
         """
-        for i in INVALID_CALLSIGNS:
+        for i in constants.INVALID_CALLSIGNS:
             self.assertFalse(
                 aprs.valid_callsign(i), "%s is an invalid call" % i)
 
