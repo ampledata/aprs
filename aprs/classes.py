@@ -132,16 +132,21 @@ class Frame(object):
             if '>' in char and not self.source:
                 self.source = Callsign(frame_so_far)
                 frame_so_far = ''
-            elif ':' in char and not self.path:
-                if ',' in frame_so_far:
-                    self.path = []
-                    for path in frame_so_far.split(',')[1:]:
-                        self.path.append(Callsign(path))
-
-                    self.destination = Callsign(frame_so_far.split(',')[0])
+            elif ':' in char:
+                if not self.path:
+                    if ',' in frame_so_far:
+                        self.destination = Callsign(frame_so_far.split(',')[0])
+                        self.path = []
+                        for path in frame_so_far.split(',')[1:]:
+                            self.path.append(Callsign(path))
+                        frame_so_far = ''
+                    elif not self.destination:
+                        self.destination = Callsign(frame_so_far)
+                        frame_so_far = ''
+                    else:
+                        frame_so_far = ''.join([frame_so_far, char])
                 else:
-                    self.destination = Callsign(frame_so_far)
-                frame_so_far = ''
+                    frame_so_far = ''.join([frame_so_far, char])
             else:
                 frame_so_far = ''.join([frame_so_far, char])
 
@@ -371,8 +376,8 @@ class TCP(APRS):
         :param frame: Frame to send to APRS-IS.
         :type frame: str
         """
-        self._logger.debug('frame="%s"', frame)
-        return self.interface.sendall("%s\n\r" % frame)  # Ensure cast->str.
+        self._logger.debug('Sending frame="%s"', frame)
+        return self.interface.send("%s\n\r" % frame)  # Ensure cast->str.
 
     def receive(self, callback=None):
         """

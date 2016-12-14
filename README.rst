@@ -7,9 +7,9 @@ receiving, parsing and sending APRS Frames.
 Included are several Interface Classes:
 
 * APRS - Abstract Class from which all other Interfaces are inherited.
-* TCPAPRS - Interfaces Class for connecting to APRS-IS via TCP. Can send or receive APRS Frames.
-* UDPAPRS - Interfaces Class for connecting to APRS-IS via UDP. Only supports sending APRS Frames.
-* HTTPAPRS - Interfaces Class for connecting to APRS-IS via HTTP. Currently only supports sending APRS Frames.
+* TCP - Interfaces Class for connecting to APRS-IS via TCP. Can send or receive APRS Frames.
+* UDP - Interfaces Class for connecting to APRS-IS via UDP. Only supports sending APRS Frames.
+* HTTP - Interfaces Class for connecting to APRS-IS via HTTP. Currently only supports sending APRS Frames.
 
 Additional Interface Classes for connecting to KISS Interfaces are included:
 
@@ -25,38 +25,37 @@ Finally, Frame and Callsign classes are included:
 Examples
 ========
 
-Example 1: APRS Tracker
------------------------
+Example 1: Library Usage - Receive
+----------------------------------
 
-The following example uses the ``aprs_tracker`` command to connect to APRS-IS
-as W2GMD and send a single-shot location frame using location data from my
-locally connected USB (or USB->Serial) GPS:
+The following example connects to APRS-IS as W2GMD (me!) and filters for APRS
+frames coming from my prefix (W2GMD, W2GMD-n, etc). Any frames returned are
+sent to my callback *p* and printed.
 
 Example 1 Code
 ^^^^^^^^^^^^^^
 ::
 
-    $ aprs_tracker -c W2GMD -p 12345 -s /dev/cu.usbmodem1a1211 -u 3 -d
+    import aprs
+
+    def p(x): print(x)
+
+    a = aprs.TCP('W2GMD', '12345')
+    a.start()
+
+    a.receive(callback=p)
 
 Example 1 Output
 ^^^^^^^^^^^^^^^^
 ::
 
-    2015-09-25 15:04:55,930 INFO aprs.classes.connect:63 - Connected to server=rotate.aprs.net port=14580
-    2015-09-25 15:04:55,931 DEBUG aprs.cmd.tracker:113 - frame=W2GMD-3>APRS:!3745.78N/12225.14W>000/000/A=000175 APRS
+    W2GMD-6>APRX28,TCPIP*,qAC,APRSFI-I1:T#471,7.5,34.7,37.0,1.0,137.0,00000000
 
-
-See Also
-^^^^^^^^
-See ``$ aprs_tracker -h`` for more information.
-
-
-Example 2: Library Usage - Receive
+Example 2: Library Usage - Send
 ----------------------------------
 
-The following example connects to APRS-IS as W2GMD (me!) and filters for APRS
-frames coming from my prefix (W2GMD, W2GMD-n, etc). Any frames returned are
-sent to my callback *my_callback* and printed.
+The following example connects to APRS-IS as W2GMD (me!) and sends an APRS
+frame.
 
 Example 2 Code
 ^^^^^^^^^^^^^^
@@ -64,32 +63,12 @@ Example 2 Code
 
     import aprs
 
-    a = aprs.TCPAPRS('W2GMD', '12345')
+    frame = aprs.Frame('W2GMD>APRS:>Hello World!')
+
+    a = aprs.TCP('W2GMD', '12345')
     a.start()
-    def p(x): print(x)
-    a.receive(callback=p)
 
-Example 2 Output
-^^^^^^^^^^^^^^^^
-::
-
-    W2GMD-6>APRX28,TCPIP*,qAC,APRSFI-I1:T#471,7.5,34.7,37.0,1.0,137.0,00000000
-
-Example 3: Library Usage - Send
-----------------------------------
-
-The following example connects to APRS-IS as W2GMD (me!) and sends an APRS
-frame.
-
-Example 3 Code
-^^^^^^^^^^^^^^
-::
-
-    import aprs
-
-    a = aprs.TCPAPRS('W2GMD', '12345')
-    a.start()
-    a.send('W2GMD>APRS:>Hello World!')
+    a.send(frame)
 
 
 Build Status
