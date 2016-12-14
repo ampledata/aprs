@@ -71,6 +71,24 @@ Example 2 Code
     a.send(frame)
 
 
+See Also
+========
+
+* `kiss <https://github.com/ampledata/kiss>`_ Python KISS Module. Handles interfacing-to and encoding-for various KISS interfaces.
+* `dirus <https://github.com/ampledata/dirus>`_ Dirus is a daemon for managing a SDR to Dire Wolf interface. Manifests that interface as a KISS TCP port.
+* `aprsgate <https://github.com/ampledata/aprsgate>`_ Python APRS Gateway. Uses Redis PubSub to run a multi-interface APRS Gateway.
+* `aprstracker <https://github.com/ampledata/aprstracker>`_ TK.
+
+Similar Projects
+================
+
+* `aprx <http://thelifeofkenneth.com/aprx/>`_ by Matti & Kenneth. A C-based Digi/IGate Software for POSIX platforms.
+* `dixprs <https://sites.google.com/site/dixprs/>`_ by HA5DI. A Python APRS project with KISS, digipeater, et al., support.
+* `APRSDroid <http://aprsdroid.org/>`_ by GE0RG. A Java/Scala Android APRS App.
+* `YAAC <http://www.ka2ddo.org/ka2ddo/YAAC.html>`_ by KA2DDO. A Java APRS Client.
+* `Ham-APRS-FAP <http://search.cpan.org/dist/Ham-APRS-FAP/>`_ by aprs.fi: A Perl APRS Parser.
+
+
 Build Status
 ============
 

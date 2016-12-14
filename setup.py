@@ -50,5 +50,13 @@ setuptools.setup(
     ],
     package_dir={'aprs': 'aprs'},
     zip_safe=False,
-    include_package_data=True
+    include_package_data=True,
+    classifiers=[
+        'Topic :: Communications :: Ham Radio',
+        'Programming Language :: Python',
+        'License :: OSI Approved :: Apache Software License'
+    ],
+    keywords=[
+        'Ham Radio', 'APRS', 'KISS'
+    ]
 )
