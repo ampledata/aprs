@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Tests for Python APRS-IS Bindings."""
+"""Python APRS Module APRS-IS Bindings Tests."""
 
 import random
 import unittest
@@ -12,15 +12,11 @@ import httpretty
 
 from .context import aprs
 
+from . import constants
+
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
-
-
-ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-NUMBERS = '0123456789'
-POSITIVE_NUMBERS = NUMBERS[1:]
-ALPHANUM = ''.join([ALPHABET, NUMBERS])
+__copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
 
 
 class APRSTest(unittest.TestCase):  # pylint: disable=R0904
@@ -28,15 +24,15 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
 
     _logger = logging.getLogger(__name__)
     if not _logger.handlers:
-        _logger.setLevel(aprs.constants.LOG_LEVEL)
+        _logger.setLevel(aprs.LOG_LEVEL)
         _console_handler = logging.StreamHandler()
-        _console_handler.setLevel(aprs.constants.LOG_LEVEL)
-        _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+        _console_handler.setLevel(aprs.LOG_LEVEL)
+        _console_handler.setFormatter(aprs.LOG_FORMAT)
         _logger.addHandler(_console_handler)
         _logger.propagate = False
 
     @classmethod
-    def random(cls, length=8, alphabet=ALPHANUM):
+    def random(cls, length=8, alphabet=constants.ALPHANUM):
         """
         Generates a random string for test cases.
 
@@ -50,16 +46,16 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
     def setUp(self):  # pylint: disable=C0103
         self.fake_server = ''.join([
             'http://localhost:',
-            self.random(4, POSITIVE_NUMBERS),
+            self.random(4, constants.POSITIVE_NUMBERS),
             '/'
         ])
 
         self.fake_callsign = ''.join([
             self.random(1, 'KWN'),
-            self.random(1, NUMBERS),
-            self.random(3, ALPHABET),
+            self.random(1, constants.NUMBERS),
+            self.random(3, constants.ALPHABET),
             '-',
-            self.random(1, POSITIVE_NUMBERS)
+            self.random(1, constants.POSITIVE_NUMBERS)
         ])
 
         self.real_server = 'http://localhost:14580'
@@ -82,7 +78,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
             status=204
         )
 
-        aprs_conn = aprs.HTTPAPRS(
+        aprs_conn = aprs.HTTP(
             user=self.fake_callsign,
             url=self.fake_server
         )
@@ -109,7 +105,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
             status=401
         )
 
-        aprs_conn = aprs.HTTPAPRS(
+        aprs_conn = aprs.HTTP(
             user=self.fake_callsign,
             url=self.fake_server
         )
@@ -130,7 +126,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
         """
         Tests APRS-IS binding against a real APRS-IS server.
         """
-        aprs_conn = aprs.HTTPAPRS(
+        aprs_conn = aprs.HTTP(
             user=self.real_callsign,
             url=self.real_server
         )

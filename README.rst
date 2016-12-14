@@ -1,45 +1,66 @@
-Python Module for APRS-IS
+aprs - Python APRS Module
 *************************
 
-Includes Python module with bindings for APRS as well as ``aprs_tracker``
-command-line APRS location tracking utility.
+aprs is a Python Module that supports connecting to APRS Interfaces, and
+receiving, parsing and sending APRS Frames.
+
+Included are several Interface Classes:
+
+* APRS - Abstract Class from which all other Interfaces are inherited.
+* TCP - Interfaces Class for connecting to APRS-IS via TCP. Can send or receive APRS Frames.
+* UDP - Interfaces Class for connecting to APRS-IS via UDP. Only supports sending APRS Frames.
+* HTTP - Interfaces Class for connecting to APRS-IS via HTTP. Currently only supports sending APRS Frames.
+
+Additional Interface Classes for connecting to KISS Interfaces are included:
+
+* SerialKISS - Interface Class for connecting to KISS Serial devices. Can send or receive APRS Frames.
+* TCPKISS - Interface Class for connecting to KISS TCP Hosts. Can send or receive APRS Frames.
+
+Finally, Frame and Callsign classes are included:
+
+* Frame - Describes the components of an APRS Frame.
+* Callsign - Describes the components of an APRS Callsign.
 
 
-Examples
-========
+Installation
+============
+Install from pypi using pip: ``pip install aprs``
 
-Example 1: APRS Tracker
------------------------
 
-The following example uses the ``aprs_tracker`` command to connect to APRS-IS
-as W2GMD and send a single-shot location frame using location data from my
-locally connected USB (or USB->Serial) GPS:
+Usage Examples
+==============
+
+Example 1: Library Usage - Receive
+----------------------------------
+
+The following example connects to APRS-IS as W2GMD (me!) and filters for APRS
+frames coming from my prefix (W2GMD, W2GMD-n, etc). Any frames returned are
+sent to my callback *p* and printed.
 
 Example 1 Code
 ^^^^^^^^^^^^^^
 ::
 
-    $ aprs_tracker -c W2GMD -p 12345 -s /dev/cu.usbmodem1a1211 -u 3 -d
+    import aprs
+
+    def p(x): print(x)
+
+    a = aprs.TCP('W2GMD', '12345')
+    a.start()
+
+    a.receive(callback=p)
 
 Example 1 Output
 ^^^^^^^^^^^^^^^^
 ::
 
-    2015-09-25 15:04:55,930 INFO aprs.classes.connect:63 - Connected to server=rotate.aprs.net port=14580
-    2015-09-25 15:04:55,931 DEBUG aprs.cmd.tracker:113 - frame=W2GMD-3>APRS:!3745.78N/12225.14W>000/000/A=000175 APRS
+    W2GMD-6>APRX28,TCPIP*,qAC,APRSFI-I1:T#471,7.5,34.7,37.0,1.0,137.0,00000000
 
-
-See Also
-^^^^^^^^
-See ``$ aprs_tracker -h`` for more information.
-
-
-Example 2: Library Usage - Receive
+Example 2: Library Usage - Send
 ----------------------------------
 
-The following example connects to APRS-IS as W2GMD (me!) and filters for APRS
-frames coming from my prefix (W2GMD, W2GMD-n, etc). Any frames returned are
-sent to my callback *my_callback* and printed.
+The following example connects to APRS-IS as W2GMD (me!) and sends an APRS
+frame.
 
 Example 2 Code
 ^^^^^^^^^^^^^^
@@ -47,32 +68,40 @@ Example 2 Code
 
     import aprs
 
-    a = aprs.TCPAPRS('W2GMD', '12345')
+    frame = aprs.Frame('W2GMD>APRS:>Hello World!')
+
+    a = aprs.TCP('W2GMD', '12345')
     a.start()
-    def p(x): print(x)
-    a.receive(callback=p)
 
-Example 2 Output
-^^^^^^^^^^^^^^^^
-::
+    a.send(frame)
 
-    W2GMD-6>APRX28,TCPIP*,qAC,APRSFI-I1:T#471,7.5,34.7,37.0,1.0,137.0,00000000
+Testing
+=======
+Run nosetests from a Makefile target::
 
-Example 3: Library Usage - Send
-----------------------------------
+    make test
 
-The following example connects to APRS-IS as W2GMD (me!) and sends an APRS
-frame.
+See Also
+========
 
-Example 3 Code
-^^^^^^^^^^^^^^
-::
+* `aprs <https://github.com/ampledata/aprs>`_ Python APRS Module. Interface for APRS, APRS-IS, and APRS over KISS.
+* `kiss <https://github.com/ampledata/kiss>`_ Python KISS Module. Handles interfacing-to and encoding-for various KISS interfaces.
+* `dirus <https://github.com/ampledata/dirus>`_ Dirus is a daemon for managing a SDR to Dire Wolf interface. Manifests that interface as a KISS TCP port.
+* `aprsgate <https://github.com/ampledata/aprsgate>`_ Python APRS Gateway. Uses Redis PubSub to run a multi-interface APRS Gateway.
+* `aprstracker <https://github.com/ampledata/aprstracker>`_ TK.
 
-    import aprs
 
-    a = aprs.TCPAPRS('W2GMD', '12345')
-    a.start()
-    a.send('W2GMD>APRS:>Hello World!')
+Similar Projects
+================
+
+* `apex <https://github.com/Syncleus/apex>`_ by Jeffrey Phillips Freeman (WI2ARD). Next-Gen APRS Protocol. (based on this Module! :)
+* `aprslib <https://github.com/rossengeorgiev/aprs-python>`_ by Rossen Georgiev. A Python APRS Library with build-in parsers for several Frame types.
+* `aprx <http://thelifeofkenneth.com/aprx/>`_ by Matti & Kenneth. A C-based Digi/IGate Software for POSIX platforms.
+* `dixprs <https://sites.google.com/site/dixprs/>`_ by HA5DI. A Python APRS project with KISS, digipeater, et al., support.
+* `APRSDroid <http://aprsdroid.org/>`_ by GE0RG. A Java/Scala Android APRS App.
+* `YAAC <http://www.ka2ddo.org/ka2ddo/YAAC.html>`_ by KA2DDO. A Java APRS Client.
+* `Ham-APRS-FAP <http://search.cpan.org/dist/Ham-APRS-FAP/>`_ by aprs.fi: A Perl APRS Parser.
+* `Dire Wolf <https://github.com/wb2osz/direwolf>`_ by WB2OSZ. A C-Based Soft-TNC for interfacing with sound cards. Can present as a KISS interface!
 
 
 Build Status
@@ -95,12 +124,16 @@ Github: https://github.com/ampledata/aprs
 
 Author
 ======
-Greg Albrecht W2GMD <oss@undef.net>
+Greg Albrecht W2GMD oss@undef.net
+
+http://ampledata.org/
 
 Copyright
 =========
-Copyright 2016 Orion Labs, Inc.
+Copyright 2016 Orion Labs, Inc. and Contributors
+
+`APRS <http://www.aprs.org/>`_ is Copyright Bob Bruninga WB4APR wb4apr@amsat.org
 
 License
 =======
-Apache License, Version 2.0
+Apache License, Version 2.0. See LICENSE for details.
