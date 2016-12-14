@@ -490,6 +490,7 @@ class SerialKISS(kiss.SerialKISS):
         super(SerialKISS, self).__init__(port, speed, strip_df_start)
         self.send = self.write
         self.receive = self.read
+        self.use_i_construct = False
 
     def write(self, frame):
         """Writes APRS-encoded frame to KISS device.
@@ -508,6 +509,7 @@ class TCPKISS(kiss.TCPKISS):
         super(TCPKISS, self).__init__(host, port, strip_df_start)
         self.send = self.write
         self.receive = self.read
+        self.use_i_construct = False
 
     def write(self, frame):
         """
