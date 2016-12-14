@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Tests for `aprs.Frame`."""
+"""Python APRS Module APRS Frame Tests."""
 
 import logging
 import logging.handlers
@@ -14,7 +14,7 @@ from . import constants
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
+__copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
 
 
 class FrameTestCase(unittest.TestCase):  # pylint: disable=R0904

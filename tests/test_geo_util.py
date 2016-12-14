@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Tests for Python APRS Geo Util methods.
+"""
+Python APRS Module Geo Utility Function Tests.
 
 Spec per ftp://ftp.tapr.org/aprssig/aprsspec/spec/aprs101/APRS101.pdf
 
@@ -50,7 +51,7 @@ from .context import aprs
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
+__copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
 
 
 class APRSGeoTestCase(unittest.TestCase):  # pylint: disable=R0904
@@ -58,10 +59,10 @@ class APRSGeoTestCase(unittest.TestCase):  # pylint: disable=R0904
 
     _logger = logging.getLogger(__name__)
     if not _logger.handlers:
-        _logger.setLevel(aprs.constants.LOG_LEVEL)
+        _logger.setLevel(aprs.LOG_LEVEL)
         _console_handler = logging.StreamHandler()
-        _console_handler.setLevel(aprs.constants.LOG_LEVEL)
-        _console_handler.setFormatter(aprs.constants.LOG_FORMAT)
+        _console_handler.setLevel(aprs.LOG_LEVEL)
+        _console_handler.setFormatter(aprs.LOG_FORMAT)
         _logger.addHandler(_console_handler)
         _logger.propagate = False
 

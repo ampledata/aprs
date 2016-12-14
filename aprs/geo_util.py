@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Geo Utilities for the APRS Python Module."""
+"""Python APRS Module Geo Utility Function Definitions."""
 
 import aprs.decimaldegrees
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
+__copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
 
 
 def dec2dm_lat(dec):

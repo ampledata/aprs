@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Tests for Python APRS Callsign Object."""
+"""Python APRS Module APRS Callsign Tests."""
 
 import logging
 import logging.handlers
@@ -13,7 +13,7 @@ from . import constants
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc.'
+__copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
 
 
 class CallsignTestCase(unittest.TestCase):  # pylint: disable=R0904
@@ -104,7 +104,7 @@ class CallsignTestCase(unittest.TestCase):  # pylint: disable=R0904
         callsign_obj = aprs.Callsign(callsign)
         print callsign_obj.encode_kiss().encode('hex')
         print '\xaed\x8e\x9a\x88@\xe2'.encode('hex')
-        #s elf.assertEqual('\xaed\x8e\x9a\x88@\xe2', callsign_obj.encode_kiss())
+        # self.assertEqual('\xaed\x8e\x9a\x88@\xe2', callsign_obj.encode_kiss())
 
 
 if __name__ == '__main__':

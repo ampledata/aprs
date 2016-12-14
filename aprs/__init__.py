@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# APRS Python Module.
+# Python APRS Module.
 
 """
-APRS Python Module.
+Python APRS Module.
 ~~~~
 
 
 :author: Greg Albrecht W2GMD <oss@undef.net>
-:copyright: Copyright 2016 Orion Labs, Inc.
+:copyright: Copyright 2016 Orion Labs, Inc. and Contributors
 :license: Apache License, Version 2.0
 :source: <https://github.com/ampledata/aprs>
 
@@ -17,7 +17,7 @@ APRS Python Module.
 
 from .constants import (LOG_FORMAT, LOG_LEVEL, APRSIS_SW_VERSION,  # NOQA
                         APRSIS_HTTP_HEADERS, APRSIS_SERVER, APRSIS_FILTER_PORT,
-                        APRSIS_RX_PORT, RECV_BUFFER, APRSIS_URL, GPS_WARM_UP)
+                        APRSIS_RX_PORT, RECV_BUFFER, APRSIS_URL)
 
 from .exceptions import BadCallsignError  # NOQA
 

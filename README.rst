@@ -70,6 +70,11 @@ Example 2 Code
 
     a.send(frame)
 
+Testing
+=======
+Run nosetests from a Makefile target::
+
+    make test
 
 See Also
 ========
@@ -78,6 +83,7 @@ See Also
 * `dirus <https://github.com/ampledata/dirus>`_ Dirus is a daemon for managing a SDR to Dire Wolf interface. Manifests that interface as a KISS TCP port.
 * `aprsgate <https://github.com/ampledata/aprsgate>`_ Python APRS Gateway. Uses Redis PubSub to run a multi-interface APRS Gateway.
 * `aprstracker <https://github.com/ampledata/aprstracker>`_ TK.
+
 
 Similar Projects
 ================
@@ -110,12 +116,16 @@ Github: https://github.com/ampledata/aprs
 
 Author
 ======
-Greg Albrecht W2GMD <oss@undef.net>
+Greg Albrecht W2GMD oss@undef.net
+
+http://ampledata.org/
 
 Copyright
 =========
-Copyright 2016 Orion Labs, Inc.
+Copyright 2016 Orion Labs, Inc. and Contributors
+
+`APRS <http://www.aprs.org/>`_ is Copyright Bob Bruninga WB4APR <wb4apr@amsat.org>
 
 License
 =======
-Apache License, Version 2.0
+Apache License, Version 2.0. See LICENSE for details.
