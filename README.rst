@@ -22,8 +22,13 @@ Finally, Frame and Callsign classes are included:
 * Callsign - Describes the components of an APRS Callsign.
 
 
-Examples
-========
+Installation
+============
+Install from pypi using pip: ``pip install aprs``
+
+
+Usage Examples
+==============
 
 Example 1: Library Usage - Receive
 ----------------------------------
@@ -95,6 +100,7 @@ Similar Projects
 * `APRSDroid <http://aprsdroid.org/>`_ by GE0RG. A Java/Scala Android APRS App.
 * `YAAC <http://www.ka2ddo.org/ka2ddo/YAAC.html>`_ by KA2DDO. A Java APRS Client.
 * `Ham-APRS-FAP <http://search.cpan.org/dist/Ham-APRS-FAP/>`_ by aprs.fi: A Perl APRS Parser.
+* `Dire Wolf <https://github.com/wb2osz/direwolf>`_ by WB2OSZ. A C-Based Soft-TNC for interfacing with sound cards. Can present as a KISS interface!
 
 
 Build Status
@@ -125,7 +131,7 @@ Copyright
 =========
 Copyright 2016 Orion Labs, Inc. and Contributors
 
-`APRS <http://www.aprs.org/>`_ is Copyright Bob Bruninga WB4APR <wb4apr@amsat.org>
+`APRS <http://www.aprs.org/>`_ is Copyright Bob Bruninga WB4APR wb4apr@amsat.org
 
 License
 =======
