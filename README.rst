@@ -84,6 +84,7 @@ Run nosetests from a Makefile target::
 See Also
 ========
 
+* `aprs <https://github.com/ampledata/aprs>`_ Python APRS Module. Interface for APRS, APRS-IS, and APRS over KISS.
 * `kiss <https://github.com/ampledata/kiss>`_ Python KISS Module. Handles interfacing-to and encoding-for various KISS interfaces.
 * `dirus <https://github.com/ampledata/dirus>`_ Dirus is a daemon for managing a SDR to Dire Wolf interface. Manifests that interface as a KISS TCP port.
 * `aprsgate <https://github.com/ampledata/aprsgate>`_ Python APRS Gateway. Uses Redis PubSub to run a multi-interface APRS Gateway.

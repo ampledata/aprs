@@ -1,8 +1,8 @@
-# Makefile for APRS Python Module.
+# Makefile for Python APRS Module.
 #
 # Source:: https://github.com/ampledata/aprs
 # Author:: Greg Albrecht W2GMD <oss@undef.net>
-# Copyright:: Copyright 2016 Orion Labs, Inc.
+# Copyright:: Copyright 2016 Orion Labs, Inc. and Contributors
 # License:: Apache License, Version 2.0
 #
 
