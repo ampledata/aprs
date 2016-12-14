@@ -1,8 +1,25 @@
-Python Module for APRS-IS
+aprs - Python APRS Module
 *************************
 
-Includes Python module with bindings for APRS as well as ``aprs_tracker``
-command-line APRS location tracking utility.
+aprs is a Python Module that supports connecting to APRS Interfaces, and
+receiving, parsing and sending APRS Frames.
+
+Included are several Interface Classes:
+
+* APRS - Abstract Class from which all other Interfaces are inherited.
+* TCPAPRS - Interfaces Class for connecting to APRS-IS via TCP. Can send or receive APRS Frames.
+* UDPAPRS - Interfaces Class for connecting to APRS-IS via UDP. Only supports sending APRS Frames.
+* HTTPAPRS - Interfaces Class for connecting to APRS-IS via HTTP. Currently only supports sending APRS Frames.
+
+Additional Interface Classes for connecting to KISS Interfaces are included:
+
+* SerialKISS - Interface Class for connecting to KISS Serial devices. Can send or receive APRS Frames.
+* TCPKISS - Interface Class for connecting to KISS TCP Hosts. Can send or receive APRS Frames.
+
+Finally, Frame and Callsign classes are included:
+
+* Frame - Describes the components of an APRS Frame.
+* Callsign - Describes the components of an APRS Callsign.
 
 
 Examples

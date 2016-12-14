@@ -50,6 +50,5 @@ setuptools.setup(
     ],
     package_dir={'aprs': 'aprs'},
     zip_safe=False,
-    include_package_data=True,
-    entry_points={'console_scripts': ['aprs_tracker = aprs.cmd:tracker']}
+    include_package_data=True
 )

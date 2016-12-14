@@ -85,7 +85,7 @@ class GateIn(threading.Thread):
         return self._stop.isSet()
 
     def handle_frame(self, frame):
-        aprs_frame = aprs.APRSFrame(frame)
+        aprs_frame = aprs.Frame(frame)
         aprs_frame.path.extend(['qAR', 'SUNSET-6'])
         self._logger.debug('Adding to Queue aprs_frame="%s"', aprs_frame)
         self.queue.put(aprs_frame)
@@ -237,7 +237,7 @@ def gate():
 
     queue = Queue.Queue()
 
-    aprs_listener = aprs.APRSTCPKISS(host=opts.host, port=opts.port)
+    aprs_listener = aprs.TCPKISS(host=opts.host, port=opts.port)
     aprs_talker = aprs.TCPAPRS(opts.callsign, opts.passcode)
 
     gate_in = GateIn(aprs_listener, queue)

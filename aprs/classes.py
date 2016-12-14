@@ -56,10 +56,10 @@ class APRS(object):
         pass
 
 
-class APRSFrame(object):
+class Frame(object):
 
     """
-    APRSFrame Class.
+    Frame Class.
 
     Defines the components of an APRS Frame and can decode a frame
     from either ASCII or KISS.
@@ -97,13 +97,13 @@ class APRSFrame(object):
 
     def to_h(self):
         """
-        Returns an APRSFrame as a Hex String.
+        Returns an Frame as a Hex String.
         """
         return str(self).encode('hex')
 
     def parse(self, frame=None):
         """
-        Parses an APRSFrame from either ASCII or KISS Encoded frame.
+        Parses an Frame from either ASCII or KISS Encoded frame.
         """
         # Allows to be called as class method:
         if frame is not None:
@@ -124,7 +124,7 @@ class APRSFrame(object):
 
     def parse_text(self):
         """
-        Parses and Extracts the components of an ASCII-Encoded APRSFrame.
+        Parses and Extracts the components of an ASCII-Encoded Frame.
         """
         frame_so_far = ''
 
@@ -149,7 +149,7 @@ class APRSFrame(object):
 
     def parse_kiss(self):
         """
-        Parses and Extracts the components of an KISS-Encoded APRSFrame.
+        Parses and Extracts the components of an KISS-Encoded Frame.
         """
         frame_len = len(self.frame)
 
@@ -180,7 +180,7 @@ class APRSFrame(object):
 
     def encode_kiss(self):
         """
-        Encodes an APRSFrame as KISS.
+        Encodes an Frame as KISS.
         """
         enc_frame = ''.join([
             self.destination.encode_kiss(),
@@ -197,19 +197,19 @@ class APRSFrame(object):
 
     def _extract_kiss_text(self, raw_slice):
         """
-        Extracts a Text portion of a KISS-Encoded APRSFrame.
+        Extracts a Text portion of a KISS-Encoded Frame.
         """
         self.text = self.frame[raw_slice + 3:]
 
     def _extract_kiss_source(self):
         """
-        Extracts a Source Callsign of a KISS-Encoded APRSFrame.
+        Extracts a Source Callsign of a KISS-Encoded Frame.
         """
         self.source = Callsign(self.frame[7:])
 
     def _extract_kiss_destination(self):
         """
-        Extracts a Destination Callsign of a KISS-Encoded APRSFrame.
+        Extracts a Destination Callsign of a KISS-Encoded Frame.
         """
         self.destination = Callsign(self.frame)
 
@@ -340,50 +340,13 @@ class Callsign(object):
         self.ssid = str((ord(frame[6]) >> 1) & 0x0F)
 
 
-class APRSSerialKISS(kiss.SerialKISS):
-
-    """APRS interface for KISS serial devices."""
-
-    def __init__(self, port, speed, strip_df_start=False):
-        super(APRSSerialKISS, self).__init__(port, speed, strip_df_start)
-        self.send = self.write
-        self.receive = self.read
-
-    def write(self, frame):
-        """Writes APRS-encoded frame to KISS device.
-
-        :param frame: APRS frame to write to KISS device.
-        :type frame: str
-        """
-        super(APRSSerialKISS, self).write(frame.encode_kiss())
-
-
-class APRSTCPKISS(kiss.TCPKISS):
-
-    """APRS interface for KISS serial devices."""
-
-    def __init__(self, host, port, strip_df_start=False):
-        super(APRSTCPKISS, self).__init__(host, port, strip_df_start)
-        self.send = self.write
-        self.receive = self.read
-
-    def write(self, frame):
-        """
-        Writes APRS-encoded frame to KISS device.
-
-        :param frame: APRS frame to write to KISS device.
-        :type frame: str
-        """
-        super(APRSTCPKISS, self).write(frame.encode_kiss())
-
-
-class TCPAPRS(APRS):
+class TCP(APRS):
 
     """APRS-IS TCP Class."""
 
     def __init__(self, user, password='-1', server=None, port=None,
                  aprs_filter=None):
-        super(TCPAPRS, self).__init__(user, password)
+        super(TCP, self).__init__(user, password)
         server = server or aprs.APRSIS_SERVER
         port = port or aprs.APRSIS_FILTER_PORT
         self.address = (server, int(port))
@@ -418,7 +381,7 @@ class TCPAPRS(APRS):
         :param callback: Optional callback to deliver frame to.
         :type callback: func
 
-        :returns: Nothing, but calls a callback with an APRSFrame object.
+        :returns: Nothing, but calls a callback with an Frame object.
         :rtype: None
         """
         recvd_data = ''
@@ -448,19 +411,19 @@ class TCPAPRS(APRS):
                     else:
                         self._logger.debug('line=%s', line)
                         if callback:
-                            callback(APRSFrame(line))
+                            callback(Frame(line))
 
         except socket.error as sock_err:
             self._logger.error(sock_err)
             raise
 
 
-class UDPAPRS(APRS):
+class UDP(APRS):
 
     """APRS-IS UDP Class."""
 
     def __init__(self, user, password='-1', server=None, port=None):
-        super(UDPAPRS, self).__init__(user, password)
+        super(UDP, self).__init__(user, password)
         server = server or aprs.APRSIS_SERVER
         port = port or aprs.APRSIS_RX_PORT
         self._addr = (server, int(port))
@@ -483,12 +446,12 @@ class UDPAPRS(APRS):
         return self.interface.sendto(content, self._addr)
 
 
-class HTTPAPRS(APRS):
+class HTTP(APRS):
 
     """APRS-IS HTTP Class."""
 
     def __init__(self, user, password='-1', url=None, headers=None):
-        super(HTTPAPRS, self).__init__(user, password)
+        super(HTTP, self).__init__(user, password)
         self.url = url or aprs.APRSIS_URL
         self.headers = headers or aprs.APRSIS_HTTP_HEADERS
 
@@ -510,32 +473,38 @@ class HTTPAPRS(APRS):
         return result.status_code == 204
 
 
-# WIP 2016-12-14
-class APRSLocationFrame(APRSFrame):
-    # WIP 2016-12-14
+class SerialKISS(kiss.SerialKISS):
 
-    """
-    APRSLocationFrame Class.
+    """APRS interface for KISS serial devices."""
 
-    Defines the components of an APRS Location Frame and can decode a frame
-    from either ASCII or KISS.
-    """
+    def __init__(self, port, speed, strip_df_start=False):
+        super(SerialKISS, self).__init__(port, speed, strip_df_start)
+        self.send = self.write
+        self.receive = self.read
 
-    __slots__ = ['frame', 'source', 'destination', 'path', 'text']
+    def write(self, frame):
+        """Writes APRS-encoded frame to KISS device.
 
-    def __init__(self, frame=None):
-        super(APRSLocationFrame, self).__init__(frame)
-        self.symbol_table = ''
-        self.symbol_code = ''
-        self.latitude = ''
-        self.longitude = ''
+        :param frame: APRS frame to write to KISS device.
+        :type frame: str
+        """
+        super(SerialKISS, self).write(frame.encode_kiss())
 
-    def __repr__(self):
-        full_path = [str(self.destination)]
-        full_path.extend([str(p) for p in self.path])
-        frame = "%s>%s:%s" % (
-            self.source,
-            ','.join(full_path),
-            self.text
-        )
-        return frame.encode('UTF-8')
+
+class TCPKISS(kiss.TCPKISS):
+
+    """APRS interface for KISS serial devices."""
+
+    def __init__(self, host, port, strip_df_start=False):
+        super(TCPKISS, self).__init__(host, port, strip_df_start)
+        self.send = self.write
+        self.receive = self.read
+
+    def write(self, frame):
+        """
+        Writes APRS-encoded frame to KISS device.
+
+        :param frame: APRS frame to write to KISS device.
+        :type frame: str
+        """
+        super(TCPKISS, self).write(frame.encode_kiss())

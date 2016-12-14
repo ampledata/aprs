@@ -78,7 +78,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
             status=204
         )
 
-        aprs_conn = aprs.HTTPAPRS(
+        aprs_conn = aprs.HTTP(
             user=self.fake_callsign,
             url=self.fake_server
         )
@@ -105,7 +105,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
             status=401
         )
 
-        aprs_conn = aprs.HTTPAPRS(
+        aprs_conn = aprs.HTTP(
             user=self.fake_callsign,
             url=self.fake_server
         )
@@ -126,7 +126,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
         """
         Tests APRS-IS binding against a real APRS-IS server.
         """
-        aprs_conn = aprs.HTTPAPRS(
+        aprs_conn = aprs.HTTP(
             user=self.real_callsign,
             url=self.real_server
         )
