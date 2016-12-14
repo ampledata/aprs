@@ -83,7 +83,7 @@ class Frame(object):
         self.path = []
         self.text = ''
         if frame is not None:
-            self.frame = kiss.strip_df_start(frame)
+            self.frame = kiss.strip_df_start(str(frame))
             self.parse()
 
     def __repr__(self):
