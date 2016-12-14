@@ -36,6 +36,7 @@ class APRS(object):
             ['user', user, 'pass', password, 'vers', aprs.APRSIS_SW_VERSION])
         self._full_auth = None
         self.interface = None
+        self.use_i_construct = False
 
     def start(self):
         """
@@ -357,6 +358,7 @@ class TCP(APRS):
         self.address = (server, int(port))
         aprs_filter = aprs_filter or '/'.join(['p', user])
         self._full_auth = ' '.join([self._auth, 'filter', aprs_filter])
+        self.use_i_construct = True
 
     def start(self):
         """
@@ -432,6 +434,7 @@ class UDP(APRS):
         server = server or aprs.APRSIS_SERVER
         port = port or aprs.APRSIS_RX_PORT
         self._addr = (server, int(port))
+        self.use_i_construct = True
 
     def start(self):
         """
@@ -459,6 +462,7 @@ class HTTP(APRS):
         super(HTTP, self).__init__(user, password)
         self.url = url or aprs.APRSIS_URL
         self.headers = headers or aprs.APRSIS_HTTP_HEADERS
+        self.use_i_construct = True
 
     def start(self):
         """
