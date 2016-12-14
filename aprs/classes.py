@@ -368,7 +368,7 @@ class APRSSerialKISS(kiss.SerialKISS):
         :param frame: APRS frame to write to KISS device.
         :type frame: str
         """
-        super(APRSSerialKISS, self).write(frame.kiss_encode())
+        super(APRSSerialKISS, self).write(frame.encode_kiss())
 
 
 class APRSTCPKISS(kiss.TCPKISS):
