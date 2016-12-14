@@ -49,7 +49,7 @@ setuptools.setup(
       'nose >= 1.3.7'
     ],
     install_requires=[
-        'kiss >= 5.0.0',
+        'kiss',
         'requests >= 2.7.0'
     ],
     classifiers=[
