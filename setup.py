@@ -12,7 +12,7 @@ import setuptools
 import sys
 
 __title__ = 'aprs'
-__version__ = '6.0.0'
+__version__ = '6.0.1'
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
 __license__ = 'Apache License, Version 2.0'
