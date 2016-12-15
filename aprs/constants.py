@@ -10,7 +10,7 @@ __copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
 __license__ = 'Apache License, Version 2.0'
 
 
-LOG_LEVEL = logging.INFO
+LOG_LEVEL = logging.DEBUG
 LOG_FORMAT = logging.Formatter(
     ('%(asctime)s aprs %(levelname)s %(name)s.%(funcName)s:%(lineno)d - '
      '%(message)s'))
