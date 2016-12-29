@@ -316,12 +316,12 @@ class Callsign(object):
         _callsign = callsign
         ssid = str(0)
 
+        if '*' in callsign:
+            callsign = callsign.replace('*', '')
+            self.digi = True
+
         if '-' in callsign:
             _callsign, ssid = callsign.split('-')
-
-        if _callsign[-1] == '*':
-            _callsign = _callsign[:-1]
-            self.digi = True
 
         self.callsign = _callsign.lstrip().rstrip()
         self.ssid = ssid.lstrip().rstrip()
