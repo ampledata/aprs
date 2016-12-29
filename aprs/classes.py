@@ -318,17 +318,17 @@ class Callsign(object):
         :type callsign: str
         """
         self._logger.debug('callsign=%s', callsign.encode('hex'))
-        _callsign = callsign
+        _callsign = callsign.lstrip().rstrip()
         ssid = str(0)
 
-        if '*' in callsign:
-            callsign = callsign.replace('*', '')
+        if '*' in _callsign:
+            _callsign = _callsign.strip('*')
             self.digi = True
 
-        if '-' in callsign:
-            _callsign, ssid = callsign.split('-')
+        if '-' in _callsign:
+            _callsign, ssid = _callsign.split('-')
 
-        self.callsign = _callsign.lstrip().rstrip()
+        self.callsign = _callsign
         self.ssid = ssid.lstrip().rstrip()
 
     def encode_kiss(self):
