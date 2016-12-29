@@ -273,11 +273,10 @@ class Callsign(object):
         call_repr = self.callsign
 
         try:
-            ssid = int(self.ssid)
-            if ssid > 0:
+            if int(self.ssid) > 0:
                 call_repr = '-'.join([self.callsign, str(self.ssid)])
         except ValueError:
-            if ssid != 0:
+            if self.ssid != 0:
                 call_repr = '-'.join([self.callsign, str(self.ssid)])
 
         if self.digi:
