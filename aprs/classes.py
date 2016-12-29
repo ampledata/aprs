@@ -301,6 +301,7 @@ class Callsign(object):
             #self._logger.debug(
             #    'Not a KISS Callsign? "%s"', callsign.encode('hex'))
 
+        self._logger.debug(self.callsign)
         if not aprs.valid_callsign(self.callsign):
             self.parse_text(callsign)
 
