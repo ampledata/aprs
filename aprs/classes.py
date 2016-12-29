@@ -270,6 +270,8 @@ class Callsign(object):
         self.parse(callsign)
 
     def __repr__(self):
+        self._logger.debug(self.callsign)
+        self._logger.debug(self.ssid)
         if int(self.ssid) > 0:
             call_repr = '-'.join([self.callsign, str(self.ssid)])
         else:
