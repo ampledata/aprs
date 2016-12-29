@@ -19,7 +19,7 @@ def valid_callsign(callsign):
     :rtype: bool
     """
     callsign = callsign.lstrip().rstrip().strip('*')
-    
+
     if '-' in callsign:
         if not callsign.count('-') == 1:
             return False

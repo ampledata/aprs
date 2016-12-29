@@ -37,9 +37,9 @@ class APRS(object):
         self.user = user
 
         try:
-            version = pkg_resources.get_distribution(
+            version = pkg_resources.get_distribution(  # pylint: disable=E1101
                 'aprs').version
-        except:
+        except:  # pylint: disable=W0702
             version = 'GIT'
         version_str = "Python APRS Module v%s" % version
 
@@ -295,11 +295,9 @@ class Callsign(object):
         Parse and extract the components of a Callsign from ASCII or KISS.
         """
         try:
-            self._extract_callsign_from_kiss_frame(callsign)
+            self._extract_kiss_callsign(callsign)
         except IndexError:
             pass
-            #self._logger.debug(
-            #    'Not a KISS Callsign? "%s"', callsign.encode('hex'))
 
         if not aprs.valid_callsign(self.callsign):
             self.parse_text(callsign)
@@ -350,7 +348,7 @@ class Callsign(object):
 
         return ''.join([encoded_callsign, chr(encoded_ssid)])
 
-    def _extract_callsign_from_kiss_frame(self, frame):
+    def _extract_kiss_callsign(self, frame):
         """
         Extracts a Callsign and SSID from a KISS-Encoded APRS Frame.
 
@@ -367,11 +365,9 @@ class TCP(APRS):
 
     """APRS-IS TCP Class."""
 
-    def __init__(self, user, password='-1', servers=None, port=None,
-                 aprs_filter=None):
+    def __init__(self, user, password, servers=None, aprs_filter=None):
         super(TCP, self).__init__(user, password)
         servers = servers or aprs.APRSIS_SERVERS
-        port = port or aprs.APRSIS_FILTER_PORT
         aprs_filter = aprs_filter or '/'.join(['p', user])
 
         self._full_auth = ' '.join([self._auth, 'filter', aprs_filter])
@@ -386,15 +382,19 @@ class TCP(APRS):
         """
         while not self._connected:
             servers = next(self.servers)
-            server, port = servers.split(':')
-            port = int(port)
+            if ':' in servers:
+                server, port = servers.split(':')
+                port = int(port)
+            else:
+                server = servers
+                port = aprs.APRSIS_FILTER_PORT
 
             try:
                 addr_info = socket.getaddrinfo(server, port)
 
                 self.interface = socket.socket(*addr_info[0][0:3])
 
-                ## Connect
+                # Connect
                 self._logger.info(
                     "Connect To %s:%i", addr_info[0][4][0], port)
 
@@ -405,7 +405,7 @@ class TCP(APRS):
                 self._logger.info(
                     'Connect Result "%s"', server_hello.rstrip())
 
-                ## Auth
+                # Auth
                 self._logger.info(
                     "Auth To %s:%i", addr_info[0][4][0], port)
                 self.interface.sendall(self._full_auth + '\n\r')
