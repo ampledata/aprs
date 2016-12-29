@@ -428,7 +428,7 @@ class TCP(APRS):
         :param frame: Frame to send to APRS-IS.
         :type frame: str
         """
-        self._logger.debug('Sending frame="%s"', frame)
+        self._logger.info('Sending frame="%s"', frame)
         return self.interface.send("%s\n\r" % frame)  # Ensure cast->str.
 
     def receive(self, callback=None):
@@ -499,7 +499,7 @@ class UDP(APRS):
         :param frame: Frame to send to APRS-IS.
         :type frame: str
         """
-        self._logger.debug('frame="%s"', frame)
+        self._logger.info('Sending frame="%s"', frame)
         content = "\n".join([self._auth, str(frame)])
         return self.interface.sendto(content, self._addr)
 
@@ -527,6 +527,7 @@ class HTTP(APRS):
         :param frame: Frame to send to APRS-IS.
         :type frame: str
         """
+        self._logger.info('Sending frame="%s"', frame)
         content = "\n".join([self._auth, str(frame)])
         result = self.interface(self.url, data=content, headers=self.headers)
         return result.status_code == 204
