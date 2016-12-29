@@ -293,8 +293,9 @@ class Callsign(object):
         try:
             self._extract_callsign_from_kiss_frame(callsign)
         except IndexError:
-            self._logger.debug(
-                'Not a KISS Callsign? "%s"', callsign.encode('hex'))
+            pass
+            #self._logger.debug(
+            #    'Not a KISS Callsign? "%s"', callsign.encode('hex'))
 
         if not aprs.valid_callsign(self.callsign):
             self.parse_text(callsign)
