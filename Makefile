@@ -44,13 +44,13 @@ nosetests: remember
 	python setup.py nosetests
 
 pep8: remember
-	flake8 --max-complexity 12 --exit-zero aprs/*.py tests/*.py
+	flake8 --max-complexity 12 --exit-zero *.py aprs/*.py tests/*.py
 
 flake8: pep8
 
 lint: remember
 	pylint --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" \
-		-r n aprs/*.py tests/*.py || exit 0
+		-r n *.py aprs/*.py tests/*.py || exit 0
 
 pylint: lint
 

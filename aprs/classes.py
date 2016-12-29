@@ -3,11 +3,14 @@
 
 """Python APRS Module Class Definitions."""
 
+import itertools
 import logging
 import logging.handlers
 import socket
+import time
 
 import kiss
+import pkg_resources
 import requests
 
 import aprs
@@ -32,8 +35,17 @@ class APRS(object):
 
     def __init__(self, user, password='-1'):
         self.user = user
+
+        try:
+            version = pkg_resources.get_distribution(
+                'aprs').version
+        except:
+            version = 'GIT'
+        version_str = "Python APRS Module v%s" % version
+
         self._auth = ' '.join(
-            ['user', user, 'pass', password, 'vers', aprs.APRSIS_SW_VERSION])
+            ['user', user, 'pass', password, 'vers', version_str])
+
         self._full_auth = None
         self.interface = None
         self.use_i_construct = False
@@ -350,26 +362,59 @@ class TCP(APRS):
 
     """APRS-IS TCP Class."""
 
-    def __init__(self, user, password='-1', server=None, port=None,
+    def __init__(self, user, password='-1', servers=None, port=None,
                  aprs_filter=None):
         super(TCP, self).__init__(user, password)
-        server = server or aprs.APRSIS_SERVER
+        servers = servers or aprs.APRSIS_SERVERS
         port = port or aprs.APRSIS_FILTER_PORT
-        self.address = (server, int(port))
         aprs_filter = aprs_filter or '/'.join(['p', user])
+
         self._full_auth = ' '.join([self._auth, 'filter', aprs_filter])
+
+        self.servers = itertools.cycle(servers)
         self.use_i_construct = True
+        self._connected = False
 
     def start(self):
         """
         Connects & logs in to APRS-IS.
         """
-        self.interface = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._logger.info('Connecting to to "%s"', self.address)
-        self.interface.connect(self.address)
+        while not self._connected:
+            servers = next(self.servers)
+            server, port = servers.split(':')
+            port = int(port)
 
-        self._logger.debug('Sending full_auth=%s', self._full_auth)
-        self.interface.sendall(self._full_auth + '\n\r')
+            try:
+                addr_info = socket.getaddrinfo(server, port)
+
+                self.interface = socket.socket(*addr_info[0][0:3])
+
+                ## Connect
+                self._logger.info(
+                    "Connect To %s:%i", addr_info[0][4][0], port)
+
+                self.interface.connect(addr_info[0][4])
+
+                server_hello = self.interface.recv(1024)
+
+                self._logger.info(
+                    'Connect Result "%s"', server_hello.rstrip())
+
+                ## Auth
+                self._logger.info(
+                    "Auth To %s:%i", addr_info[0][4][0], port)
+                self.interface.sendall(self._full_auth + '\n\r')
+
+                server_return = self.interface.recv(1024)
+                self._logger.info(
+                    'Auth Result "%s"', server_return.rstrip())
+
+                self._connected = True
+            except socket.error as ex:
+                self._logger.warn(
+                    "Error when connecting to %s:%d: '%s'",
+                    server, port, str(ex))
+                time.sleep(1)
 
     def send(self, frame):
         """
@@ -431,7 +476,7 @@ class UDP(APRS):
 
     def __init__(self, user, password='-1', server=None, port=None):
         super(UDP, self).__init__(user, password)
-        server = server or aprs.APRSIS_SERVER
+        server = server or aprs.APRSIS_SERVERS[0]
         port = port or aprs.APRSIS_RX_PORT
         self._addr = (server, int(port))
         self.use_i_construct = True

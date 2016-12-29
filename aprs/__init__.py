@@ -16,8 +16,9 @@ Python APRS Module.
 """
 
 from .constants import (LOG_FORMAT, LOG_LEVEL, APRSIS_SW_VERSION,  # NOQA
-                        APRSIS_HTTP_HEADERS, APRSIS_SERVER, APRSIS_FILTER_PORT,
-                        APRSIS_RX_PORT, RECV_BUFFER, APRSIS_URL)
+                        APRSIS_HTTP_HEADERS, APRSIS_SERVERS,
+                        APRSIS_FILTER_PORT, APRSIS_RX_PORT, RECV_BUFFER,
+                        APRSIS_URL)
 
 from .exceptions import BadCallsignError  # NOQA
 
