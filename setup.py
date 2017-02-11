@@ -43,11 +43,6 @@ setuptools.setup(
     url='https://github.com/ampledata/aprs',
     zip_safe=False,
     include_package_data=True,
-    setup_requires=[
-      'coverage >= 3.7.1',
-      'httpretty >= 0.8.10',
-      'nose >= 1.3.7'
-    ],
     install_requires=[
         'kiss >= 6.0.0',
         'requests >= 2.7.0'
