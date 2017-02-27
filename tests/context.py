@@ -8,7 +8,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath('..'))
 
-import aprs  # NOQA pylint: disable=W0611
+import aprs  # NOQA pylint: disable=C0413,W0611
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'

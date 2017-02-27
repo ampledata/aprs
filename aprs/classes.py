@@ -102,7 +102,7 @@ class Callsign(object):
         Parse and extract the components of a Callsign from ASCII or KISS.
         """
         try:
-            self._extract_callsign_from_kiss_frame(callsign)
+            self._extract_callsign(callsign)
         except IndexError:
             self._logger.debug(
                 'Not a KISS Callsign? "%s"', callsign.encode('hex'))
@@ -156,7 +156,7 @@ class Callsign(object):
 
         return ''.join([encoded_callsign, chr(encoded_ssid)])
 
-    def _extract_callsign_from_kiss_frame(self, frame):
+    def _extract_callsign(self, frame):
         """
         Extracts a Callsign and SSID from a KISS-Encoded APRS Frame.
 
@@ -173,7 +173,7 @@ class TCP(APRS):
 
     """APRS-IS TCP Class."""
 
-    def __init__(self, user, password='-1', server=None, port=None,
+    def __init__(self, user, password='-1', server=None, port=None,  # NOQA pylint: disable=R0913
                  aprs_filter=None):
         super(TCP, self).__init__(user, password)
         server = server or aprs.APRSIS_SERVER
@@ -241,7 +241,7 @@ class TCP(APRS):
                     else:
                         self._logger.debug('line=%s', line)
                         if callback:
-                            callback(Frame(line))
+                            callback(aprs.Frame(line))
 
         except socket.error as sock_err:
             self._logger.error(sock_err)

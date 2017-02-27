@@ -45,9 +45,7 @@ def valid_callsign(callsign):
 
     for char in callsign:
         if not (char.isalpha() or char.isdigit()):
-            if char == '*' and callsign[-1] == '*':
-                next
-            else:
+            if not char == '*' and not callsign[-1] == '*':
                 return False
 
     if not str(ssid).isdigit():
