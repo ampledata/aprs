@@ -13,8 +13,8 @@ from .context import aprs
 from . import constants
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
+__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'
 __license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
 
 
 class FrameTestCase(unittest.TestCase):  # pylint: disable=R0904
@@ -40,7 +40,7 @@ class FrameTestCase(unittest.TestCase):  # pylint: disable=R0904
         :type length: int
         :type alphabet: str
         """
-        return ''.join(random.choice(alphabet) for _ in xrange(length))
+        return ''.join(random.choice(alphabet) for _ in range(length))
 
     def setUp(self):  # pylint: disable=C0103
         """Setup."""

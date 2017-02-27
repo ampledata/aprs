@@ -12,8 +12,8 @@ from .context import aprs
 from . import constants
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
+__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'
 __license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
 
 
 class CallsignTestCase(unittest.TestCase):  # pylint: disable=R0904
@@ -102,8 +102,8 @@ class CallsignTestCase(unittest.TestCase):  # pylint: disable=R0904
         """
         callsign = 'W2GMD*'
         callsign_obj = aprs.Callsign(callsign)
-        print callsign_obj.encode_kiss().encode('hex')
-        print '\xaed\x8e\x9a\x88@\xe2'.encode('hex')
+        self._logger.info(callsign_obj.encode_kiss().encode('hex'))
+        self._logger.info('\xaed\x8e\x9a\x88@\xe2'.encode('hex'))
         # self.assertEqual('\xaed\x8e\x9a\x88@\xe2', callsign_obj.encode_kiss())
 
 

@@ -4,13 +4,18 @@
 """Python APRS Module Constants."""
 
 import logging
+import os
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
+__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'
 __license__ = 'Apache License, Version 2.0'
 
 
-LOG_LEVEL = logging.DEBUG
+if bool(os.environ.get('DEBUG_APRS')) or bool(os.environ.get('DEBUG_ALL')):
+    LOG_LEVEL = logging.DEBUG
+else:
+    LOG_LEVEL = logging.INFO
+
 LOG_FORMAT = logging.Formatter(
     ('%(asctime)s aprs %(levelname)s %(name)s.%(funcName)s:%(lineno)d - '
      '%(message)s'))

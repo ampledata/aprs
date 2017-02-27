@@ -12,8 +12,8 @@ from .context import aprs
 from . import constants
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
+__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'
 __license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
 
 
 class APRSUtilTestCase(unittest.TestCase):  # pylint: disable=R0904
@@ -52,6 +52,7 @@ class APRSUtilTestCase(unittest.TestCase):  # pylint: disable=R0904
         for i in constants.INVALID_CALLSIGNS:
             self.assertFalse(
                 aprs.valid_callsign(i), "%s is an invalid call" % i)
+
 
 if __name__ == '__main__':
     unittest.main()

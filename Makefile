@@ -2,7 +2,7 @@
 #
 # Source:: https://github.com/ampledata/aprs
 # Author:: Greg Albrecht W2GMD <oss@undef.net>
-# Copyright:: Copyright 2016 Orion Labs, Inc. and Contributors
+# Copyright:: Copyright 2017 Greg Albrecht and Contributors
 # License:: Apache License, Version 2.0
 #
 

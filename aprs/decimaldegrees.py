@@ -152,8 +152,7 @@ def dm2decimal(degrees, minutes):
 def run_doctest():  # pragma: no cover
     """Runs doctests for this module."""
     import doctest
-    import decimaldegrees  # pylint: disable=W0406
-    return doctest.testmod(decimaldegrees)
+    return doctest.testmod()
 
 
 if __name__ == '__main__':

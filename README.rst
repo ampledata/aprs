@@ -130,7 +130,7 @@ http://ampledata.org/
 
 Copyright
 =========
-Copyright 2016 Orion Labs, Inc. and Contributors
+Copyright 2017 Greg Albrecht and Contributors
 
 `Automatic Packet Reporting System (APRS) <http://www.aprs.org/>`_ is Copyright Bob Bruninga WB4APR wb4apr@amsat.org
 
