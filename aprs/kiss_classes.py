@@ -52,7 +52,7 @@ class Frame(object):
             ','.join(full_path),
             self.text
         )
-        return frame.encode('UTF-8')
+        return frame
 
     def to_h(self):
         """
@@ -87,7 +87,7 @@ class Frame(object):
         """
         frame_so_far = ''
 
-        for char in self.frame.decode('UTF-8'):
+        for char in self.frame:
             if '>' in char and not self.source:
                 self.source = aprs.Callsign(frame_so_far)
                 frame_so_far = ''
@@ -110,7 +110,7 @@ class Frame(object):
             else:
                 frame_so_far = ''.join([frame_so_far, char])
 
-        self.text = frame_so_far.encode('UTF-8')
+        self.text = frame_so_far
 
     def parse_kiss(self):
         """
@@ -157,7 +157,7 @@ class Frame(object):
             chr(ord(enc_frame[-1]) | 0x01),
             kiss.SLOT_TIME,
             chr(0xF0),
-            self.text.encode('UTF-8')
+            self.text
         ])
 
     def _extract_kiss_text(self, raw_slice):

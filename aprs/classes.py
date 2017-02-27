@@ -3,6 +3,7 @@
 
 """Python APRS Module Class Definitions."""
 
+import binascii
 import logging
 import logging.handlers
 import socket
@@ -95,7 +96,7 @@ class Callsign(object):
         """
         Returns a Callsign as a Hex String.
         """
-        return str(self).encode('hex')
+        return binascii.hexlify(self)
 
     def parse(self, callsign):
         """
@@ -103,9 +104,12 @@ class Callsign(object):
         """
         try:
             self._extract_callsign(callsign)
-        except IndexError:
-            self._logger.debug(
-                'Not a KISS Callsign? "%s"', callsign.encode('hex'))
+        except:
+            pass
+            #self._logger.debug(
+            #    'Not a KISS Callsign? "%s"',
+            #    binascii.hexlify(callsign.encode('utf-8'))
+            #)
 
         if not aprs.valid_callsign(self.callsign):
             self.parse_text(callsign)
@@ -113,7 +117,8 @@ class Callsign(object):
         if not aprs.valid_callsign(self.callsign):
             raise aprs.BadCallsignError(
                 'Could not extract callsign from %s',
-                self.callsign.encode('hex'))
+                binascii.hexlify(self.callsign)
+            )
 
     def parse_text(self, callsign):
         """
@@ -123,7 +128,6 @@ class Callsign(object):
         :param callsign: ASCII-Encoded APRS Callsign
         :type callsign: str
         """
-        self._logger.debug('callsign=%s', callsign.encode('hex'))
         _callsign = callsign
         ssid = str(0)
 
@@ -163,10 +167,9 @@ class Callsign(object):
         :param frame: KISS-Encoded APRS Frame as str of octs.
         :type frame: str
         """
-        self._logger.debug('frame=%s', frame.encode('hex'))
-        callsign = ''.join([chr(ord(x) >> 1) for x in frame[:6]])
+        callsign = ''.join([chr(x >> 1) for x in frame[:6]])
         self.callsign = callsign.lstrip().rstrip()
-        self.ssid = str((ord(frame[6]) >> 1) & 0x0F)
+        self.ssid = str((frame[6] >> 1) & 0x0F)
 
 
 class TCP(APRS):

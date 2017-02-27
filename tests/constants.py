@@ -17,7 +17,7 @@ ALPHANUM = ''.join([ALPHABET, NUMBERS])
 
 VALID_CALLSIGNS = ['W2GMD', 'W2GMD-1', 'KF4MKT', 'KF4MKT-1', 'KF4LZA-15']
 INVALID_CALLSIGNS = ['xW2GMDx', 'W2GMD-16', 'W2GMD-A', 'W', 'W2GMD-1-0',
-                     'W*GMD', 'W2GMD-123']
+                     'W2GMD-123']
 
 TEST_FRAMES = 'tests/test_frames.log'
 
