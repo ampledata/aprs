@@ -31,6 +31,7 @@ class APRSUtilTestCase(unittest.TestCase):  # pylint: disable=R0904
     def setUp(self):  # pylint: disable=C0103
         """Setup."""
         self.test_frames = open(constants.TEST_FRAMES, 'r')
+        print(self.test_frame)
         self.test_frame = self.test_frames.readlines()[0].strip()
 
     def tearDown(self):  # pylint: disable=C0103
