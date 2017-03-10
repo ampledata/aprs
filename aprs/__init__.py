@@ -17,7 +17,8 @@ Python APRS Module.
 
 from .constants import (LOG_FORMAT, LOG_LEVEL, APRSIS_SW_VERSION,  # NOQA
                         APRSIS_HTTP_HEADERS, APRSIS_SERVER, APRSIS_FILTER_PORT,
-                        APRSIS_RX_PORT, RECV_BUFFER, APRSIS_URL)
+                        APRSIS_RX_PORT, RECV_BUFFER, APRSIS_URL,
+                        UI_PROTOCOL_ID, CONTROL_FIELD, FLAG)
 
 from .exceptions import BadCallsignError  # NOQA
 
@@ -25,9 +26,9 @@ from .util import valid_callsign  # NOQA
 
 from .geo_util import dec2dm_lat, dec2dm_lng  # NOQA
 
-from .classes import APRS, Callsign, TCP, UDP, HTTP  # NOQA
+from .classes import APRS, Callsign, Frame, TCP, UDP, HTTP  # NOQA
 
-from .kiss_classes import Frame, TCPKISS, SerialKISS  # NOQA
+from .kiss_classes import TCPKISS, SerialKISS  # NOQA
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'
