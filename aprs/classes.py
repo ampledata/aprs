@@ -9,7 +9,7 @@ import logging.handlers
 import socket
 import struct
 
-import bitarray
+from bitarray import bitarray
 import requests
 
 import aprs
