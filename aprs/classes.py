@@ -2,18 +2,18 @@
 # -*- coding: utf-8 -*-
 
 """Python APRS Module Class Definitions."""
-
+from __future__ import division, absolute_import, print_function, unicode_literals
+import six
 import binascii
 import logging
 import logging.handlers
 import socket
 import struct
 
-import bitarray
+from bitarray import bitarray
 import requests
 
 import aprs
-import kiss
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
 __copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'
@@ -643,6 +643,14 @@ class TCP(APRS):
         self._full_auth = ' '.join([self._auth, 'filter', aprs_filter])
         self.use_i_construct = True
 
+    def _send(self, data):
+        """
+            Send a string to the socket, encoding as bytes if necessary
+        """
+        if isinstance(data, six.string_types):
+            data = data.encode('iso-8859-1')
+        self.interface.sendall(data)
+
     def start(self):
         """
         Connects & logs in to APRS-IS.
@@ -652,7 +660,7 @@ class TCP(APRS):
         self.interface.connect(self.address)
 
         self._logger.debug('Sending full_auth=%s', self._full_auth)
-        self.interface.sendall(self._full_auth + '\n\r')
+        self._send(self._full_auth + '\n\r')
 
     def send(self, frame):
         """
@@ -662,7 +670,7 @@ class TCP(APRS):
         :type frame: str
         """
         self._logger.debug('Sending frame="%s"', frame)
-        return self.interface.send("%s\n\r" % frame)  # Ensure cast->str.
+        return self._send("%s\n\r" % frame)  # Ensure cast->str.
 
     def receive(self, callback=None):
         """
@@ -674,7 +682,7 @@ class TCP(APRS):
         :returns: Nothing, but calls a callback with an Frame object.
         :rtype: None
         """
-        recvd_data = ''
+        recvd_data = b''
 
         try:
             while 1:
@@ -687,21 +695,21 @@ class TCP(APRS):
 
                 self._logger.debug('recv_data=%s', recv_data.strip())
 
-                if recvd_data.endswith('\r\n'):
-                    lines = recvd_data.strip().split('\r\n')
-                    recvd_data = ''
+                if recvd_data.endswith(b'\r\n'):
+                    lines = recvd_data.strip().split(b'\r\n')
+                    recvd_data = b''
                 else:
-                    lines = recvd_data.split('\r\n')
-                    recvd_data = str(lines.pop(-1))
+                    lines = recvd_data.split(b'\r\n')
+                    recvd_data = lines.pop(-1)
 
                 for line in lines:
-                    if line.startswith('#'):
-                        if 'logresp' in line:
+                    if line.startswith(b'#'):
+                        if b'logresp' in line:
                             self._logger.debug('logresp=%s', line)
                     else:
                         self._logger.debug('line=%s', line)
                         if callback:
-                            callback(aprs.Frame(line))
+                            callback(aprs.Frame(line.decode('iso-8859-1')))
 
         except socket.error as sock_err:
             self._logger.error(sock_err)
@@ -725,6 +733,14 @@ class UDP(APRS):
         """
         self.interface = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+    def _send(self, data):
+        """
+            Send a string to the socket, encoding as bytes if necessary
+        """
+        if isinstance(data, six.string_types):
+            data = data.encode('iso-8859-1')
+        return self.interface.sendto(data, self._addr)
+
     def send(self, frame):
         """
         Sends frame to APRS-IS.
@@ -734,7 +750,7 @@ class UDP(APRS):
         """
         self._logger.debug('frame="%s"', frame)
         content = "\n".join([self._auth, str(frame)])
-        return self.interface.sendto(content, self._addr)
+        return self._send(content)
 
 
 class HTTP(APRS):
