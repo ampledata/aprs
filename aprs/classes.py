@@ -2,16 +2,18 @@
 # -*- coding: utf-8 -*-
 
 """Python APRS Module Class Definitions."""
-from __future__ import division, absolute_import, print_function, unicode_literals
-import six
+
+from __future__ import (division, absolute_import, print_function,
+                        unicode_literals)
+
 import binascii
 import logging
-import logging.handlers
 import socket
 import struct
 
-from bitarray import bitarray
+import bitarray
 import requests
+import six
 
 import aprs
 
@@ -109,10 +111,10 @@ class CallsignOLD(object):
             self._extract_callsignsign(callsign)
         except:
             pass
-            #self._logger.debug(
+            # self._logger.debug(
             #    'Not a KISS Callsign? "%s"',
             #    binascii.hexlify(callsign.encode('utf-8'))
-            #)
+            # )
 
         if not aprs.valid_callsign(self.callsign):
             self.parse_text(callsign)
@@ -330,9 +332,9 @@ class Callsign(object):
     >>> c2.callsign
     'W2G'
 
-    >>> f = bytes.fromhex('00a88aa6a84040e0ae84649ea6b4ff03f02c54686520717569636b2062726f776e20666f78206a756d7073206f76657220746865206c617a7920646f6721202030323532206f662031303030')
+    >>> f = bytes.fromhex('00a88aa6a84040e0ae84649ea6b4ff03f02c54686520717569636b2062726f776e20666f78206a756d7073206f76657220746865206c617a7920646f6721202030323532206f662031303030')  # NOQA
     >>> f[1:]
-    b'\\xa8\\x8a\\xa6\\xa8@@\\xe0\\xae\\x84d\\x9e\\xa6\\xb4\\xff\\x03\\xf0,The quick brown fox jumps over the lazy dog!  0252 of 1000'
+    b'\\xa8\\x8a\\xa6\\xa8@@\\xe0\\xae\\x84d\\x9e\\xa6\\xb4\\xff\\x03\\xf0,The quick brown fox jumps over the lazy dog!  0252 of 1000'  # NOQA
     >>> d = Callsign(f[1:7])
     >>> d
     TEST
@@ -424,7 +426,7 @@ class Callsign(object):
         self.ssid = str((self.callsign[-1] >> 1) & 0x0F)  # aka 15
 
         # not quite working...
-        #if self.callsign[-1] & 0x80:
+        # if self.callsign[-1] & 0x80:
         #    self.digipeated = True
 
         for char in self.callsign[:-1]:
@@ -546,14 +548,15 @@ class Frame(object):
         frame = b''.join([
             aprs.FLAG,
             self._encode_header(),
-            #bytes(self.text, 'UTF-8'),
-            #self.fcs()
+            # bytes(self.text, 'UTF-8'),
+            # self.fcs()
         ])
         return frame
 
     def fcs(self):
         content = bitarray.bitarray(endian='little')
-        content.frombytes(b''.join([self._encode_header(), bytes(self.text, 'UTF-8')]))
+        content.frombytes(
+            b''.join([self._encode_header(), bytes(self.text, 'UTF-8')]))
 
         fcs = FCS()
         for bit in content:
@@ -623,7 +626,7 @@ class Frame(object):
 
             if path_call:
                 # FIXME (gba@20170210) Digi detection is broken.
-                #if self.frame[bound * 7 + 7] & 0x80:
+                # if self.frame[bound * 7 + 7] & 0x80:
                 #    path_call.digipeated = True
 
                 self.path.append(path_call)

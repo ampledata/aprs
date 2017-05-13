@@ -52,9 +52,9 @@ setuptools.setup(
       'nose >= 1.3.7'
     ],
     install_requires=[
+        'bitarray >= 0.8.1',
         'kiss >= 6.0.0',
-        'requests >= 2.7.0',
-        'bitarray >= 0.8.1'
+        'requests >= 2.7.0'
     ],
     classifiers=[
         'Topic :: Communications :: Ham Radio',

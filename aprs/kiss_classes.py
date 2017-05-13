@@ -3,10 +3,6 @@
 
 """Python APRS KISS Module Class Definitions."""
 
-import logging
-import logging.handlers
-
-import aprs
 import kiss
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
