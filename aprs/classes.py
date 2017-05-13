@@ -660,7 +660,7 @@ class TCP(APRS):
         self.interface.connect(self.address)
 
         self._logger.debug('Sending full_auth=%s', self._full_auth)
-        self._send(self._full_auth + '\n\r')
+        self._send(self._full_auth + '\r\n')
 
     def send(self, frame):
         """
@@ -670,7 +670,7 @@ class TCP(APRS):
         :type frame: str
         """
         self._logger.debug('Sending frame="%s"', frame)
-        return self._send("%s\n\r" % frame)  # Ensure cast->str.
+        return self._send("%s\r\n" % frame)  # Ensure cast->str.
 
     def receive(self, callback=None):
         """
