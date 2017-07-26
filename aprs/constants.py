@@ -11,7 +11,7 @@ __copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'
 __license__ = 'Apache License, Version 2.0'
 
 
-if bool(os.environ.get('DEBUG_APRS')) or bool(os.environ.get('DEBUG_ALL')):
+if bool(os.environ.get('DEBUG')):
     LOG_LEVEL = logging.DEBUG
 else:
     LOG_LEVEL = logging.INFO
@@ -21,15 +21,16 @@ LOG_FORMAT = logging.Formatter(
      '%(message)s'))
 
 APRSIS_SERVERS = ['rotate.aprs.net', 'noam.aprs2.net']
-APRSIS_FILTER_PORT = 14580
-APRSIS_RX_PORT = 8080
 
 APRSIS_SW_VERSION = 'APRS Python Module'
-APRSIS_URL = 'http://srvr.aprs-is.net:8080'
 
 APRSIS_HTTP_HEADERS = {
     'content-type': 'application/octet-stream',
     'accept': 'text/plain'
 }
 
-RECV_BUFFER = 1024
+APRSIS_FILTER_PORT = int(os.environ.get('APRSIS_FILTER_PORT', 14580))
+APRSIS_RX_PORT = int(os.environ.get('APRSIS_RX_PORT', 8080))
+APRSIS_URL = os.environ.get('APRSIS_URL', 'http://srvr.aprs-is.net:8080')
+
+RECV_BUFFER = int(os.environ.get('RECV_BUFFER', 1024))
