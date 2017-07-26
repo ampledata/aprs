@@ -3,10 +3,14 @@
 
 """Python APRS Module Class Definitions."""
 
+import itertools
 import logging
 import logging.handlers
 import socket
+import time
 
+import kiss
+import pkg_resources
 import requests
 
 import aprs
@@ -31,8 +35,17 @@ class APRS(object):
 
     def __init__(self, user, password='-1'):
         self.user = user
+
+        try:
+            version = pkg_resources.get_distribution(  # pylint: disable=E1101
+                'aprs').version
+        except:  # pylint: disable=W0702
+            version = 'GIT'
+        version_str = "Python APRS Module v%s" % version
+
         self._auth = ' '.join(
-            ['user', user, 'pass', password, 'vers', aprs.APRSIS_SW_VERSION])
+            ['user', user, 'pass', password, 'vers', version_str])
+
         self._full_auth = None
         self.interface = None
         self.use_i_construct = False
@@ -81,10 +94,14 @@ class Callsign(object):
         self.parse(callsign)
 
     def __repr__(self):
-        if int(self.ssid) > 0:
-            call_repr = '-'.join([self.callsign, str(self.ssid)])
-        else:
-            call_repr = self.callsign
+        call_repr = self.callsign
+
+        try:
+            if int(self.ssid) > 0:
+                call_repr = '-'.join([self.callsign, str(self.ssid)])
+        except ValueError:
+            if self.ssid != 0:
+                call_repr = '-'.join([self.callsign, str(self.ssid)])
 
         if self.digi:
             return ''.join([call_repr, '*'])
@@ -102,10 +119,9 @@ class Callsign(object):
         Parse and extract the components of a Callsign from ASCII or KISS.
         """
         try:
-            self._extract_callsign_from_kiss_frame(callsign)
+            self._extract_kiss_callsign(callsign)
         except IndexError:
-            self._logger.debug(
-                'Not a KISS Callsign? "%s"', callsign.encode('hex'))
+            pass
 
         if not aprs.valid_callsign(self.callsign):
             self.parse_text(callsign)
@@ -124,17 +140,17 @@ class Callsign(object):
         :type callsign: str
         """
         self._logger.debug('callsign=%s', callsign.encode('hex'))
-        _callsign = callsign
+        _callsign = callsign.lstrip().rstrip()
         ssid = str(0)
 
-        if '-' in callsign:
-            _callsign, ssid = callsign.split('-')
-
-        if _callsign[-1] == '*':
-            _callsign = _callsign[:-1]
+        if '*' in _callsign:
+            _callsign = _callsign.strip('*')
             self.digi = True
 
-        self.callsign = _callsign.lstrip().rstrip()
+        if '-' in _callsign:
+            _callsign, ssid = _callsign.split('-')
+
+        self.callsign = _callsign
         self.ssid = ssid.lstrip().rstrip()
 
     def encode_kiss(self):
@@ -156,7 +172,7 @@ class Callsign(object):
 
         return ''.join([encoded_callsign, chr(encoded_ssid)])
 
-    def _extract_callsign_from_kiss_frame(self, frame):
+    def _extract_kiss_callsign(self, frame):
         """
         Extracts a Callsign and SSID from a KISS-Encoded APRS Frame.
 
@@ -173,26 +189,61 @@ class TCP(APRS):
 
     """APRS-IS TCP Class."""
 
-    def __init__(self, user, password='-1', server=None, port=None,
-                 aprs_filter=None):
+    def __init__(self, user, password, servers=None, aprs_filter=None):
         super(TCP, self).__init__(user, password)
-        server = server or aprs.APRSIS_SERVER
-        port = port or aprs.APRSIS_FILTER_PORT
-        self.address = (server, int(port))
+        servers = servers or aprs.APRSIS_SERVERS
         aprs_filter = aprs_filter or '/'.join(['p', user])
+
         self._full_auth = ' '.join([self._auth, 'filter', aprs_filter])
+
+        self.servers = itertools.cycle(servers)
         self.use_i_construct = True
+        self._connected = False
 
     def start(self):
         """
         Connects & logs in to APRS-IS.
         """
-        self.interface = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._logger.info('Connecting to to "%s"', self.address)
-        self.interface.connect(self.address)
+        while not self._connected:
+            servers = next(self.servers)
+            if ':' in servers:
+                server, port = servers.split(':')
+                port = int(port)
+            else:
+                server = servers
+                port = aprs.APRSIS_FILTER_PORT
 
-        self._logger.debug('Sending full_auth=%s', self._full_auth)
-        self.interface.sendall(self._full_auth + '\n\r')
+            try:
+                addr_info = socket.getaddrinfo(server, port)
+
+                self.interface = socket.socket(*addr_info[0][0:3])
+
+                # Connect
+                self._logger.info(
+                    "Connect To %s:%i", addr_info[0][4][0], port)
+
+                self.interface.connect(addr_info[0][4])
+
+                server_hello = self.interface.recv(1024)
+
+                self._logger.info(
+                    'Connect Result "%s"', server_hello.rstrip())
+
+                # Auth
+                self._logger.info(
+                    "Auth To %s:%i", addr_info[0][4][0], port)
+                self.interface.sendall(self._full_auth + '\n\r')
+
+                server_return = self.interface.recv(1024)
+                self._logger.info(
+                    'Auth Result "%s"', server_return.rstrip())
+
+                self._connected = True
+            except socket.error as ex:
+                self._logger.warn(
+                    "Error when connecting to %s:%d: '%s'",
+                    server, port, str(ex))
+                time.sleep(1)
 
     def send(self, frame):
         """
@@ -201,7 +252,7 @@ class TCP(APRS):
         :param frame: Frame to send to APRS-IS.
         :type frame: str
         """
-        self._logger.debug('Sending frame="%s"', frame)
+        self._logger.info('Sending frame="%s"', frame)
         return self.interface.send("%s\n\r" % frame)  # Ensure cast->str.
 
     def receive(self, callback=None):
@@ -254,7 +305,7 @@ class UDP(APRS):
 
     def __init__(self, user, password='-1', server=None, port=None):
         super(UDP, self).__init__(user, password)
-        server = server or aprs.APRSIS_SERVER
+        server = server or aprs.APRSIS_SERVERS[0]
         port = port or aprs.APRSIS_RX_PORT
         self._addr = (server, int(port))
         self.use_i_construct = True
@@ -272,7 +323,7 @@ class UDP(APRS):
         :param frame: Frame to send to APRS-IS.
         :type frame: str
         """
-        self._logger.debug('frame="%s"', frame)
+        self._logger.info('Sending frame="%s"', frame)
         content = "\n".join([self._auth, str(frame)])
         return self.interface.sendto(content, self._addr)
 
@@ -300,6 +351,7 @@ class HTTP(APRS):
         :param frame: Frame to send to APRS-IS.
         :type frame: str
         """
+        self._logger.info('Sending frame="%s"', frame)
         content = "\n".join([self._auth, str(frame)])
         result = self.interface(self.url, data=content, headers=self.headers)
         return result.status_code == 204

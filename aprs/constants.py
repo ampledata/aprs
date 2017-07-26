@@ -20,7 +20,7 @@ LOG_FORMAT = logging.Formatter(
     ('%(asctime)s aprs %(levelname)s %(name)s.%(funcName)s:%(lineno)d - '
      '%(message)s'))
 
-APRSIS_SERVER = 'rotate.aprs.net'
+APRSIS_SERVERS = ['rotate.aprs.net', 'noam.aprs2.net']
 APRSIS_FILTER_PORT = 14580
 APRSIS_RX_PORT = 8080
 
