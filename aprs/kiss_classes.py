@@ -89,18 +89,18 @@ class Frame(object):
 
         for char in self.frame.decode('UTF-8'):
             if '>' in char and not self.source:
-                self.source = Callsign(frame_so_far)
+                self.source = aprs.Callsign(frame_so_far)
                 frame_so_far = ''
             elif ':' in char:
                 if not self.path:
                     if ',' in frame_so_far:
-                        self.destination = Callsign(frame_so_far.split(',')[0])
+                        self.destination = aprs.Callsign(frame_so_far.split(',')[0])
                         self.path = []
                         for path in frame_so_far.split(',')[1:]:
-                            self.path.append(Callsign(path))
+                            self.path.append(aprs.Callsign(path))
                         frame_so_far = ''
                     elif not self.destination:
-                        self.destination = Callsign(frame_so_far)
+                        self.destination = aprs.Callsign(frame_so_far)
                         frame_so_far = ''
                     else:
                         frame_so_far = ''.join([frame_so_far, char])
@@ -169,20 +169,20 @@ class Frame(object):
         """
         Extracts a Source Callsign of a KISS-Encoded Frame.
         """
-        self.source = Callsign(self.frame[7:])
+        self.source = aprs.Callsign(self.frame[7:])
 
     def _extract_kiss_destination(self):
         """
         Extracts a Destination Callsign of a KISS-Encoded Frame.
         """
-        self.destination = Callsign(self.frame)
+        self.destination = aprs.Callsign(self.frame)
 
     def _extract_kiss_path(self, start):
         """
         Extracts path from raw APRS KISS frame.
         """
         for i in range(2, start):
-            path_call = Callsign(self.frame[i * 7:])
+            path_call = aprs.Callsign(self.frame[i * 7:])
 
             if path_call:
                 if ord(self.frame[i * 7 + 6]) & 0x80:
