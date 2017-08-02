@@ -19,32 +19,6 @@ class FrameTestCase(aprs_test_classes.APRSTestClass):  # pylint: disable=R0904
 
     """Tests for `aprs.Frame`."""
 
-    def setUp(self):  # pylint: disable=C0103
-        """Setup."""
-        self.test_frames = open(constants.TEST_FRAMES, 'r')
-        self.test_frame = self.test_frames.readlines()[0].strip()
-
-        self.fake_callsign = ''.join([
-            self.random(1, 'KWN'),
-            self.random(1, constants.NUMBERS),
-            self.random(3, constants.ALPHABET),
-            '-',
-            self.random(1, constants.POSITIVE_NUMBERS)
-        ])
-
-        self.real_callsign = '-'.join(
-            ['W2GMD', self.random(1, constants.POSITIVE_NUMBERS)])
-
-        self._logger.debug(
-            "fake_callsign=%s real_callsign=%s",
-            self.fake_callsign,
-            self.real_callsign
-        )
-
-    def tearDown(self):  # pylint: disable=C0103
-        """Teardown."""
-        self.test_frames.close()
-
     def test_format_aprs_frame(self):
         """
         Tests formatting an APRS frame-as-string from an APRS frame-as-dict

@@ -19,15 +19,6 @@ class CallsignTestCase(aprs_test_classes.APRSTestClass):  # NOQA pylint: disable
 
     """Tests for Python APRS Callsign."""
 
-    def setUp(self):  # pylint: disable=C0103
-        """Setup."""
-        self.test_frames = open(constants.TEST_FRAMES, 'r')
-        self.test_frame = self.test_frames.readlines()[0].strip()
-
-    def tearDown(self):  # pylint: disable=C0103
-        """Teardown."""
-        self.test_frames.close()
-
     def test_extract_callsign_source(self):
         """
         Tests extracting the source callsign from a KISS-encoded APRS frame
@@ -38,7 +29,7 @@ class CallsignTestCase(aprs_test_classes.APRSTestClass):  # NOQA pylint: disable
         full = '-'.join([callsign, ssid])
 
         extracted_callsign = aprs.Callsign(
-            constants.TEST_FRAME.decode('hex')[7:])
+            constants.TEST_FRAME[7:].decode('hex')[7:])
 
         self.assertEqual(full, str(extracted_callsign))
         self.assertEqual(callsign, extracted_callsign.callsign)

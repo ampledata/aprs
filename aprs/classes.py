@@ -139,7 +139,7 @@ class Callsign(object):
         :param callsign: ASCII-Encoded APRS Callsign
         :type callsign: str
         """
-        self._logger.debug('callsign=%s', callsign.encode('hex'))
+        self._logger.debug('callsign="%s"', callsign)#.encode('hex'))
         _callsign = callsign.lstrip().rstrip()
         ssid = str(0)
 
@@ -179,7 +179,7 @@ class Callsign(object):
         :param frame: KISS-Encoded APRS Frame as str of octs.
         :type frame: str
         """
-        self._logger.debug('frame=%s', frame.encode('hex'))
+        self._logger.debug('frame="%s"', frame)#.encode('hex'))
         callsign = ''.join([chr(ord(x) >> 1) for x in frame[:6]])
         self.callsign = callsign.lstrip().rstrip()
         self.ssid = str((ord(frame[6]) >> 1) & 0x0F)

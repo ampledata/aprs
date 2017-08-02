@@ -19,15 +19,6 @@ class APRSUtilTestCase(aprs_test_classes.APRSTestClass):  # NOQA pylint: disable
 
     """Tests for Python APRS Utils."""
 
-    def setUp(self):  # pylint: disable=C0103
-        """Setup."""
-        self.test_frames = open(constants.TEST_FRAMES, 'r')
-        self.test_frame = self.test_frames.readlines()[0].strip()
-
-    def tearDown(self):  # pylint: disable=C0103
-        """Teardown."""
-        self.test_frames.close()
-
     def test_valid_callsign_valid(self):
         """
         Tests valid callsigns using `aprs.valid_callsign()`.
