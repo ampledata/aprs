@@ -15,7 +15,7 @@ __copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'  # NOQA pylint: 
 __license__ = 'Apache License, Version 2.0'  # NOQA pylint: disable=R0801
 
 
-class CallsignTestCase(aprs_test_classes.APRSTestClass):  # pylint: disable=R0904
+class CallsignTestCase(aprs_test_classes.APRSTestClass):  # NOQA pylint: disable=R0904
 
     """Tests for Python APRS Callsign."""
 

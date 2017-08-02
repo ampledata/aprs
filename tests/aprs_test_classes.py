@@ -3,9 +3,9 @@
 
 """Python APRS Module APRS-IS Bindings Tests."""
 
+import logging
 import random
 import unittest
-import logging
 
 from .context import aprs
 

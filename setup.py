@@ -53,7 +53,7 @@ setuptools.setup(
         'httpretty >= 0.8.14'
     ],
     install_requires=[
-        'kiss < 7.0.0',
+        'kiss > 6.4, < 7.0',
         'requests >= 2.7.0'
     ],
     classifiers=[
