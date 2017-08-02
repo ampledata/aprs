@@ -22,6 +22,12 @@ Finally, Frame and Callsign classes are included:
 * Callsign - Describes the components of an APRS Callsign.
 
 
+Versions
+========
+
+- 6.5.x branch will be the last version of this Module that supports Python 2.7.x
+- 7.x.x branch and-on will be Python 3.x ONLY.
+
 Installation
 ============
 Install from pypi using pip: ``pip install aprs``
@@ -130,7 +136,7 @@ http://ampledata.org/
 
 Copyright
 =========
-Copyright 2016 Orion Labs, Inc. and Contributors
+Copyright 2017 Greg Albrecht and Contributors
 
 `Automatic Packet Reporting System (APRS) <http://www.aprs.org/>`_ is Copyright Bob Bruninga WB4APR wb4apr@amsat.org
 

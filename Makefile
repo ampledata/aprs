@@ -2,7 +2,7 @@
 #
 # Source:: https://github.com/ampledata/aprs
 # Author:: Greg Albrecht W2GMD <oss@undef.net>
-# Copyright:: Copyright 2016 Orion Labs, Inc. and Contributors
+# Copyright:: Copyright 2017 Greg Albrecht and Contributors
 # License:: Apache License, Version 2.0
 #
 
@@ -44,14 +44,17 @@ nosetests: remember
 	python setup.py nosetests
 
 pep8: remember
-	flake8 --max-complexity 12 --exit-zero aprs/*.py tests/*.py
+	flake8 --max-complexity 12 --exit-zero *.py aprs/*.py tests/*.py
 
 flake8: pep8
 
 lint: remember
 	pylint --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" \
-		-r n aprs/*.py tests/*.py || exit 0
+		-r n *.py  --ignore-imports=y aprs/*.py tests/*.py || exit 0
 
 pylint: lint
 
-test: lint pep8 nosetests
+coverage:
+	coverage report -m
+
+test: lint pep8 nosetests coverage

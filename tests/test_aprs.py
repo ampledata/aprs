@@ -3,45 +3,23 @@
 
 """Python APRS Module APRS-IS Bindings Tests."""
 
-import random
-import unittest
-import logging
-import logging.handlers
+import unittest  # pylint: disable=R0801
 
 import httpretty
 
-from .context import aprs
+from .context import aprs  # pylint: disable=R0801
+from .context import aprs_test_classes  # pylint: disable=R0801
 
-from . import constants
+from . import constants  # pylint: disable=R0801
 
-__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
-__license__ = 'Apache License, Version 2.0'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'  # NOQA pylint: disable=R0801
+__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'  # NOQA pylint: disable=R0801
+__license__ = 'Apache License, Version 2.0'  # NOQA pylint: disable=R0801
 
 
-class APRSTest(unittest.TestCase):  # pylint: disable=R0904
+class APRSTest(aprs_test_classes.APRSTestClass):  # pylint: disable=R0904
+
     """Tests for Python APRS-IS Bindings."""
-
-    _logger = logging.getLogger(__name__)
-    if not _logger.handlers:
-        _logger.setLevel(aprs.LOG_LEVEL)
-        _console_handler = logging.StreamHandler()
-        _console_handler.setLevel(aprs.LOG_LEVEL)
-        _console_handler.setFormatter(aprs.LOG_FORMAT)
-        _logger.addHandler(_console_handler)
-        _logger.propagate = False
-
-    @classmethod
-    def random(cls, length=8, alphabet=constants.ALPHANUM):
-        """
-        Generates a random string for test cases.
-
-        :param length: Length of string to generate.
-        :param alphabet: Alphabet to use to create string.
-        :type length: int
-        :type alphabet: str
-        """
-        return ''.join(random.choice(alphabet) for _ in xrange(length))
 
     def setUp(self):  # pylint: disable=C0103
         self.fake_server = ''.join([
@@ -141,3 +119,7 @@ class APRSTest(unittest.TestCase):  # pylint: disable=R0904
         result = aprs_conn.send(msg)
 
         self.assertFalse(result)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -5,9 +5,9 @@
 
 import aprs.decimaldegrees
 
-__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
-__license__ = 'Apache License, Version 2.0'
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'  # NOQA pylint: disable=R0801
+__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'  # NOQA pylint: disable=R0801
+__license__ = 'Apache License, Version 2.0'  # NOQA pylint: disable=R0801
 
 
 def dec2dm_lat(dec):
@@ -73,8 +73,7 @@ def dec2dm_lng(dec):
 def run_doctest():  # pragma: no cover
     """Runs doctests for this module."""
     import doctest
-    import aprs  # pylint: disable=W0406,W0621
-    return doctest.testmod(aprs.geo_util)
+    return doctest.testmod()
 
 
 if __name__ == '__main__':

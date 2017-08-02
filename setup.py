@@ -4,18 +4,22 @@
 """
 Setup for the Python APRS Module.
 
-Source:: https://github.com/ampledata/aprs
+:author: Greg Albrecht W2GMD <oss@undef.net>
+:copyright: Copyright 2017 Greg Albrecht and Contributors
+:license: Apache License, Version 2.0
+:source: <https://github.com/ampledata/aprs>
 """
 
 import os
-import setuptools
 import sys
 
+import setuptools
+
 __title__ = 'aprs'
-__version__ = '6.0.1'
-__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
-__license__ = 'Apache License, Version 2.0'
+__version__ = '6.5.0b1'
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'  # NOQA pylint: disable=R0801
+__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'  # NOQA pylint: disable=R0801
+__license__ = 'Apache License, Version 2.0'  # NOQA pylint: disable=R0801
 
 
 def publish():
@@ -44,12 +48,12 @@ setuptools.setup(
     zip_safe=False,
     include_package_data=True,
     setup_requires=[
-      'coverage >= 3.7.1',
-      'httpretty >= 0.8.10',
-      'nose >= 1.3.7'
+        'coverage >= 4.4.1',
+        'nose >= 1.3.7',
+        'httpretty >= 0.8.14'
     ],
     install_requires=[
-        'kiss >= 6.0.0',
+        'kiss > 6.4, < 7.0',
         'requests >= 2.7.0'
     ],
     classifiers=[

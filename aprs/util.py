@@ -3,14 +3,24 @@
 
 """Python APRS Module Utility Functions Definitions."""
 
-__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
-__copyright__ = 'Copyright 2016 Orion Labs, Inc. and Contributors'
-__license__ = 'Apache License, Version 2.0'
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'  # NOQA pylint: disable=R0801
+__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'  # NOQA pylint: disable=R0801
+__license__ = 'Apache License, Version 2.0'  # NOQA pylint: disable=R0801
 
 
 def valid_callsign(callsign):
     """
-    Validates callsign.
+    Validates an over-the-air callsign. APRS-IS is more forgiving.
+
+    Verifies that a valid callsign is valid:
+    >>> valid_callsign('W2GMD-1')
+    True
+    >>>
+
+    Verifies that an invalid callsign is invalid:
+    >>> valid_callsign('BURRITOS-99')
+    False
+    >>>
 
     :param callsign: Callsign to validate.
     :type callsign: str
@@ -18,7 +28,7 @@ def valid_callsign(callsign):
     :returns: True if valid, False otherwise.
     :rtype: bool
     """
-    callsign = callsign.lstrip().rstrip()
+    callsign = callsign.lstrip().rstrip().strip('*')
 
     if '-' in callsign:
         if not callsign.count('-') == 1:
@@ -52,8 +62,7 @@ def valid_callsign(callsign):
 def run_doctest():  # pragma: no cover
     """Runs doctests for this module."""
     import doctest
-    import aprs  # pylint: disable=W0406,W0621
-    return doctest.testmod(aprs.util)
+    return doctest.testmod()
 
 
 if __name__ == '__main__':
