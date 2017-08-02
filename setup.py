@@ -48,12 +48,11 @@ setuptools.setup(
     zip_safe=False,
     include_package_data=True,
     setup_requires=[
-        'coverage >= 3.7.1',
-        'httpretty >= 0.8.10',
+        'coverage >= 4.4.1',
         'nose >= 1.3.7'
     ],
     install_requires=[
-        'kiss >= 6.0.0',
+        'kiss < 7.0.0',
         'requests >= 2.7.0'
     ],
     classifiers=[
