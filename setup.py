@@ -49,7 +49,8 @@ setuptools.setup(
     include_package_data=True,
     setup_requires=[
         'coverage >= 4.4.1',
-        'nose >= 1.3.7'
+        'nose >= 1.3.7',
+        'httpretty >= 0.8.14'
     ],
     install_requires=[
         'kiss < 7.0.0',

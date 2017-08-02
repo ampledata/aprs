@@ -54,4 +54,7 @@ lint: remember
 
 pylint: lint
 
-test: lint pep8 nosetests
+coverage:
+	coverage report -m
+
+test: lint pep8 nosetests coverage

@@ -6,7 +6,7 @@
 import unittest  # pylint: disable=R0801
 
 from .context import aprs  # pylint: disable=R0801
-from .context import classes  # pylint: disable=R0801
+from .context import aprs_test_classes  # pylint: disable=R0801
 
 from . import constants  # pylint: disable=R0801
 
@@ -15,7 +15,7 @@ __copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'  # NOQA pylint: 
 __license__ = 'Apache License, Version 2.0'  # NOQA pylint: disable=R0801
 
 
-class CallsignTestCase(classes.APRSTestClass):  # pylint: disable=R0904
+class CallsignTestCase(aprs_test_classes.APRSTestClass):  # pylint: disable=R0904
 
     """Tests for Python APRS Callsign."""
 
