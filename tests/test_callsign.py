@@ -3,31 +3,21 @@
 
 """Python APRS Module APRS Callsign Tests."""
 
-import logging
-import logging.handlers
-import unittest
+import unittest  # pylint: disable=R0801
 
-from .context import aprs
+from .context import aprs  # pylint: disable=R0801
+from .context import classes  # pylint: disable=R0801
 
-from . import constants
+from . import constants  # pylint: disable=R0801
 
-__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
-__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'
-__license__ = 'Apache License, Version 2.0'
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'  # NOQA pylint: disable=R0801
+__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'  # NOQA pylint: disable=R0801
+__license__ = 'Apache License, Version 2.0'  # NOQA pylint: disable=R0801
 
 
-class CallsignTestCase(unittest.TestCase):  # pylint: disable=R0904
+class CallsignTestCase(classes.APRSTestClass):  # pylint: disable=R0904
 
     """Tests for Python APRS Callsign."""
-
-    _logger = logging.getLogger(__name__)
-    if not _logger.handlers:
-        _logger.setLevel(aprs.LOG_LEVEL)
-        _console_handler = logging.StreamHandler()
-        _console_handler.setLevel(aprs.LOG_LEVEL)
-        _console_handler.setFormatter(aprs.LOG_FORMAT)
-        _logger.addHandler(_console_handler)
-        _logger.propagate = False
 
     def setUp(self):  # pylint: disable=C0103
         """Setup."""
@@ -104,7 +94,8 @@ class CallsignTestCase(unittest.TestCase):  # pylint: disable=R0904
         callsign_obj = aprs.Callsign(callsign)
         self._logger.info(callsign_obj.encode_kiss().encode('hex'))
         self._logger.info('\xaed\x8e\x9a\x88@\xe2'.encode('hex'))
-        # self.assertEqual('\xaed\x8e\x9a\x88@\xe2', callsign_obj.encode_kiss())
+        # self.assertEqual(
+        #    '\xaed\x8e\x9a\x88@\xe2', callsign_obj.encode_kiss())
 
 
 if __name__ == '__main__':

@@ -4,15 +4,14 @@
 """Python APRS KISS Module Class Definitions."""
 
 import logging
-import logging.handlers
 
-import kiss
+import kiss  # pylint: disable=R0801
 
-import aprs
+import aprs  # pylint: disable=R0801
 
-__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
-__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'
-__license__ = 'Apache License, Version 2.0'
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'  # NOQA pylint: disable=R0801
+__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'  # NOQA pylint: disable=R0801
+__license__ = 'Apache License, Version 2.0'  # NOQA pylint: disable=R0801
 
 
 class Frame(object):
@@ -26,14 +25,14 @@ class Frame(object):
 
     __slots__ = ['frame', 'source', 'destination', 'path', 'text']
 
-    _logger = logging.getLogger(__name__)
-    if not _logger.handlers:
-        _logger.setLevel(aprs.LOG_LEVEL)
-        _console_handler = logging.StreamHandler()
-        _console_handler.setLevel(aprs.LOG_LEVEL)
-        _console_handler.setFormatter(aprs.LOG_FORMAT)
-        _logger.addHandler(_console_handler)
-        _logger.propagate = False
+    _logger = logging.getLogger(__name__)  # pylint: disable=R0801
+    if not _logger.handlers:  # pylint: disable=R0801
+        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
+        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
+        _logger.addHandler(_console_handler)  # pylint: disable=R0801
+        _logger.propagate = False  # pylint: disable=R0801
 
     def __init__(self, frame=None):
         self.source = ''
@@ -94,7 +93,8 @@ class Frame(object):
             elif ':' in char:
                 if not self.path:
                     if ',' in frame_so_far:
-                        self.destination = aprs.Callsign(frame_so_far.split(',')[0])
+                        self.destination = aprs.Callsign(
+                            frame_so_far.split(',')[0])
                         self.path = []
                         for path in frame_so_far.split(',')[1:]:
                             self.path.append(aprs.Callsign(path))
