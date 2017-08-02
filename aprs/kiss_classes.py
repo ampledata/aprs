@@ -4,15 +4,14 @@
 """Python APRS KISS Module Class Definitions."""
 
 import logging
-import logging.handlers
 
-import kiss
+import kiss  # pylint: disable=R0801
 
-import aprs
+import aprs  # pylint: disable=R0801
 
-__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
-__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'
-__license__ = 'Apache License, Version 2.0'
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'  # NOQA pylint: disable=R0801
+__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'  # NOQA pylint: disable=R0801
+__license__ = 'Apache License, Version 2.0'  # NOQA pylint: disable=R0801
 
 
 class Frame(object):
@@ -26,14 +25,14 @@ class Frame(object):
 
     __slots__ = ['frame', 'source', 'destination', 'path', 'text']
 
-    _logger = logging.getLogger(__name__)
-    if not _logger.handlers:
-        _logger.setLevel(aprs.LOG_LEVEL)
-        _console_handler = logging.StreamHandler()
-        _console_handler.setLevel(aprs.LOG_LEVEL)
-        _console_handler.setFormatter(aprs.LOG_FORMAT)
-        _logger.addHandler(_console_handler)
-        _logger.propagate = False
+    _logger = logging.getLogger(__name__)  # pylint: disable=R0801
+    if not _logger.handlers:  # pylint: disable=R0801
+        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
+        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
+        _logger.addHandler(_console_handler)  # pylint: disable=R0801
+        _logger.propagate = False  # pylint: disable=R0801
 
     def __init__(self, frame=None):
         self.source = ''
@@ -52,7 +51,7 @@ class Frame(object):
             ','.join(full_path),
             self.text
         )
-        return frame.encode('UTF-8')
+        return frame
 
     def to_h(self):
         """
@@ -87,20 +86,21 @@ class Frame(object):
         """
         frame_so_far = ''
 
-        for char in self.frame.decode('UTF-8'):
+        for char in self.frame:
             if '>' in char and not self.source:
-                self.source = Callsign(frame_so_far)
+                self.source = aprs.Callsign(frame_so_far)
                 frame_so_far = ''
             elif ':' in char:
                 if not self.path:
                     if ',' in frame_so_far:
-                        self.destination = Callsign(frame_so_far.split(',')[0])
+                        self.destination = aprs.Callsign(
+                            frame_so_far.split(',')[0])
                         self.path = []
                         for path in frame_so_far.split(',')[1:]:
-                            self.path.append(Callsign(path))
+                            self.path.append(aprs.Callsign(path))
                         frame_so_far = ''
                     elif not self.destination:
-                        self.destination = Callsign(frame_so_far)
+                        self.destination = aprs.Callsign(frame_so_far)
                         frame_so_far = ''
                     else:
                         frame_so_far = ''.join([frame_so_far, char])
@@ -109,7 +109,7 @@ class Frame(object):
             else:
                 frame_so_far = ''.join([frame_so_far, char])
 
-        self.text = frame_so_far.encode('UTF-8')
+        self.text = frame_so_far
 
     def parse_kiss(self):
         """
@@ -156,7 +156,7 @@ class Frame(object):
             chr(ord(enc_frame[-1]) | 0x01),
             kiss.SLOT_TIME,
             chr(0xF0),
-            self.text.encode('UTF-8')
+            self.text
         ])
 
     def _extract_kiss_text(self, raw_slice):
@@ -169,20 +169,20 @@ class Frame(object):
         """
         Extracts a Source Callsign of a KISS-Encoded Frame.
         """
-        self.source = Callsign(self.frame[7:])
+        self.source = aprs.Callsign(self.frame[7:])
 
     def _extract_kiss_destination(self):
         """
         Extracts a Destination Callsign of a KISS-Encoded Frame.
         """
-        self.destination = Callsign(self.frame)
+        self.destination = aprs.Callsign(self.frame)
 
     def _extract_kiss_path(self, start):
         """
         Extracts path from raw APRS KISS frame.
         """
         for i in range(2, start):
-            path_call = Callsign(self.frame[i * 7:])
+            path_call = aprs.Callsign(self.frame[i * 7:])
 
             if path_call:
                 if ord(self.frame[i * 7 + 6]) & 0x80:

@@ -5,33 +5,33 @@
 
 import itertools
 import logging
-import logging.handlers
 import socket
 import time
 
-import kiss
 import pkg_resources
 import requests
 
-import aprs
+import kiss  # pylint: disable=R0801
 
-__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'
-__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'
-__license__ = 'Apache License, Version 2.0'
+import aprs  # pylint: disable=R0801
+
+__author__ = 'Greg Albrecht W2GMD <oss@undef.net>'  # NOQA pylint: disable=R0801
+__copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'  # NOQA pylint: disable=R0801
+__license__ = 'Apache License, Version 2.0'  # NOQA pylint: disable=R0801
 
 
 class APRS(object):
 
     """APRS Object."""
 
-    _logger = logging.getLogger(__name__)
-    if not _logger.handlers:
-        _logger.setLevel(aprs.LOG_LEVEL)
-        _console_handler = logging.StreamHandler()
-        _console_handler.setLevel(aprs.LOG_LEVEL)
-        _console_handler.setFormatter(aprs.LOG_FORMAT)
-        _logger.addHandler(_console_handler)
-        _logger.propagate = False
+    _logger = logging.getLogger(__name__)  # pylint: disable=R0801
+    if not _logger.handlers:  # pylint: disable=R0801
+        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
+        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
+        _logger.addHandler(_console_handler)  # pylint: disable=R0801
+        _logger.propagate = False  # pylint: disable=R0801
 
     def __init__(self, user, password='-1'):
         self.user = user
@@ -76,14 +76,14 @@ class Callsign(object):
     Defines parts of a Callsign decoded from either ASCII or KISS.
     """
 
-    _logger = logging.getLogger(__name__)
-    if not _logger.handlers:
-        _logger.setLevel(aprs.LOG_LEVEL)
-        _console_handler = logging.StreamHandler()
-        _console_handler.setLevel(aprs.LOG_LEVEL)
-        _console_handler.setFormatter(aprs.LOG_FORMAT)
-        _logger.addHandler(_console_handler)
-        _logger.propagate = False
+    _logger = logging.getLogger(__name__)  # pylint: disable=R0801
+    if not _logger.handlers:  # pylint: disable=R0801
+        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
+        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
+        _logger.addHandler(_console_handler)  # pylint: disable=R0801
+        _logger.propagate = False  # pylint: disable=R0801
 
     __slots__ = ['callsign', 'ssid', 'digi']
 
@@ -128,7 +128,7 @@ class Callsign(object):
 
         if not aprs.valid_callsign(self.callsign):
             raise aprs.BadCallsignError(
-                'Could not extract callsign from %s',
+                'Could not extract callsign from %s' %
                 self.callsign.encode('hex'))
 
     def parse_text(self, callsign):
@@ -292,7 +292,7 @@ class TCP(APRS):
                     else:
                         self._logger.debug('line=%s', line)
                         if callback:
-                            callback(Frame(line))
+                            callback(kiss.Frame(line))
 
         except socket.error as sock_err:
             self._logger.error(sock_err)
