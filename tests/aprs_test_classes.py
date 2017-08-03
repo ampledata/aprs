@@ -80,3 +80,13 @@ class APRSTestClass(unittest.TestCase):  # pylint: disable=R0904
         :type alphabet: str
         """
         return ''.join(random.choice(alphabet) for _ in range(length))
+
+    def setUp(self):  # pylint: disable=C0103
+        """Setup."""
+        self.test_frames = open(constants.TEST_FRAMES, 'rb')
+        self.test_frame = self.test_frames.read()#lines()[0].strip()
+        self.test_hex_frame = bytearray.fromhex(constants.TEST_HEX_FRAME)
+
+    def tearDown(self):  # pylint: disable=C0103
+        """Teardown."""
+        self.test_frames.close()

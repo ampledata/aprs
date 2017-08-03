@@ -19,28 +19,27 @@ class CallsignTestCase(aprs_test_classes.APRSTestClass):  # NOQA pylint: disable
 
     """Tests for Python APRS Callsign."""
 
-    def test_extract_callsign_source(self):
+    def test_ax25_extract_callsign_source(self):
         """
-        Tests extracting the source callsign from a KISS-encoded APRS frame
+        Tests extracting the source callsign from a AX.25 Encoded APRS frame
         using `aprs.Callsign`.
         """
         callsign = 'W2GMD'
         ssid = str(6)
         full = '-'.join([callsign, ssid])
 
-        extracted_callsign = aprs.Callsign(
-            constants.TEST_FRAME[7:].decode('hex')[7:])
+        extracted_callsign = aprs.Callsign(self.test_hex_frame[7:])
 
         self.assertEqual(full, str(extracted_callsign))
         self.assertEqual(callsign, extracted_callsign.callsign)
         self.assertEqual(ssid, extracted_callsign.ssid)
 
-    def test_extract_callsign_dest(self):
+    def test_ax25_extract_callsign_dest(self):
         """
-        Tests extracting the destination callsign from a KISS-encoded APRS
+        Tests extracting the destination callsign from a AX.25 Encoded APRS
         frame using `aprs.Callsign`.
         """
-        extracted_callsign = aprs.Callsign(constants.TEST_FRAME.decode('hex'))
+        extracted_callsign = aprs.Callsign(self.test_hex_frame)
         self.assertEqual(extracted_callsign.callsign, 'APRX24')
 
     def test_full_callsign_with_ssid(self):
@@ -69,25 +68,45 @@ class CallsignTestCase(aprs_test_classes.APRSTestClass):  # NOQA pylint: disable
         full_callsign = aprs.Callsign(callsign)
         self.assertEqual(str(full_callsign), callsign)
 
-    def test_encode_kiss(self):
+    def test_ax25_encode(self):
         """
-        Tests encoding a non-digipeated Callsign.
+        Tests AX.25 Encoding a Digipeated Callsign.
         """
-        encoded_callsign = aprs.Callsign('W2GMD-1').encode_kiss()
-        self.assertEqual('\xaed\x8e\x9a\x88@b', encoded_callsign)
+        callsign = 'W2GMD-1'
+        callsign_obj = aprs.Callsign(callsign)
+        self.assertFalse(callsign_obj.digi)
+        self.assertEqual(callsign_obj.callsign, 'W2GMD')
+        self.assertEqual(callsign_obj.ssid, '1')
 
-    # FIXME: Currently not working...
-    def test_encode_kiss_digipeated(self):
+        encoded_callsign = callsign_obj.encode_ax25()
+        self.assertEqual(
+            encoded_callsign, bytearray(b'\xaed\x8e\x9a\x88\x00b'))
+
+        decoded_callsign = aprs.Callsign(encoded_callsign)
+        self.assertEqual(str(decoded_callsign), callsign)
+        self.assertFalse(decoded_callsign.digi)
+        self.assertEqual(decoded_callsign.callsign, 'W2GMD')
+        self.assertEqual(decoded_callsign.ssid, '1')
+
+    def test_ax25_encode_digipeated(self):
         """
-        Tests encoding a digipeated callsign.
+        Tests AX.25 Encoding a Digipeated Callsign.
         """
         callsign = 'W2GMD*'
         callsign_obj = aprs.Callsign(callsign)
-        self._logger.info(callsign_obj.encode_kiss().encode('hex'))
-        self._logger.info('\xaed\x8e\x9a\x88@\xe2'.encode('hex'))
-        # self.assertEqual(
-        #    '\xaed\x8e\x9a\x88@\xe2', callsign_obj.encode_kiss())
+        self.assertTrue(callsign_obj.digi)
+        self.assertEqual(callsign_obj.callsign, 'W2GMD')
+        self.assertEqual(callsign_obj.ssid, '0')
 
+        encoded_callsign = callsign_obj.encode_ax25()
+        self.assertEqual(
+            encoded_callsign, bytearray(b'\xaed\x8e\x9a\x88\x00\xe0'))
+
+        decoded_callsign = aprs.Callsign(encoded_callsign)
+        self.assertEqual(str(decoded_callsign), callsign)
+        self.assertTrue(decoded_callsign.digi)
+        self.assertEqual(decoded_callsign.callsign, 'W2GMD')
+        self.assertEqual(decoded_callsign.ssid, '0')
 
 if __name__ == '__main__':
     unittest.main()

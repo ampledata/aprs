@@ -11,8 +11,6 @@ import time
 import pkg_resources
 import requests
 
-import kiss  # pylint: disable=R0801
-
 import aprs  # pylint: disable=R0801
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'  # NOQA pylint: disable=R0801
@@ -73,7 +71,8 @@ class Callsign(object):
 
     """
     Callsign Class.
-    Defines parts of a Callsign decoded from either ASCII or KISS.
+
+    Defines parts of an APRS AX.25 Callsign.
     """
 
     _logger = logging.getLogger(__name__)  # pylint: disable=R0801
@@ -96,6 +95,7 @@ class Callsign(object):
     def __repr__(self):
         call_repr = self.callsign
 
+        # Don't print callsigns with ssid 0.
         try:
             if int(self.ssid) > 0:
                 call_repr = '-'.join([self.callsign, str(self.ssid)])
@@ -103,6 +103,7 @@ class Callsign(object):
             if self.ssid != 0:
                 call_repr = '-'.join([self.callsign, str(self.ssid)])
 
+        # If callsign was digipeated, append '*'.
         if self.digi:
             return ''.join([call_repr, '*'])
         else:
@@ -118,20 +119,17 @@ class Callsign(object):
         """
         Parse and extract the components of a Callsign from ASCII or KISS.
         """
-        try:
-            self._extract_kiss_callsign(callsign)
-        except IndexError:
-            pass
-
-        if not aprs.valid_callsign(self.callsign):
-            self.parse_text(callsign)
+        if isinstance(callsign, bytearray):
+            self._parse_ax25(callsign)
+        else:
+            self._parse_text(callsign)
 
         if not aprs.valid_callsign(self.callsign):
             raise aprs.BadCallsignError(
                 'Could not extract callsign from %s' %
                 self.callsign.encode('hex'))
 
-    def parse_text(self, callsign):
+    def _parse_text(self, callsign):
         """
         Parses and extracts a Callsign and SSID from an ASCII-Encoded APRS
         Callsign or Callsign-SSID.
@@ -153,37 +151,67 @@ class Callsign(object):
         self.callsign = _callsign
         self.ssid = ssid.lstrip().rstrip()
 
-    def encode_kiss(self):
+    def _parse_ax25(self, callsign):
         """
-        Encodes Callsign (or Callsign-SSID) as KISS.
+        Extracts a Callsign and SSID from a AX.25 Encoded APRS Frame.
+
+        :param frame: AX.25 Encoded APRS Frame.
+        :type frame: str
         """
+        self._logger.debug('callsign="%s"', callsign)
+        self._logger.debug('type callsign="%s"', type(callsign))
+        if not len(callsign) >= 6:
+            raise aprs.BadCallsignError('Callsign is too short.')
+
+        for _chunk in callsign[:6]:
+            chunk = _chunk & 0xFF
+            if chunk & 1:
+                # aprx: /* Bad address-end flag ? */
+                raise aprs.BadCallsignError('Bad address-end flag.')
+
+            # Shift by one bit:
+            chunk = chunk >> 1
+            self._logger.debug('chunk={}'.format(chunk))
+            chr_chunk = chr(chunk)
+
+            if chr_chunk.isalnum():
+                self.callsign += chr_chunk
+            #else:
+            #    raise aprs.BadCallsignError('Invalid characters in callsign.')
+
+        self._logger.debug('self.callsign=%s', self.callsign)
+
+        # 7th byte carries SSID or digi:
+        seven_chunk = callsign[6] & 0xFF
+        self.ssid = str((seven_chunk >> 1) & 0x0F)
+        self._logger.debug('self.ssid=%s', self.ssid)
+
+        if seven_chunk & 0x80:
+            self.digi = True
+        self._logger.debug('self.digi=%s', self.digi)
+
+    def encode_ax25(self):
+        """
+        Encodes Callsign (or Callsign-SSID) as AX.25.
+        """
+        encoded_callsign = bytearray(self.callsign, encoding='UTF-8')
+
         encoded_ssid = (int(self.ssid) << 1) | 0x60
-        _callsign = self.callsign
 
         if self.digi:
             # _callsign = ''.join([_callsign, '*'])
             encoded_ssid |= 0x80
 
         # Pad the callsign to at least 6 characters.
-        while len(_callsign) < 6:
-            _callsign = ''.join([_callsign, ' '])
+        while len(encoded_callsign) < 6:
+            encoded_callsign.append(0)
 
-        encoded_callsign = ''.join([chr(ord(p) << 1) for p in _callsign])
+        ec = bytearray()
+        for pos in encoded_callsign:
+            ec.append(pos << 1)
 
-        return ''.join([encoded_callsign, chr(encoded_ssid)])
-
-    def _extract_kiss_callsign(self, frame):
-        """
-        Extracts a Callsign and SSID from a KISS-Encoded APRS Frame.
-
-        :param frame: KISS-Encoded APRS Frame as str of octs.
-        :type frame: str
-        """
-        self._logger.debug('frame="%s"', frame)#.encode('hex'))
-        callsign = ''.join([chr(ord(x) >> 1) for x in frame[:6]])
-        self.callsign = callsign.lstrip().rstrip()
-        self.ssid = str((ord(frame[6]) >> 1) & 0x0F)
-
+        ec.append(encoded_ssid)
+        return ec
 
 class TCP(APRS):
 
