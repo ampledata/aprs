@@ -106,12 +106,6 @@ class Frame(object):
         )
         return frame
 
-    def to_h(self):
-        """
-        Returns an Frame as a Hex String.
-        """
-        return str(self).encode('hex')
-
     def parse(self, frame=None):
         """
         Parses an Frame from either plain-text or AX.25.
@@ -245,12 +239,6 @@ class Callsign(object):
         else:
             return call_repr
 
-    def to_h(self):
-        """
-        Returns a Callsign as a Hex String.
-        """
-        return str(self).encode('hex')
-
     def parse(self, callsign):
         """
         Parse and extract the components of a Callsign from ASCII or KISS.
@@ -359,7 +347,7 @@ class TCP(APRS):
         servers = servers or aprs.APRSIS_SERVERS
         aprs_filter = aprs_filter or '/'.join(['p', user])
 
-        self._full_auth = ' '.join([self._auth, 'filter', aprs_filter])
+        self._full_auth = b' '.join([self._auth, 'filter', aprs_filter])
 
         self.servers = itertools.cycle(servers)
         self.use_i_construct = True
@@ -397,7 +385,7 @@ class TCP(APRS):
                 # Auth
                 self._logger.info(
                     "Auth To %s:%i", addr_info[0][4][0], port)
-                self.interface.sendall(self._full_auth + '\n\r')
+                self.interface.sendall(self._full_auth + b'\n\r')
 
                 server_return = self.interface.recv(1024)
                 self._logger.info(
@@ -418,7 +406,7 @@ class TCP(APRS):
         :type frame: str
         """
         self._logger.info('Sending frame="%s"', frame)
-        return self.interface.send("%s\n\r" % frame)  # Ensure cast->str.
+        return self.interface.send(b"%s\n\r" % frame)  # Ensure cast->str.
 
     def receive(self, callback=None):
         """
@@ -460,7 +448,7 @@ class TCP(APRS):
                             callback(kiss.Frame(line))
 
         except socket.error as sock_err:
-            self._logger.error(sock_err)
+            self._logger.exception(sock_err)
             raise
 
 

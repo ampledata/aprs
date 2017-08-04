@@ -95,7 +95,7 @@ class FrameTestCase(aprs_test_classes.APRSTestClass):  # pylint: disable=R0904
         self.assertEqual(str(decoded_frame.path[1]), 'WIDE2-1')
         self.assertEqual(
             decoded_frame.text,
-            bytearray(b'!3745.75NI12228.05W#W2GMD-6 Inner Sunset, SF iGate/Digipeater http://w2gmd.org')
+            '!3745.75NI12228.05W#W2GMD-6 Inner Sunset, SF iGate/Digipeater http://w2gmd.org'
         )
 
     @unittest.skip
