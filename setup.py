@@ -54,7 +54,8 @@ setuptools.setup(
     ],
     install_requires=[
         'kiss > 6.9',
-        'requests >= 2.7.0'
+        'requests >= 2.7.0',
+        'bitarray >= 0.8.1'
     ],
     classifiers=[
         'Topic :: Communications :: Ham Radio',
