@@ -154,53 +154,20 @@ class Frame(object):
         """
         Parses and Extracts the components of an KISS-Encoded Frame.
         """
-        frame = frame.replace(b'\x7E', b'')
+        frame = frame.strip(b'\x7E')
 
         # Control Field — This field is set to 0x03 (UI-frame)
         control_field = b'\x03'
         # Protocol ID — This field is set to 0xf0 (no layer 3 protocol).
         protocol_id = b'\xF0'
         # Use these two fields as the address/information delimiter
-        control_protocol = control_field + protocol_id
-        control_protocol_idx = frame.index(control_protocol)
-        len_control_protocol = len(control_protocol)
-        frame_addressing = frame[:control_protocol_idx - len_control_protocol]
-        frame_information = frame[control_protocol_idx + len_control_protocol:]
+        frame_addressing, self.text = frame.split(control_field + protocol_id)
 
         self._logger.debug('frame_addressing="%s"', frame_addressing)
-        self._logger.debug('frame_information="%s"', frame_information)
+        self._logger.debug('self.text="%s"', self.text)
 
-        self.text = frame_information
         self.destination = aprs.Callsign(frame_addressing)
-        print(len(frame_addressing))
-        print(len(frame_addressing[6:]))
-        self.source = aprs.Callsign(frame_addressing[6:])
-        print(len(frame_addressing))
-        print(len(frame_addressing[6:]))
-        # print(len(frame_addressing[12:]))
-        # for _path in paths:
-        #    self.path.append(aprs.Callsign())
-
-        for raw_slice in range(0, 0):
-
-            # Is address field length correct?
-            # Find the first ODD Byte followed by the next boundary:
-            if (ord(self.frame[raw_slice]) & 0x01
-                    and ((raw_slice + 1) % 7) == 0):
-
-                i = (raw_slice + 1) / 7
-
-                # Less than 2 callsigns?
-                if 1 < i < 11:
-                    # For frames <= 70 bytes
-                    if frame_len >= raw_slice + 2:
-                        if (ord(self.frame[raw_slice + 1]) & 0x03 == 0x03 and
-                                ord(self.frame[raw_slice + 2]) in
-                                [0xf0, 0xcf]):
-                            self._extract_kiss_text(raw_slice)
-                            self._extract_kiss_destination()
-                            self._extract_kiss_source()
-                            self._extract_kiss_path(i)
+        self.source = aprs.Callsign(frame_addressing[7:])
 
     def encode_ax25(self):
         """
@@ -223,45 +190,6 @@ class Frame(object):
         encoded_frame.extend(fcs.digest())
         encoded_frame.append(0x7E)
         return encoded_frame
-
-        # return ''.join([
-        #    enc_frame[:-1],
-        #    chr(ord(enc_frame[-1]) | 0x01),
-        #    kiss.SLOT_TIME,
-        #    chr(0xF0),
-        #    self.text
-        #])
-
-    def _extract_kiss_text(self, raw_slice):
-        """
-        Extracts a Text portion of a KISS-Encoded Frame.
-        """
-        self.text = self.frame[raw_slice + 3:]
-
-    def _extract_kiss_source(self):
-        """
-        Extracts a Source Callsign of a KISS-Encoded Frame.
-        """
-        self.source = aprs.Callsign(self.frame[7:])
-
-    def _extract_kiss_destination(self):
-        """
-        Extracts a Destination Callsign of a KISS-Encoded Frame.
-        """
-        self.destination = aprs.Callsign(self.frame)
-
-    def _extract_kiss_path(self, start):
-        """
-        Extracts path from raw APRS KISS frame.
-        """
-        for i in range(2, start):
-            path_call = aprs.Callsign(self.frame[i * 7:])
-
-            if path_call:
-                if ord(self.frame[i * 7 + 6]) & 0x80:
-                    path_call.digi = True
-
-                self.path.append(path_call)
 
 
 class Callsign(object):
