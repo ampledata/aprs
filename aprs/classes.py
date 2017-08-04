@@ -161,13 +161,24 @@ class Frame(object):
         # Protocol ID — This field is set to 0xf0 (no layer 3 protocol).
         protocol_id = b'\xF0'
         # Use these two fields as the address/information delimiter
-        frame_addressing, self.text = frame.split(control_field + protocol_id)
+        frame_addressing, frame_information = frame.split(
+            control_field + protocol_id)
+
+        self.text = frame_information[:-2]
 
         self._logger.debug('frame_addressing="%s"', frame_addressing)
         self._logger.debug('self.text="%s"', self.text)
 
         self.destination = aprs.Callsign(frame_addressing)
         self.source = aprs.Callsign(frame_addressing[7:])
+
+        paths = frame_addressing[7+7:]
+        n_paths = int(len(paths) / 7)
+        n = 0
+        while n < n_paths:
+            self.path.append(aprs.Callsign(paths[:7]))
+            paths = paths[7:]
+            n += 1
 
     def encode_ax25(self):
         """

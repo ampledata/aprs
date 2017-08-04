@@ -73,23 +73,30 @@ class FrameTestCase(aprs_test_classes.APRSTestClass):  # pylint: disable=R0904
         )
         aprs_frame = aprs.Frame(frame)
         encoded_frame = aprs_frame.encode_ax25()
-        print('encoded_frame={}'.format(encoded_frame))
+        self._logger.debug('encoded_frame=%s', encoded_frame)
+
         self.assertEqual(encoded_frame[0], 126)
         self.assertEqual(encoded_frame[-1:], b'\x7E')
         self.assertEqual(encoded_frame[-3:-1], b'\xF0\x07')
-
         self.assertEqual(str(aprs.Callsign(encoded_frame[1:8])), 'APRX24')
         self.assertEqual(str(aprs.Callsign(encoded_frame[8:15])), 'W2GMD-6')
         self.assertEqual(str(aprs.Callsign(encoded_frame[15:22])), 'WIDE1-1')
         self.assertEqual(str(aprs.Callsign(encoded_frame[22:29])), 'WIDE2-1')
         self.assertEqual(encoded_frame[29:31], b'\x03\xF0')
-        self.assertEqual(encoded_frame[31:-3],
-            bytearray(b'!3745.75NI12228.05W#W2GMD-6 Inner Sunset, SF iGate/Digipeater http://w2gmd.org'))
+        self.assertEqual(
+            encoded_frame[31:-3],
+            bytearray(b'!3745.75NI12228.05W#W2GMD-6 Inner Sunset, SF iGate/Digipeater http://w2gmd.org')
+        )
 
         decoded_frame = aprs.Frame(encoded_frame)
         self.assertEqual(str(decoded_frame.source), 'W2GMD-6')
         self.assertEqual(str(decoded_frame.destination), 'APRX24')
-        #self.assertEqual(str(decoded_frame.path), ['WIDE1-1', 'WIDE2-1'])
+        self.assertEqual(str(decoded_frame.path[0]), 'WIDE1-1')
+        self.assertEqual(str(decoded_frame.path[1]), 'WIDE2-1')
+        self.assertEqual(
+            decoded_frame.text,
+            bytearray(b'!3745.75NI12228.05W#W2GMD-6 Inner Sunset, SF iGate/Digipeater http://w2gmd.org')
+        )
 
     @unittest.skip
     def test_ax25_decode(self):
