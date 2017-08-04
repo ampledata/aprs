@@ -8,6 +8,7 @@ import logging
 import socket
 import time
 
+import bitarray
 import pkg_resources
 import requests
 
@@ -67,6 +68,176 @@ class APRS(object):
         pass
 
 
+class Frame(object):
+
+    """
+    Frame Class.
+
+    Defines the components of an APRS Frame and can decode a frame
+    from either plain-text or AX.25.
+    """
+
+    __slots__ = ['frame', 'source', 'destination', 'path', 'text']
+
+    _logger = logging.getLogger(__name__)  # pylint: disable=R0801
+    if not _logger.handlers:  # pylint: disable=R0801
+        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
+        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
+        _logger.addHandler(_console_handler)  # pylint: disable=R0801
+        _logger.propagate = False  # pylint: disable=R0801
+
+    def __init__(self, frame=None):
+        self.source = ''
+        self.destination = 'APYT70'
+        self.path = []
+        self.text = ''
+        if frame is not None:
+            #self.frame = kiss.strip_df_start(str(frame))
+            self.parse(frame)
+
+    def __repr__(self):
+        full_path = [str(self.destination)]
+        full_path.extend([str(p) for p in self.path])
+        frame = "%s>%s:%s" % (
+            self.source,
+            ','.join(full_path),
+            self.text
+        )
+        return frame
+
+    def to_h(self):
+        """
+        Returns an Frame as a Hex String.
+        """
+        return str(self).encode('hex')
+
+    def parse(self, frame=None):
+        """
+        Parses an Frame from either plain-text or AX.25.
+        """
+        #self.parse_ax25(frame)
+        self.parse_text(frame)
+
+        if not self.source or not self.destination:
+            self._logger.info(
+                'Cannot decode frame=%s', self.frame.encode('hex'))
+
+    def parse_text(self, frame=None):
+        """
+        Parses and Extracts the components of an ASCII-Encoded Frame.
+        """
+        # Source>Destination
+        sd_delim = frame.index('>')
+        self.source = aprs.Callsign(frame[:sd_delim])
+        self._logger.debug('self.source=%s', self.source)
+
+        # Path:Info
+        pi_delim = frame.index(':')
+        _path = frame[sd_delim + 1:pi_delim]
+        if ',' in _path:
+            self.path = [aprs.Callsign(p) for p in _path.split(',')]
+            self.destination = self.path.pop(0)
+        else:
+            self.destination = aprs.Callsign(_path)
+
+        self._logger.debug('self.path=%s', self.path)
+        self._logger.debug('self.destination=%s', self.destination)
+
+        self.text = frame[pi_delim + 1:]
+        self._logger.debug('self.text=%s', self.text)
+
+    def parse_ax25(self):
+        """
+        Parses and Extracts the components of an KISS-Encoded Frame.
+        """
+        frame_len = len(self.frame)
+
+        if frame_len < 16:
+            self._logger.debug('Frame len(%s) < 16, Exiting.', frame_len)
+            return
+
+        for raw_slice in range(0, frame_len):
+
+            # Is address field length correct?
+            # Find the first ODD Byte followed by the next boundary:
+            if (ord(self.frame[raw_slice]) & 0x01
+                    and ((raw_slice + 1) % 7) == 0):
+
+                i = (raw_slice + 1) / 7
+
+                # Less than 2 callsigns?
+                if 1 < i < 11:
+                    # For frames <= 70 bytes
+                    if frame_len >= raw_slice + 2:
+                        if (ord(self.frame[raw_slice + 1]) & 0x03 == 0x03 and
+                                ord(self.frame[raw_slice + 2]) in
+                                [0xf0, 0xcf]):
+                            self._extract_kiss_text(raw_slice)
+                            self._extract_kiss_destination()
+                            self._extract_kiss_source()
+                            self._extract_kiss_path(i)
+
+    def encode_ax25(self):
+        """
+        Encodes an Frame as AX.25.
+        """
+        encoded_frame = bytearray()
+        encoded_frame.append(0x7E)
+        encoded_frame.extend(self.destination.encode_ax25())
+        encoded_frame.extend(self.source.encode_ax25())
+        for path_call in self.path:
+            encoded_frame.extend(path_call.encode_ax25())
+
+        fcs = aprs.FCS()
+        for bit in encoded_frame:
+            fcs.update_bit(bit)
+
+        encoded_frame.extend(fcs.digest())
+        encoded_frame.append(0x7E)
+        return encoded_frame
+
+        # return ''.join([
+        #    enc_frame[:-1],
+        #    chr(ord(enc_frame[-1]) | 0x01),
+        #    kiss.SLOT_TIME,
+        #    chr(0xF0),
+        #    self.text
+        #])
+
+    def _extract_kiss_text(self, raw_slice):
+        """
+        Extracts a Text portion of a KISS-Encoded Frame.
+        """
+        self.text = self.frame[raw_slice + 3:]
+
+    def _extract_kiss_source(self):
+        """
+        Extracts a Source Callsign of a KISS-Encoded Frame.
+        """
+        self.source = aprs.Callsign(self.frame[7:])
+
+    def _extract_kiss_destination(self):
+        """
+        Extracts a Destination Callsign of a KISS-Encoded Frame.
+        """
+        self.destination = aprs.Callsign(self.frame)
+
+    def _extract_kiss_path(self, start):
+        """
+        Extracts path from raw APRS KISS frame.
+        """
+        for i in range(2, start):
+            path_call = aprs.Callsign(self.frame[i * 7:])
+
+            if path_call:
+                if ord(self.frame[i * 7 + 6]) & 0x80:
+                    path_call.digi = True
+
+                self.path.append(path_call)
+
+
 class Callsign(object):
 
     """
@@ -86,11 +257,12 @@ class Callsign(object):
 
     __slots__ = ['callsign', 'ssid', 'digi']
 
-    def __init__(self, callsign):
+    def __init__(self, callsign=None):
         self.callsign = ''
         self.ssid = str(0)
         self.digi = False
-        self.parse(callsign)
+        if callsign is not None:
+            self.parse(callsign)
 
     def __repr__(self):
         call_repr = self.callsign
@@ -127,21 +299,21 @@ class Callsign(object):
         if not aprs.valid_callsign(self.callsign):
             raise aprs.BadCallsignError(
                 'Could not extract callsign from %s' %
-                self.callsign.encode('hex'))
+                self.callsign)
 
     def _parse_text(self, callsign):
         """
-        Parses and extracts a Callsign and SSID from an ASCII-Encoded APRS
+        Parses and extracts a Callsign and SSID from plain-text APRS
         Callsign or Callsign-SSID.
 
         :param callsign: ASCII-Encoded APRS Callsign
         :type callsign: str
         """
-        self._logger.debug('callsign="%s"', callsign)#.encode('hex'))
-        _callsign = callsign.lstrip().rstrip()
+        self._logger.debug('callsign="%s"', callsign)
+        _callsign = str(callsign).lstrip().rstrip()
         ssid = str(0)
 
-        if '*' in _callsign:
+        if '*' in str(_callsign):
             _callsign = _callsign.strip('*')
             self.digi = True
 
@@ -212,6 +384,7 @@ class Callsign(object):
 
         ec.append(encoded_ssid)
         return ec
+
 
 class TCP(APRS):
 

@@ -26,7 +26,9 @@ from .util import valid_callsign  # NOQA
 
 from .geo_util import dec2dm_lat, dec2dm_lng  # NOQA
 
-from .classes import APRS, Callsign, TCP, UDP, HTTP  # NOQA
+from .fcs import FCS  # NOQA
+
+from .classes import APRS, Frame, Callsign, TCP, UDP, HTTP  # NOQA
 
 #from .kiss_classes import Frame, TCPKISS, SerialKISS  # NOQA
 

@@ -19,48 +19,59 @@ class FrameTestCase(aprs_test_classes.APRSTestClass):  # pylint: disable=R0904
 
     """Tests for `aprs.Frame`."""
 
-    def test_format_aprs_frame(self):
+    def test_aprs_frame(self):
         """
-        Tests formatting an APRS frame-as-string from an APRS frame-as-dict
-        using `aprs.util.format_aprs_frame()`.
+        Tests creating APRS Frame Object from plain-text APRS Frame string.
         """
-        frame = "%s>%s,WIDE1-1:>test_format_aprs_frame" % \
+        frame = "%s>%s,WIDE1-1:>test_aprs_frame" % \
             (self.real_callsign, self.fake_callsign)
-
         formatted_frame = aprs.Frame(frame)
-
         self.assertEqual(str(formatted_frame), frame)
 
-    def test_decode_aprs_ascii_frame(self):
+    def test_aprs_frame_no_path(self):
         """
-        Tests creating an Frame Object from an APRS ASCII Frame
-        using `aprs.Frame`.
+        Tests creating APRS Frame Object from plain-text APRS Frame string.
         """
-        ascii_frame = (
+        frame = "%s>%s:>test_aprs_frame_no_path" % \
+            (self.real_callsign, self.fake_callsign)
+        formatted_frame = aprs.Frame(frame)
+        self.assertEqual(str(formatted_frame), frame)
+
+    def test_aprs_frame_long_path(self):
+        """
+        Tests creating APRS Frame Object from plain-text APRS Frame string.
+        """
+        frame = "%s>%s,WIDE1-1,WIDE4-2,WIDE9-9:>test_aprs_frame_long_path" % \
+            (self.real_callsign, self.fake_callsign)
+        formatted_frame = aprs.Frame(frame)
+        self.assertEqual(str(formatted_frame), frame)
+
+    def test_decode_aprs_frame(self):
+        """
+        Tests creating an APRS Frame Object from plain-text APRS Frame string.
+        """
+        frame = (
             "%s>APOTC1,WIDE1-1,WIDE2-1:!3745.94N/12228.05W>118/010/"
             "A=000269 http://w2gmd.org/ Twitter: @ampledata" %
             self.real_callsign)
 
-        aprs_frame = aprs.Frame(ascii_frame)
+        aprs_frame = aprs.Frame(frame)
 
-        self.assertEqual(str(aprs_frame), ascii_frame)
+        self.assertEqual(str(aprs_frame), frame)
         self.assertEqual(str(aprs_frame.source), self.real_callsign)
         self.assertEqual(str(aprs_frame.destination), 'APOTC1')
         self.assertEqual(str(aprs_frame.path[0]), 'WIDE1-1')
         self.assertEqual(str(aprs_frame.path[1]), 'WIDE2-1')
 
-    def test_encode_ascii_frame_as_kiss(self):
+    def test_ax25_encode(self):
         """
-        Tests KISS-encoding an ASCII APRS frame using `aprs.Frame()`.
+        Tests AX.25 Encoding a plain-text APRS Frame.
         """
-        frame = 'W2GMD-1>OMG,WIDE1-1:test_encode_frame'
-        kiss_frame = (
-            '9e9a8e40404060ae648e9a884062ae92888a62406303f074657'
-            '3745f656e636f64655f6672616d65')
-
+        frame = 'W2GMD-1>APRY07,WIDE1-1:>test_ax25_encode'
         aprs_frame = aprs.Frame(frame)
-
-        self.assertEqual(kiss_frame.decode('hex'), aprs_frame.encode_kiss())
+        print(aprs_frame.encode_ax25())
+        self.assertEqual(
+            bytearray(b'~\x82\xa0\xa4\xb2`n`\xaed\x8e\x9a\x88\x00b\xae\x92\x88\x8ab\x00b\xf0\x07~'), aprs_frame.encode_ax25())
 
 
 if __name__ == '__main__':
