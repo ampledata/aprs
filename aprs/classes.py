@@ -117,12 +117,14 @@ class Frame(object):
         """
         Parses an Frame from either plain-text or AX.25.
         """
-        #self.parse_ax25(frame)
-        self.parse_text(frame)
+        if isinstance(frame, bytearray):
+            self.parse_ax25(frame)
+        else:
+            self.parse_text(frame)
 
         if not self.source or not self.destination:
             self._logger.info(
-                'Cannot decode frame=%s', self.frame.encode('hex'))
+                'Cannot decode frame=%s', frame)
 
     def parse_text(self, frame=None):
         """
@@ -148,17 +150,38 @@ class Frame(object):
         self.text = frame[pi_delim + 1:]
         self._logger.debug('self.text=%s', self.text)
 
-    def parse_ax25(self):
+    def parse_ax25(self, frame=None):
         """
         Parses and Extracts the components of an KISS-Encoded Frame.
         """
-        frame_len = len(self.frame)
+        frame = frame.replace(b'\x7E', b'')
 
-        if frame_len < 16:
-            self._logger.debug('Frame len(%s) < 16, Exiting.', frame_len)
-            return
+        # Control Field — This field is set to 0x03 (UI-frame)
+        control_field = b'\x03'
+        # Protocol ID — This field is set to 0xf0 (no layer 3 protocol).
+        protocol_id = b'\xF0'
+        # Use these two fields as the address/information delimiter
+        control_protocol = control_field + protocol_id
+        control_protocol_idx = frame.index(control_protocol)
+        len_control_protocol = len(control_protocol)
+        frame_addressing = frame[:control_protocol_idx - len_control_protocol]
+        frame_information = frame[control_protocol_idx + len_control_protocol:]
 
-        for raw_slice in range(0, frame_len):
+        self._logger.debug('frame_addressing="%s"', frame_addressing)
+        self._logger.debug('frame_information="%s"', frame_information)
+
+        self.text = frame_information
+        self.destination = aprs.Callsign(frame_addressing)
+        print(len(frame_addressing))
+        print(len(frame_addressing[6:]))
+        self.source = aprs.Callsign(frame_addressing[6:])
+        print(len(frame_addressing))
+        print(len(frame_addressing[6:]))
+        # print(len(frame_addressing[12:]))
+        # for _path in paths:
+        #    self.path.append(aprs.Callsign())
+
+        for raw_slice in range(0, 0):
 
             # Is address field length correct?
             # Find the first ODD Byte followed by the next boundary:
@@ -189,6 +212,9 @@ class Frame(object):
         encoded_frame.extend(self.source.encode_ax25())
         for path_call in self.path:
             encoded_frame.extend(path_call.encode_ax25())
+        encoded_frame.append(0x03)
+        encoded_frame.append(0xF0)
+        encoded_frame.extend([ord(t) for t in self.text])
 
         fcs = aprs.FCS()
         for bit in encoded_frame:

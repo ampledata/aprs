@@ -68,10 +68,32 @@ class FrameTestCase(aprs_test_classes.APRSTestClass):  # pylint: disable=R0904
         Tests AX.25 Encoding a plain-text APRS Frame.
         """
         frame = 'W2GMD-1>APRY07,WIDE1-1:>test_ax25_encode'
+        #frame = 'W2GMD-6>APRX24,WIDE1-1,WIDE2-1:!3745.75NI12228.05W#W2GMD-6 Inner Sunset, SF iGate/Digipeater http://w2gmd.org'
+        frame = 'W2GMD-6>APRX24,WIDE1-1,WIDE2-1:!3745.75NI12228.05W#W2GMD-6 Inner Sunset, SF iGate/Digipeater http://w2gmd.org'
         aprs_frame = aprs.Frame(frame)
-        print(aprs_frame.encode_ax25())
-        self.assertEqual(
-            bytearray(b'~\x82\xa0\xa4\xb2`n`\xaed\x8e\x9a\x88\x00b\xae\x92\x88\x8ab\x00b\xf0\x07~'), aprs_frame.encode_ax25())
+        encoded_frame = aprs_frame.encode_ax25()
+        print('encoded_frame={}'.format(encoded_frame))
+
+        self.assertTrue(False)
+        #self.assertEqual(
+        #    bytearray(b'~\x82\xa0\xa4\xb2`n`\xaed\x8e\x9a\x88\x00b\xae\x92\x88\x8ab\x00b\x03\xf0>test_ax25_encode\xf0\x07~'),
+        #    encoded_frame
+        #)
+
+    def test_ax25_decode(self):
+        """
+        Tests AX.25 Encoding a plain-text APRS Frame.
+        """
+        #frame = 'W2GMD-1>APRY07,WIDE1-1:>test_ax25_decode'
+        frame = 'W2GMD-1>APRY07:>test_ax25_decode'
+        aprs_frame = aprs.Frame(frame)
+        encoded_frame = aprs_frame.encode_ax25()
+        print('encoded_frame={}'.format(encoded_frame))
+
+        decoded_frame = aprs.Frame(encoded_frame)
+        print('decoded_frame={}'.format(decoded_frame))
+
+        self.assertTrue(False)
 
 
 if __name__ == '__main__':
