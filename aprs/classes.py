@@ -94,7 +94,6 @@ class Frame(object):
         self.path = []
         self.text = ''
         if frame is not None:
-            #self.frame = kiss.strip_df_start(str(frame))
             self.parse(frame)
 
     def __repr__(self):
@@ -164,7 +163,7 @@ class Frame(object):
         frame_addressing, frame_information = frame.split(
             control_field + protocol_id)
 
-        self.text = frame_information[:-2]
+        self.text = ''.join([chr(x) for x in frame_information[:-2]])
 
         self._logger.debug('frame_addressing="%s"', frame_addressing)
         self._logger.debug('self.text="%s"', self.text)
