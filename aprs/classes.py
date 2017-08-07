@@ -119,7 +119,7 @@ class Frame(object):
                 self.path.append(decoded_path)
             self.set_destination(self.path.pop(0))
         else:
-            self.set_destination(_path))
+            self.set_destination(_path)
 
         self.set_info(frame[pi_delim + 1:])
 
