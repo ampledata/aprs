@@ -105,7 +105,7 @@ class Frame(object):
         """
         # Source>Destination
         sd_delim = frame.index(b'>')
-        self.set_source(frame[:sd_delim].decode('UTF-8')))
+        self.set_source(frame[:sd_delim].decode('UTF-8'))
         self._logger.debug('self.source="%s"', self.source)
 
         path = []
