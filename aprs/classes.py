@@ -564,15 +564,15 @@ class InformationField(object):
     def __init__(self, data=None):
         self.data = data
         self.data_type = 'undefined'
-        self.decoded_data = ''
+        self.decoded_data = b''
         if data:
             self.get_data_type(data)
 
     def __repr__(self):
-        return self.data
+        return self.decoded_data
 
     def __bytes__(self):
-        return self.decoded_data
+        return self.data
 
     def _handle_data_type_undefined(self, data):
         """
