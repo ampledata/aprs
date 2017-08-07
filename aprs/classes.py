@@ -58,6 +58,15 @@ class Frame(object):
         )
         return frame
 
+    def __bytes__(self):
+        b_frame = bytearray()
+        full_path = [str(self.destination)]
+        full_path.extend([str(p) for p in self.path])
+        b_frame.append(self.source)
+        b_frame.append(','.join(full_path))
+        b_frame.append(self.info)
+        return b_frame
+
     def parse(self, frame=None):
         """
         Parses an Frame from either plain-text or AX.25.
