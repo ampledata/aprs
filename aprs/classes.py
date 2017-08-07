@@ -564,7 +564,7 @@ class InformationField(object):
     def __init__(self, data=None):
         self.data = data
         self.data_type = 'undefined'
-        self.decoded_data = b''
+        self.decoded_data = ''
         if data:
             self.get_data_type(data)
 
