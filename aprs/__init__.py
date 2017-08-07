@@ -28,7 +28,8 @@ from .geo_util import dec2dm_lat, dec2dm_lng  # NOQA
 
 from .fcs import FCS  # NOQA
 
-from .classes import APRS, Frame, Callsign, TCP, UDP, HTTP  # NOQA
+from .classes import (Frame, Callsign, APRS, TCP, UDP, HTTP,  # NOQA
+                      InformationField)
 
 #from .kiss_classes import Frame, TCPKISS, SerialKISS  # NOQA
 
