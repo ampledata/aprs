@@ -572,7 +572,7 @@ class InformationField(object):
         return self.data
 
     def __bytes__(self):
-        return decoded_data
+        return self.decoded_data
 
     def _handle_data_type_undefined(self, data):
         """
