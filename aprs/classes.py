@@ -62,12 +62,12 @@ class Frame(object):
         return frame
 
     def __bytes__(self):
-        full_path = [bytes(self.destination, encoding='UTF-8')]
-        full_path.extend([bytes(p, encoding='UTF-8') for p in self.path])
+        full_path = [self.destination.__bytes__()]
+        full_path.extend([p.__bytes__() for p in self.path])
         frame = b"%s>%s:%s" % (
-            bytes(self.source, encoding='UTF-8'),
+            self.source.__bytes__(),
             b','.join(full_path),
-            bytes(str(self.info), encoding='UTF-8')
+            self.info.__bytes__()
         )
         return frame
 
@@ -206,6 +206,9 @@ class Callsign(object):
             return ''.join([call_repr, '*'])
         else:
             return call_repr
+
+    def __bytes__(self):
+        return bytes(str(self), encoding='UTF-8')
 
     def parse(self, callsign):
         """
@@ -559,13 +562,17 @@ class InformationField(object):
     __slots__ = ['data_type', 'data']
 
     def __init__(self, data=None):
-        self.data = ''
+        self.data = data
         self.data_type = 'undefined'
+        self.decoded_data = ''
         if data:
             self.get_data_type(data)
 
     def __repr__(self):
         return self.data
+
+    def __bytes__(self):
+        return decoded_data
 
     def _handle_data_type_undefined(self, data):
         """
@@ -579,7 +586,7 @@ class InformationField(object):
             self._logger.warn(
                 'Error decoding data as UTF-8, forcing "backslashreplace".')
             decoded_data = data.decode('UTF-8', 'backslashreplace')
-        self.data = decoded_data
+        self.decoded_data = decoded_data
 
     def get_data_type(self, data):
         if '>' in chr(data[0]):
