@@ -49,6 +49,9 @@ class Frame(object):
             self.parse(frame)
 
     def __repr__(self):
+        """
+        Returns a string representation of this Object.
+        """
         full_path = [str(self.destination)]
         full_path.extend([str(p) for p in self.path])
         frame = "%s>%s:%s" % (
@@ -59,13 +62,14 @@ class Frame(object):
         return frame
 
     def __bytes__(self):
-        b_frame = bytearray()
-        full_path = [str(self.destination)]
-        full_path.extend([str(p) for p in self.path])
-        b_frame.append(self.source)
-        b_frame.append(','.join(full_path))
-        b_frame.append(self.info)
-        return b_frame
+        full_path = [bytes(self.destination, encoding='UTF-8')]
+        full_path.extend([bytes(p, encoding='UTF-8') for p in self.path])
+        frame = b"%s>%s:%s" % (
+            bytes(self.source, encoding='UTF-8'),
+            b','.join(full_path),
+            bytes(str(self.info), encoding='UTF-8')
+        )
+        return frame
 
     def parse(self, frame=None):
         """
