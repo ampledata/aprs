@@ -559,7 +559,7 @@ class InformationField(object):
         _logger.addHandler(_console_handler)  # pylint: disable=R0801
         _logger.propagate = False  # pylint: disable=R0801
 
-    __slots__ = ['data_type', 'data']
+    __slots__ = ['data_type', 'data', 'decoded_data']
 
     def __init__(self, data=None):
         self.data = data
@@ -578,15 +578,13 @@ class InformationField(object):
         """
         Handler for Undefined Data Tyes.
         """
-        decoded_data = ''
         try:
-            decoded_data = data.decode('UTF-8')
+            self.decoded_data = data.decode('UTF-8')
         except UnicodeDecodeError as ex:
             self._logger.exception(ex)
             self._logger.warn(
                 'Error decoding data as UTF-8, forcing "backslashreplace".')
-            decoded_data = data.decode('UTF-8', 'backslashreplace')
-        self.decoded_data = decoded_data
+            self.decoded_data = data.decode('UTF-8', 'backslashreplace')
 
     def get_data_type(self, data):
         if '>' in chr(data[0]):
