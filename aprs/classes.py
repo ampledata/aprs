@@ -62,12 +62,12 @@ class Frame(object):
         return frame
 
     def __bytes__(self):
-        full_path = [self.destination.__bytes__()]
-        full_path.extend([p.__bytes__() for p in self.path])
+        full_path = [bytes(self.destination, encoding='UTF-8')]
+        full_path.extend([bytes(p, encoding='UTF-8') for p in self.path])
         frame = b"%s>%s:%s" % (
-            self.source.__bytes__(),
+            bytes(self.source, encoding='UTF-8'),
             b','.join(full_path),
-            self.info.__bytes__()
+            bytes(self.info, encoding='UTF-8')
         )
         return frame
 
