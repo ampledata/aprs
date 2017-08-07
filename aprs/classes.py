@@ -42,7 +42,7 @@ class Frame(object):
 
     def __init__(self, frame=None):
         self.source = ''
-        self.destination = 'APYT70'
+        self.destination = aprs.Callsign('APYT70')
         self.path = []
         self.info = aprs.InformationField()
         if frame is not None:
@@ -71,6 +71,21 @@ class Frame(object):
         )
         return frame
 
+    def set_source(self, source):
+        self.source = aprs.Callsign(source)
+        return self.source
+
+    def set_destination(self, destination='APYT70'):
+        self.destination = aprs.Callsign(destination)
+        return self.destination
+
+    def set_path(self, path=[]):
+        self.path = [aprs.Callsign(pth) for pth in path]
+        return self.path
+    def set_info(self, info):
+        self.info = aprs.InformationField(info)
+        return self.info
+
     def parse(self, frame=None):
         """
         Parses an Frame from either plain-text or AX.25.
@@ -90,26 +105,23 @@ class Frame(object):
         """
         # Source>Destination
         sd_delim = frame.index(b'>')
-        self.source = aprs.Callsign(frame[:sd_delim].decode('UTF-8'))
+        self.set_source(frame[:sd_delim].decode('UTF-8')))
         self._logger.debug('self.source="%s"', self.source)
 
+        path = []
         # Path:Info
         pi_delim = frame.index(b':')
-        _path = frame[sd_delim + 1:pi_delim]
+        parsed_path = frame[sd_delim + 1:pi_delim]
         if b',' in _path:
             for path in _path.split(b','):
                 decoded_path = aprs.Callsign(path.decode('UTF-8'))
                 self._logger.debug('decoded_path=%s', decoded_path)
                 self.path.append(decoded_path)
-            self.destination = self.path.pop(0)
+            self.set_destination(self.path.pop(0))
         else:
-            self.destination = aprs.Callsign(_path)
+            self.set_destination(_path))
 
-        self._logger.debug('self.path="%s"', self.path)
-        self._logger.debug('self.destination="%s"', self.destination)
-
-        self.info = aprs.InformationField(frame[pi_delim + 1:])
-        self._logger.debug('self.info="%s"', self.info)
+        self.set_info(frame[pi_delim + 1:])
 
     def parse_ax25(self, frame=None):
         """
@@ -566,7 +578,7 @@ class InformationField(object):
         self.data_type = 'undefined'
         self.decoded_data = ''
         if data:
-            self.get_data_type(data)
+            self.find_data_type(data)
 
     def __repr__(self):
         return self.decoded_data
@@ -586,18 +598,18 @@ class InformationField(object):
                 'Error decoding data as UTF-8, forcing "backslashreplace".')
             self.decoded_data = data.decode('UTF-8', 'backslashreplace')
 
-    def get_data_type(self, data):
-        if '>' in chr(data[0]):
+    def find_data_type(self, data):
+        if '>' in data[0]:
             self.data_type = 'status'
-        if '!' in chr(data[0]):
+        if '!' in data[0]:
             self.data_type = 'position_nots_nomsg'
-        if '=' in chr(data[0]):
+        if '=' in data[0]:
             self.data_type = 'position_nots_msg'
-        elif 'T' in chr(data[0]):
+        elif 'T' in data[0]:
             self.data_type = 'telemetry'
-        elif ';' in chr(data[0]):
+        elif ';' in data[0]:
             self.data_type = 'object'
-        elif '`' in chr(data[0]):
+        elif '`' in data[0]:
             self.data_type = 'old_mice'
 
         return self.handle_data_type(data)
