@@ -584,9 +584,9 @@ class InformationField(object):
     __slots__ = ['data_type', 'data', 'decoded_data']
 
     def __init__(self, data=None):
-        self.data = data
-        self.data_type = 'undefined'
-        self.decoded_data = ''
+        self.data = data  # Bytes
+        self.data_type = 'undefined'  # Unicode
+        self.decoded_data = ''  # Unicode-ish
         if data:
             self.find_data_type(data)
 
@@ -609,7 +609,7 @@ class InformationField(object):
             self.decoded_data = data.decode('UTF-8', 'backslashreplace')
 
     def find_data_type(self, data):
-        dtf = chr(data[0])
+        dtf = data[0]
         if '>' in dtf:
             self.data_type = 'status'
         if '!' in dtf:
