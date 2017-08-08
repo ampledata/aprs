@@ -584,11 +584,11 @@ class InformationField(object):
     __slots__ = ['data_type', 'data', 'decoded_data']
 
     def __init__(self, data=None):
-        if isinstance('bytes', data):
+        if isinstance(data, bytes):
             self.data = data  # Bytes
         else:
             self.data = bytes(data, 'UTF-8')
-            
+
         self.data_type = 'undefined'  # Unicode
         self.decoded_data = ''  # Unicode-ish
         if data:
