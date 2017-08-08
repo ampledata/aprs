@@ -589,11 +589,9 @@ class InformationField(object):
             self.data = data  # Bytes
         else:
             self.data = bytes(data, 'UTF-8')
-
         self.data_type = 'undefined'  # Unicode
         self.decoded_data = ''  # Unicode-ish
-        if data:
-            self.find_data_type(data)
+        self.find_data_type()
 
     def __repr__(self):
         return self.decoded_data
@@ -601,20 +599,20 @@ class InformationField(object):
     def __bytes__(self):
         return self.data
 
-    def _handle_data_type_undefined(self, data):
+    def _handle_data_type_undefined(self):
         """
         Handler for Undefined Data Types.
         """
         try:
-            self.decoded_data = data.decode('UTF-8')
+            self.decoded_data = self.data.decode('UTF-8')
         except UnicodeDecodeError as ex:
             self._logger.exception(ex)
             self._logger.warn(
                 'Error decoding data as UTF-8, forcing "backslashreplace".')
-            self.decoded_data = data.decode('UTF-8', 'backslashreplace')
+            self.decoded_data = self.data.decode('UTF-8', 'backslashreplace')
 
-    def find_data_type(self, data):
-        dtf = data[0]
+    def find_data_type(self):
+        dtf = self.data[0]
         if '>' in dtf:
             self.data_type = 'status'
         if '!' in dtf:
@@ -628,9 +626,9 @@ class InformationField(object):
         elif '`' in dtf:
             self.data_type = 'old_mice'
 
-        return self.handle_data_type(data)
+        return self.handle_data_type()
 
-    def handle_data_type(self, data):
+    def handle_data_type(self):
         handler = getattr(
             self,
             "_handle_data_type_%s" % self.data_type,
@@ -643,8 +641,8 @@ class InformationField(object):
             self._logger.debug(
                 'Handling data_type="%s" with handler="%s"',
                 self.data_type, handler)
-            return handler(data)
+            return handler()
         else:
             self._logger.warn(
                 'Received Unhandled data_type="%s"', self.data_type)
-            return self._handle_data_type_undefined(data)
+            return self._handle_data_type_undefined()
