@@ -112,8 +112,8 @@ class Frame(object):
         # Path:Info
         pi_delim = frame.index(b':')
         parsed_path = frame[sd_delim + 1:pi_delim]
-        if b',' in _path:
-            for path in _path.split(b','):
+        if b',' in parsed_path:
+            for path in parsed_path.split(b','):
                 decoded_path = aprs.Callsign(path.decode('UTF-8'))
                 self._logger.debug('decoded_path=%s', decoded_path)
                 self.path.append(decoded_path)
@@ -196,8 +196,8 @@ class Callsign(object):
     __slots__ = ['callsign', 'ssid', 'digi']
 
     def __init__(self, callsign=None):
-        self.callsign = ''
-        self.ssid = str(0)
+        self.callsign = ''  # Unicode
+        self.ssid = str(0)  # Unicode
         self.digi = False
         if callsign is not None:
             self.parse(callsign)
@@ -220,6 +220,7 @@ class Callsign(object):
             return call_repr
 
     def __bytes__(self):
+        # Unicode Sandwich: Send our Unicode as bytes.
         return bytes(str(self), encoding='UTF-8')
 
     def parse(self, callsign):
@@ -376,11 +377,10 @@ class TCP(APRS):
 
     def __init__(self, user, password, servers=None, aprs_filter=None):
         super(TCP, self).__init__(user, password)
-        servers = servers or aprs.APRSIS_SERVERS
-        aprs_filter = aprs_filter or '/'.join(['p', user])
+        servers = servers or aprs.APRSIS_SERVERS  # Unicode
+        aprs_filter = aprs_filter or '/'.join(['p', user])  # Unicode
 
-        self._full_auth = bytes(
-            ' '.join([self._auth, 'filter', aprs_filter]), 'UTF-8')
+        self._full_auth = ' '.join([self._auth, 'filter', aprs_filter])  # Unicode
 
         self.servers = itertools.cycle(servers)
         self.use_i_construct = True
@@ -418,7 +418,11 @@ class TCP(APRS):
                 # Auth
                 self._logger.info(
                     "Auth To %s:%i", addr_info[0][4][0], port)
-                self.interface.sendall(self._full_auth + b'\n\r')
+
+                # Unicode Sandwich: Send our unicode as bytes.
+                _full_auth = bytes(self._full_auth + '\n\r', 'UTF-8')
+
+                self.interface.sendall(_full_auth)
 
                 server_return = self.interface.recv(1024)
                 self._logger.info(
@@ -440,7 +444,11 @@ class TCP(APRS):
         :type frame: str
         """
         self._logger.info('Sending frame="%s"', frame)
-        return self.interface.send(b"%s\n\r" % frame)  # Ensure cast->str.
+
+        # Unicode Sandwich: Send bytes.
+        _frame = bytes(frame + b'\n\r')
+
+        return self.interface.send(_frame)
 
     def receive(self, callback=None, frame_handler=Frame):
         """
@@ -456,7 +464,9 @@ class TCP(APRS):
             'Receive started with callback="%s" and frame_handler="%s"',
             callback, frame_handler)
 
-        recvd_data = b''
+        # Unicode Sandwich: Receive Bytes.
+        recvd_data = bytes()
+
         try:
             while 1:
                 recv_data = self.interface.recv(aprs.RECV_BUFFER)
@@ -466,14 +476,14 @@ class TCP(APRS):
 
                 recvd_data += recv_data
 
-                self._logger.debug('recv_data=%s', recv_data.strip())
+                self._logger.debug('recv_data="%s"', recv_data.strip())
 
                 if recvd_data.endswith(b'\r\n'):
                     lines = recvd_data.strip().split(b'\r\n')
-                    recvd_data = b''
+                    recvd_data = bytes()
                 else:
                     lines = recvd_data.split(b'\r\n')
-                    recvd_data = str(lines.pop(-1))
+                    recvd_data = lines.pop(-1)
 
                 for line in lines:
                     if line.startswith(b'#'):
@@ -599,17 +609,18 @@ class InformationField(object):
             self.decoded_data = data.decode('UTF-8', 'backslashreplace')
 
     def find_data_type(self, data):
-        if '>' in data[0]:
+        dtf = chr(data[0])
+        if '>' in dtf:
             self.data_type = 'status'
-        if '!' in data[0]:
+        if '!' in dtf:
             self.data_type = 'position_nots_nomsg'
-        if '=' in data[0]:
+        if '=' in dtf:
             self.data_type = 'position_nots_msg'
-        elif 'T' in data[0]:
+        elif 'T' in dtf:
             self.data_type = 'telemetry'
-        elif ';' in data[0]:
+        elif ';' in dtf:
             self.data_type = 'object'
-        elif '`' in data[0]:
+        elif '`' in dtf:
             self.data_type = 'old_mice'
 
         return self.handle_data_type(data)
