@@ -584,7 +584,11 @@ class InformationField(object):
     __slots__ = ['data_type', 'data', 'decoded_data']
 
     def __init__(self, data=None):
-        self.data = data  # Bytes
+        if isinstance('bytes', data):
+            self.data = data  # Bytes
+        else:
+            self.data = bytes(data, 'UTF-8')
+            
         self.data_type = 'undefined'  # Unicode
         self.decoded_data = ''  # Unicode-ish
         if data:
@@ -598,7 +602,7 @@ class InformationField(object):
 
     def _handle_data_type_undefined(self, data):
         """
-        Handler for Undefined Data Tyes.
+        Handler for Undefined Data Types.
         """
         try:
             self.decoded_data = data.decode('UTF-8')
