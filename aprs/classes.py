@@ -584,7 +584,7 @@ class InformationField(object):
     __slots__ = ['data_type', 'data', 'decoded_data']
 
     def __init__(self, data=None):
-        data = data or bytes()
+        data = data or bytes('')
         if isinstance(data, bytes):
             self.data = data  # Bytes
         else:
