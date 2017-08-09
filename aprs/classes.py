@@ -229,7 +229,7 @@ class APRS(object):
                 'aprs').version, 'UTF-8')
         except:  # pylint: disable=W0702
             version = b'GIT'
-        version_str = b'Python APRS Module v{}'.format(version)
+        version_str = b'Python APRS Module v' + version
 
         self._auth = b' '.join(
             ['user', user, 'pass', password, 'vers', version_str])
