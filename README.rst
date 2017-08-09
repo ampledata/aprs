@@ -81,6 +81,13 @@ Run nosetests from a Makefile target::
 
     make test
 
+Errata
+======
+
+7.0.0rc1 - Currently setting/getting digi flag on KISS frames is broken. Expect it to
+be fixed in final release of 7.0.0.
+
+
 See Also
 ========
 
