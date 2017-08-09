@@ -6,21 +6,15 @@ receiving, parsing and sending APRS Frames.
 
 Included are several Interface Classes:
 
-* APRS - Abstract Class from which all other Interfaces are inherited.
-* TCP - Interfaces Class for connecting to APRS-IS via TCP. Can send or receive APRS Frames.
-* UDP - Interfaces Class for connecting to APRS-IS via UDP. Only supports sending APRS Frames.
-* HTTP - Interfaces Class for connecting to APRS-IS via HTTP. Currently only supports sending APRS Frames.
+* APRS - Abstract Class from which all other Connection Interfaces are inherited.
+* TCP - Connection Interface Class for connecting to APRS-IS via TCP. Can send or receive APRS Frames.
+* UDP - Connection Interface Class for connecting to APRS-IS via UDP. Only supports sending APRS Frames.
+* HTTP - Connection Interface Class for connecting to APRS-IS via HTTP. Currently only supports sending APRS Frames.
 
-Additional Interface Classes for connecting to KISS Interfaces are included:
-
-* SerialKISS - Interface Class for connecting to KISS Serial devices. Can send or receive APRS Frames.
-* TCPKISS - Interface Class for connecting to KISS TCP Hosts. Can send or receive APRS Frames.
-
-Finally, Frame and Callsign classes are included:
+Frame and Callsign classes are included:
 
 * Frame - Describes the components of an APRS Frame.
 * Callsign - Describes the components of an APRS Callsign.
-
 
 Versions
 ========
@@ -74,7 +68,7 @@ Example 2 Code
 
     import aprs
 
-    frame = aprs.Frame('W2GMD>APRS:>Hello World!')
+    frame = aprs.parse_frame('W2GMD>APRS:>Hello World!')
 
     a = aprs.TCP('W2GMD', '12345')
     a.start()

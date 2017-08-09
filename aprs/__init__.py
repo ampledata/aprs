@@ -26,7 +26,7 @@ from .exceptions import BadCallsignError  # NOQA
 
 from .util import valid_callsign  # NOQA
 
-from .geo_util import dec2dm_lat, dec2dm_lng  # NOQA
+from .geo_util import dec2dm_lat, dec2dm_lng, ambiguate  # NOQA
 
 from .fcs import FCS  # NOQA
 

@@ -21,9 +21,9 @@ LOG_FORMAT = logging.Formatter(
     ('%(asctime)s aprs %(levelname)s %(name)s.%(funcName)s:%(lineno)d - '
      '%(message)s'))
 
-APRSIS_SERVERS = ['rotate.aprs.net', 'noam.aprs2.net']
+APRSIS_SERVERS = [b'rotate.aprs.net', b'noam.aprs2.net']
 
-APRSIS_SW_VERSION = 'APRS Python Module'
+APRSIS_SW_VERSION = b'APRS Python Module'
 
 APRSIS_HTTP_HEADERS = {
     'content-type': 'application/octet-stream',
@@ -32,7 +32,7 @@ APRSIS_HTTP_HEADERS = {
 
 APRSIS_FILTER_PORT = int(os.environ.get('APRSIS_FILTER_PORT', 14580))
 APRSIS_RX_PORT = int(os.environ.get('APRSIS_RX_PORT', 8080))
-APRSIS_URL = os.environ.get('APRSIS_URL', 'http://srvr.aprs-is.net:8080')
+APRSIS_URL = os.environ.get('APRSIS_URL', b'http://srvr.aprs-is.net:8080')
 
 RECV_BUFFER = int(os.environ.get('RECV_BUFFER', 1024))
 

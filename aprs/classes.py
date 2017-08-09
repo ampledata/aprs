@@ -3,7 +3,6 @@
 
 """Python APRS Module Class Definitions."""
 
-import binascii
 import itertools
 import logging
 import socket
@@ -69,10 +68,10 @@ class Frame(object):
         )
         return frame
 
-    def set_source(self, source) -> None:
+    def set_source(self, source: typing.Union[str, bytes]) -> None:
         self.source = aprs.parse_callsign(source)
 
-    def set_destination(self, destination) -> None:
+    def set_destination(self, destination: typing.Union[str, bytes]) -> None:
         self.destination = aprs.parse_callsign(destination)
 
     def set_path(self, path=[]) -> None:
@@ -81,10 +80,10 @@ class Frame(object):
     def update_path(self, update: bytes) -> None:
         self.path.append(aprs.parse_callsign(update))
 
-    def set_info(self, info) -> None:
+    def set_info(self, info: typing.Union[str, bytes]) -> None:
         self.info = aprs.parse_info_field(info)
 
-    def encode_ax25(self) -> bytearray:
+    def encode_ax25(self) -> bytes:
         """
         Encodes an APRS Frame as AX.25.
         """
@@ -146,7 +145,6 @@ class Callsign(object):
                 if _ssid != 0:
                     call_repr = '-'.join([_callsign, _ssid])
 
-
         # If callsign was digipeated, append '*'.
         if self.digi:
             return ''.join([call_repr, '*'])
@@ -166,7 +164,6 @@ class Callsign(object):
             except ValueError:
                 if _ssid != 0:
                     call_repr = b'-'.join([_callsign, _ssid])
-
 
         # If callsign was digipeated, append '*'.
         if self.digi:
@@ -224,17 +221,17 @@ class APRS(object):
         _logger.addHandler(_console_handler)  # pylint: disable=R0801
         _logger.propagate = False  # pylint: disable=R0801
 
-    def __init__(self, user, password='-1'):
+    def __init__(self, user: bytes, password: bytes=b'-1') -> None:
         self.user = user
 
         try:
-            version = pkg_resources.get_distribution(  # pylint: disable=E1101
-                'aprs').version
+            version = bytes(pkg_resources.get_distribution(  # NOQA pylint: disable=E1101
+                'aprs').version, 'UTF-8')
         except:  # pylint: disable=W0702
-            version = 'GIT'
-        version_str = 'Python APRS Module v{}'.format(version)
+            version = b'GIT'
+        version_str = b'Python APRS Module v{}'.format(version)
 
-        self._auth = ' '.join(
+        self._auth = b' '.join(
             ['user', user, 'pass', password, 'vers', version_str])
 
         self._full_auth = None
@@ -264,12 +261,14 @@ class TCP(APRS):
 
     """APRS-IS TCP Class."""
 
-    def __init__(self, user, password, servers=None, aprs_filter=None):
+    def __init__(self, user: bytes, password: bytes, servers: bytes=b'',
+                 aprs_filter: bytes=b'') -> None:
         super(TCP, self).__init__(user, password)
         servers = servers or aprs.APRSIS_SERVERS  # Unicode
-        aprs_filter = aprs_filter or '/'.join(['p', user])  # Unicode
+        aprs_filter = aprs_filter or b'/'.join([b'p', user])  # Unicode
 
-        self._full_auth = ' '.join([self._auth, 'filter', aprs_filter])  # Unicode
+        # Unicode
+        self._full_auth = b' '.join([self._auth, b'filter', aprs_filter])
 
         self.servers = itertools.cycle(servers)
         self.use_i_construct = True
@@ -519,10 +518,10 @@ class PositionFrame(Frame):
         super(PositionFrame, self).__init__(source, destination, path, frame)
 
     def create_frame(self) -> bytes:
-        enc_lat = encode_lat(self.lat)
-        enc_lat_amb = process_ambiguity(enc_lat, self.ambiguity)
-        enc_lng = encode_lng(self.lng)
-        enc_lng_amb = process_ambiguity(enc_lng, self.ambiguity)
+        enc_lat = aprs.dec2dm_lat(self.lat)
+        enc_lat_amb = aprs.ambiguate(enc_lat, self.ambiguity)
+        enc_lng = aprs.dec2dm_lng(self.lng)
+        enc_lng_amb = aprs.ambiguate(enc_lng, self.ambiguity)
         frame = [
             b'=',
             enc_lat_amb,
