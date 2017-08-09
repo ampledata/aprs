@@ -28,19 +28,21 @@ class CallsignTestCase(aprs_test_classes.APRSTestClass):  # NOQA pylint: disable
         ssid = str(6)
         full = '-'.join([callsign, ssid])
 
-        extracted_callsign = aprs.Callsign(self.test_hex_frame[7:])
+        print(self.test_hex_frame[7:13])
+        extracted_callsign = aprs.parse_callsign_ax25(self.test_hex_frame[7:])
 
-        self.assertEqual(full, str(extracted_callsign))
-        self.assertEqual(callsign, extracted_callsign.callsign)
-        self.assertEqual(ssid, extracted_callsign.ssid)
+        print(extracted_callsign)
+        self.assertEqual(str(extracted_callsign), full)
+        self.assertEqual(extracted_callsign.callsign, bytes(callsign, 'UTF-8'))
+        self.assertEqual(extracted_callsign.ssid, bytes(ssid, 'UTF_8'))
 
     def test_ax25_extract_callsign_dest(self):
         """
         Tests extracting the destination callsign from a AX.25 Encoded APRS
         frame using `aprs.Callsign`.
         """
-        extracted_callsign = aprs.Callsign(self.test_hex_frame)
-        self.assertEqual(extracted_callsign.callsign, 'APRX24')
+        extracted_callsign = aprs.parse_callsign_ax25(self.test_hex_frame)
+        self.assertEqual(extracted_callsign.callsign, b'APRX24')
 
     def test_full_callsign_with_ssid(self):
         """
@@ -48,7 +50,7 @@ class CallsignTestCase(aprs_test_classes.APRSTestClass):  # NOQA pylint: disable
         `aprs.Callsign`.
         """
         callsign = 'W2GMD-1'
-        full_callsign = aprs.Callsign(callsign)
+        full_callsign = aprs.parse_callsign(callsign)
         self.assertEqual(str(full_callsign), callsign)
 
     def test_full_callsign_with_ssid_0(self):
@@ -57,7 +59,7 @@ class CallsignTestCase(aprs_test_classes.APRSTestClass):  # NOQA pylint: disable
         `aprs.Callsign`.
         """
         callsign = 'W2GMD-0'
-        full_callsign = aprs.Callsign(callsign)
+        full_callsign = aprs.parse_callsign(callsign)
         self.assertEqual(str(full_callsign), callsign.split('-')[0])
 
     def test_full_callsign_sans_ssid(self):
@@ -65,7 +67,7 @@ class CallsignTestCase(aprs_test_classes.APRSTestClass):  # NOQA pylint: disable
         Tests creating a full Callsign string from a Callsign sans SSID.
         """
         callsign = 'W2GMD'
-        full_callsign = aprs.Callsign(callsign)
+        full_callsign = aprs.parse_callsign(callsign)
         self.assertEqual(str(full_callsign), callsign)
 
     def test_ax25_encode(self):
@@ -73,40 +75,40 @@ class CallsignTestCase(aprs_test_classes.APRSTestClass):  # NOQA pylint: disable
         Tests AX.25 Encoding a Digipeated Callsign.
         """
         callsign = 'W2GMD-1'
-        callsign_obj = aprs.Callsign(callsign)
+        callsign_obj = aprs.parse_callsign(callsign)
         self.assertFalse(callsign_obj.digi)
-        self.assertEqual(callsign_obj.callsign, 'W2GMD')
-        self.assertEqual(callsign_obj.ssid, '1')
+        self.assertEqual(callsign_obj.callsign, b'W2GMD')
+        self.assertEqual(callsign_obj.ssid, b'1')
 
         encoded_callsign = callsign_obj.encode_ax25()
         self.assertEqual(
-            encoded_callsign, bytearray(b'\xaed\x8e\x9a\x88\x00b'))
+            encoded_callsign, b'\xaed\x8e\x9a\x88@b')
 
-        decoded_callsign = aprs.Callsign(encoded_callsign)
+        decoded_callsign = aprs.parse_callsign(encoded_callsign)
         self.assertEqual(str(decoded_callsign), callsign)
         self.assertFalse(decoded_callsign.digi)
-        self.assertEqual(decoded_callsign.callsign, 'W2GMD')
-        self.assertEqual(decoded_callsign.ssid, '1')
+        self.assertEqual(decoded_callsign.callsign, b'W2GMD')
+        self.assertEqual(decoded_callsign.ssid, b'1')
 
     def test_ax25_encode_digipeated(self):
         """
         Tests AX.25 Encoding a Digipeated Callsign.
         """
         callsign = 'W2GMD*'
-        callsign_obj = aprs.Callsign(callsign)
+        callsign_obj = aprs.parse_callsign(callsign)
         self.assertTrue(callsign_obj.digi)
-        self.assertEqual(callsign_obj.callsign, 'W2GMD')
-        self.assertEqual(callsign_obj.ssid, '0')
+        self.assertEqual(callsign_obj.callsign, b'W2GMD')
+        self.assertEqual(callsign_obj.ssid, b'0')
 
         encoded_callsign = callsign_obj.encode_ax25()
         self.assertEqual(
-            encoded_callsign, bytearray(b'\xaed\x8e\x9a\x88\x00\xe0'))
+            encoded_callsign, b'\xaed\x8e\x9a\x88@\xe0')
 
-        decoded_callsign = aprs.Callsign(encoded_callsign)
+        decoded_callsign = aprs.parse_callsign(encoded_callsign)
         self.assertEqual(str(decoded_callsign), callsign)
         self.assertTrue(decoded_callsign.digi)
-        self.assertEqual(decoded_callsign.callsign, 'W2GMD')
-        self.assertEqual(decoded_callsign.ssid, '0')
+        self.assertEqual(decoded_callsign.callsign, b'W2GMD')
+        self.assertEqual(decoded_callsign.ssid, b'0')
 
 if __name__ == '__main__':
     unittest.main()

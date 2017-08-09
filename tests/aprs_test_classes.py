@@ -33,7 +33,7 @@ class APRSTestClass(unittest.TestCase):  # pylint: disable=R0904
         """Setup."""
         self.test_frames = open(constants.TEST_FRAMES, 'rb')
         self.test_frame = self.test_frames.read()#lines()[0].strip()
-        self.test_hex_frame = bytearray.fromhex(constants.TEST_HEX_FRAME)
+        self.test_hex_frame = bytes.fromhex(constants.TEST_HEX_FRAME)
 
         self.fake_callsign = ''.join([
             self.random(1, 'KWN'),

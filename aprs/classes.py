@@ -450,7 +450,7 @@ class HTTP(APRS):
         :type frame: str
         """
         self._logger.info('Sending frame="%s"', frame)
-        content = b"\n".join([self._auth, str(frame)])
+        content = b"\n".join([bytes(self._auth, 'UTF-8'), bytes(frame, 'UTF-8')])
         result = self.interface(self.url, data=content, headers=self.headers)
         return result.status_code == 204
 
