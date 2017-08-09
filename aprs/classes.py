@@ -7,17 +7,205 @@ import itertools
 import logging
 import socket
 import time
+import typing
 
 import pkg_resources
 import requests
-
-import kiss  # pylint: disable=R0801
 
 import aprs  # pylint: disable=R0801
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'  # NOQA pylint: disable=R0801
 __copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'  # NOQA pylint: disable=R0801
 __license__ = 'Apache License, Version 2.0'  # NOQA pylint: disable=R0801
+
+
+class Frame(object):
+
+    """
+    Frame Class.
+
+    Defines the components of an AX.25/APRS Frame.
+    """
+
+    __slots__ = ['source', 'destination', 'path', 'info']
+
+    _logger = logging.getLogger(__name__)  # pylint: disable=R0801
+    if not _logger.handlers:  # pylint: disable=R0801
+        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
+        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
+        _logger.addHandler(_console_handler)  # pylint: disable=R0801
+        _logger.propagate = False  # pylint: disable=R0801
+
+    def __init__(self, source: bytes=b'', destination: bytes=b'',
+                 path: list=[], info: bytes=b'') -> None:
+        self.source = aprs.Callsign(source)
+        self.destination = aprs.Callsign(destination)
+        self.path = path
+        self.info = aprs.InformationField(info)
+
+    def __repr__(self) -> str:
+        """
+        Returns a string representation of this Object.
+        """
+        full_path = [str(self.destination)]
+        full_path.extend([str(p) for p in self.path])
+        frame = "%s>%s:%s" % (
+            self.source,
+            ','.join(full_path),
+            self.info
+        )
+        return frame
+
+    def __bytes__(self) -> bytes:
+        full_path = [bytes(self.destination)]
+        full_path.extend([bytes(p) for p in self.path])
+        frame = b"%s>%s:%s" % (
+            bytes(self.source),
+            b','.join(full_path),
+            bytes(self.info)
+        )
+        return frame
+
+    def set_source(self, source: typing.Union[str, bytes]) -> None:
+        self.source = aprs.parse_callsign(source)
+
+    def set_destination(self, destination: typing.Union[str, bytes]) -> None:
+        self.destination = aprs.parse_callsign(destination)
+
+    def set_path(self, path=[]) -> None:
+        self.path = [aprs.parse_callsign(pth) for pth in path]
+
+    def update_path(self, update: bytes) -> None:
+        self.path.append(aprs.parse_callsign(update))
+
+    def set_info(self, info: typing.Union[str, bytes]) -> None:
+        self.info = aprs.parse_info_field(info)
+
+    def encode_ax25(self) -> bytes:
+        """
+        Encodes an APRS Frame as AX.25.
+        """
+        encoded_frame = []
+        encoded_frame.append(aprs.AX25_FLAG)
+        encoded_frame.append(self.destination.encode_ax25())
+        encoded_frame.append(self.source.encode_ax25())
+        for path_call in self.path:
+            encoded_frame.append(path_call.encode_ax25())
+        encoded_frame.append(aprs.ADDR_INFO_DELIM)
+        encoded_frame.append(bytes(self.info))
+
+        fcs = aprs.FCS()
+        for bit in encoded_frame:
+            fcs.update_bit(bit)
+
+        encoded_frame.append(fcs.digest())
+        encoded_frame.append(aprs.AX25_FLAG)
+
+        return b''.join(encoded_frame)
+
+
+class Callsign(object):
+
+    """
+    Callsign Class.
+
+    Defines parts of an APRS AX.25 Callsign.
+    """
+
+    _logger = logging.getLogger(__name__)  # pylint: disable=R0801
+    if not _logger.handlers:  # pylint: disable=R0801
+        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
+        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
+        _logger.addHandler(_console_handler)  # pylint: disable=R0801
+        _logger.propagate = False  # pylint: disable=R0801
+
+    __slots__ = ['callsign', 'ssid', 'digi']
+
+    def __init__(self, callsign: bytes=b'', ssid: bytes=b'0',
+                 digi: bool=False) -> None:
+        self.callsign: bytes = callsign
+        self.ssid: bytes = ssid
+        self.digi: bool = digi
+
+    def __repr__(self) -> str:
+        _callsign = self.callsign.decode()
+        _ssid = self.ssid.decode()
+        call_repr = _callsign
+
+        # Don't print callsigns with ssid 0.
+        if _ssid:
+            try:
+                if int(_ssid) > 0:
+                    call_repr = '-'.join([_callsign, _ssid])
+            except ValueError:
+                if _ssid != 0:
+                    call_repr = '-'.join([_callsign, _ssid])
+
+        # If callsign was digipeated, append '*'.
+        if self.digi:
+            return ''.join([call_repr, '*'])
+        else:
+            return call_repr
+
+    def __bytes__(self) -> bytes:
+        _callsign = self.callsign
+        _ssid = self.ssid
+        call_repr = _callsign
+
+        # Don't print callsigns with ssid 0.
+        if _ssid:
+            try:
+                if int(_ssid) > 0:
+                    call_repr = b'-'.join([_callsign, _ssid])
+            except ValueError:
+                if _ssid != 0:
+                    call_repr = b'-'.join([_callsign, _ssid])
+
+        # If callsign was digipeated, append '*'.
+        if self.digi:
+            return b''.join([call_repr, b'*'])
+        else:
+            return call_repr
+
+    def set_callsign(self, callsign: bytes) -> None:
+        self.callsign = callsign
+
+    def set_ssid(self, ssid: bytes=b'0') -> None:
+        if isinstance(ssid, bytes):
+            self.ssid = ssid
+        else:
+            self.ssid = bytes(str(ssid), 'UTF-8')
+
+    def set_digi(self, digi: bool) -> None:
+        self.digi = digi
+
+    def encode_ax25(self) -> bytearray:
+        """
+        Encodes Callsign as AX.25.
+        """
+        _callsign = self.callsign
+        encoded_callsign = []
+
+        encoded_ssid = (int(self.ssid) << 1) | 0x60
+
+        if self.digi:
+            # _callsign = ''.join([_callsign, '*'])
+            encoded_ssid |= 0x80
+
+        # Pad the callsign to at least 6 characters.
+        while len(_callsign) < 6:
+            _callsign += b' '
+
+        for pos in _callsign:
+            encoded_callsign.append(bytes([pos << 1]))
+
+        encoded_callsign.append(bytes([encoded_ssid]))
+
+        return b''.join(encoded_callsign)
 
 
 class APRS(object):
@@ -33,18 +221,22 @@ class APRS(object):
         _logger.addHandler(_console_handler)  # pylint: disable=R0801
         _logger.propagate = False  # pylint: disable=R0801
 
-    def __init__(self, user, password='-1'):
+    def __init__(self, user: bytes, password: bytes=b'-1') -> None:
+        if isinstance(user, str):
+            user = bytes(user, 'UTF-8')
+        if isinstance(password, str):
+            password = bytes(password, 'UTF-8')
         self.user = user
 
         try:
-            version = pkg_resources.get_distribution(  # pylint: disable=E1101
-                'aprs').version
+            version = bytes(pkg_resources.get_distribution(  # NOQA pylint: disable=E1101
+                'aprs').version, 'UTF-8')
         except:  # pylint: disable=W0702
-            version = 'GIT'
-        version_str = "Python APRS Module v%s" % version
+            version = b'GIT'
+        version_str = b'Python APRS Module v' + version
 
-        self._auth = ' '.join(
-            ['user', user, 'pass', password, 'vers', version_str])
+        self._auth = b' '.join(
+            [b'user', user, b'pass', password, b'vers', version_str])
 
         self._full_auth = None
         self.interface = None
@@ -62,141 +254,27 @@ class APRS(object):
         """
         pass
 
-    def receive(self, callback=None):
+    def receive(self, callback=None, frame_handler=aprs.parse_frame):
         """
         Abstract method for receiving messages from APRS-IS.
         """
         pass
 
 
-class Callsign(object):
-
-    """
-    Callsign Class.
-    Defines parts of a Callsign decoded from either ASCII or KISS.
-    """
-
-    _logger = logging.getLogger(__name__)  # pylint: disable=R0801
-    if not _logger.handlers:  # pylint: disable=R0801
-        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
-        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
-        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
-        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
-        _logger.addHandler(_console_handler)  # pylint: disable=R0801
-        _logger.propagate = False  # pylint: disable=R0801
-
-    __slots__ = ['callsign', 'ssid', 'digi']
-
-    def __init__(self, callsign):
-        self.callsign = ''
-        self.ssid = str(0)
-        self.digi = False
-        self.parse(callsign)
-
-    def __repr__(self):
-        call_repr = self.callsign
-
-        try:
-            if int(self.ssid) > 0:
-                call_repr = '-'.join([self.callsign, str(self.ssid)])
-        except ValueError:
-            if self.ssid != 0:
-                call_repr = '-'.join([self.callsign, str(self.ssid)])
-
-        if self.digi:
-            return ''.join([call_repr, '*'])
-        else:
-            return call_repr
-
-    def to_h(self):
-        """
-        Returns a Callsign as a Hex String.
-        """
-        return str(self).encode('hex')
-
-    def parse(self, callsign):
-        """
-        Parse and extract the components of a Callsign from ASCII or KISS.
-        """
-        try:
-            self._extract_kiss_callsign(callsign)
-        except IndexError:
-            pass
-        except TypeError:
-            pass
-
-        if not aprs.valid_callsign(self.callsign):
-            self.parse_text(callsign)
-
-        if not aprs.valid_callsign(self.callsign):
-            raise aprs.BadCallsignError(
-                'Could not extract callsign from %s' %
-                self.callsign.encode('hex'))
-
-    def parse_text(self, callsign):
-        """
-        Parses and extracts a Callsign and SSID from an ASCII-Encoded APRS
-        Callsign or Callsign-SSID.
-
-        :param callsign: ASCII-Encoded APRS Callsign
-        :type callsign: str
-        """
-        self._logger.debug('callsign="%s"', callsign)
-        _callsign = callsign.lstrip().rstrip()
-        ssid = str(0)
-
-        if '*' in _callsign:
-            _callsign = _callsign.strip('*')
-            self.digi = True
-
-        if '-' in _callsign:
-            _callsign, ssid = _callsign.split('-')
-
-        self.callsign = _callsign
-        self.ssid = ssid.lstrip().rstrip()
-
-    def encode_kiss(self):
-        """
-        Encodes Callsign (or Callsign-SSID) as KISS.
-        """
-        encoded_ssid = (int(self.ssid) << 1) | 0x60
-        _callsign = self.callsign
-
-        if self.digi:
-            # _callsign = ''.join([_callsign, '*'])
-            encoded_ssid |= 0x80
-
-        # Pad the callsign to at least 6 characters.
-        while len(_callsign) < 6:
-            _callsign = ''.join([_callsign, ' '])
-
-        encoded_callsign = ''.join([chr(ord(p) << 1) for p in _callsign])
-
-        return ''.join([encoded_callsign, chr(encoded_ssid)])
-
-    def _extract_kiss_callsign(self, frame):
-        """
-        Extracts a Callsign and SSID from a KISS-Encoded APRS Frame.
-
-        :param frame: KISS-Encoded APRS Frame as str of octs.
-        :type frame: str
-        """
-        self._logger.debug('frame="%s"', frame)
-        callsign = ''.join([chr(x >> 1) for x in frame[:6]])
-        self.callsign = callsign.lstrip().rstrip()
-        self.ssid = str((ord(frame[6]) >> 1) & 0x0F)
-
-
 class TCP(APRS):
 
     """APRS-IS TCP Class."""
 
-    def __init__(self, user, password, servers=None, aprs_filter=None):
+    def __init__(self, user: bytes, password: bytes, servers: bytes=b'',
+                 aprs_filter: bytes=b'') -> None:
         super(TCP, self).__init__(user, password)
-        servers = servers or aprs.APRSIS_SERVERS
-        aprs_filter = aprs_filter or '/'.join(['p', user])
+        servers = servers or aprs.APRSIS_SERVERS  # Unicode
+        aprs_filter = aprs_filter or b'/'.join([b'p', user])  # Unicode
+        if isinstance(aprs_filter, str):
+            aprs_filter = bytes(aprs_filter, 'UTF-8')
 
-        self._full_auth = ' '.join([self._auth, 'filter', aprs_filter])
+        # Unicode
+        self._full_auth = b' '.join([self._auth, b'filter', aprs_filter])
 
         self.servers = itertools.cycle(servers)
         self.use_i_construct = True
@@ -208,8 +286,8 @@ class TCP(APRS):
         """
         while not self._connected:
             servers = next(self.servers)
-            if ':' in servers:
-                server, port = servers.split(':')
+            if b':' in servers:
+                server, port = servers.split(b':')
                 port = int(port)
             else:
                 server = servers
@@ -234,7 +312,10 @@ class TCP(APRS):
                 # Auth
                 self._logger.info(
                     "Auth To %s:%i", addr_info[0][4][0], port)
-                self.interface.sendall(self._full_auth + '\n\r')
+
+                _full_auth = self._full_auth + b'\n\r'
+
+                self.interface.sendall(_full_auth)
 
                 server_return = self.interface.recv(1024)
                 self._logger.info(
@@ -242,6 +323,7 @@ class TCP(APRS):
 
                 self._connected = True
             except socket.error as ex:
+                self._logger.exception(ex)
                 self._logger.warn(
                     "Error when connecting to %s:%d: '%s'",
                     server, port, str(ex))
@@ -255,9 +337,13 @@ class TCP(APRS):
         :type frame: str
         """
         self._logger.info('Sending frame="%s"', frame)
-        return self.interface.send("%s\n\r" % frame)  # Ensure cast->str.
 
-    def receive(self, callback=None):
+        # Unicode Sandwich: Send bytes.
+        _frame = bytes(frame + b'\n\r')
+
+        return self.interface.send(_frame)
+
+    def receive(self, callback=None, frame_handler=aprs.parse_frame):
         """
         Receives from APRS-IS.
 
@@ -267,7 +353,12 @@ class TCP(APRS):
         :returns: Nothing, but calls a callback with an Frame object.
         :rtype: None
         """
-        recvd_data = ''
+        self._logger.info(
+            'Receive started with callback="%s" and frame_handler="%s"',
+            callback, frame_handler)
+
+        # Unicode Sandwich: Receive Bytes.
+        recvd_data = bytes()
 
         try:
             while 1:
@@ -278,26 +369,35 @@ class TCP(APRS):
 
                 recvd_data += recv_data
 
-                self._logger.debug('recv_data=%s', recv_data.strip())
+                self._logger.debug('recv_data="%s"', recv_data.strip())
 
-                if recvd_data.endswith('\r\n'):
-                    lines = recvd_data.strip().split('\r\n')
-                    recvd_data = ''
+                if recvd_data.endswith(b'\r\n'):
+                    lines = recvd_data.strip().split(b'\r\n')
+                    recvd_data = bytes()
                 else:
-                    lines = recvd_data.split('\r\n')
-                    recvd_data = str(lines.pop(-1))
+                    lines = recvd_data.split(b'\r\n')
+                    recvd_data = lines.pop(-1)
 
                 for line in lines:
-                    if line.startswith('#'):
-                        if 'logresp' in line:
-                            self._logger.debug('logresp=%s', line)
+                    if line.startswith(b'#'):
+                        if b'logresp' in line:
+                            self._logger.debug('logresp="%s"', line)
+                        # We log all received data anyway, so no need to log
+                        # it here again:
+                        # else:
+                        #    self._logger.debug('unknown response="%s"', line)
                     else:
-                        self._logger.debug('line=%s', line)
+                        self._logger.debug('line="%s"', line)
                         if callback:
-                            callback(kiss.Frame(line))
+                            if frame_handler:
+                                callback(frame_handler(line))
+                            else:
+                                callback(line)
+                        else:
+                            self._logger.info('No callback set?')
 
         except socket.error as sock_err:
-            self._logger.error(sock_err)
+            self._logger.exception(sock_err)
             raise
 
 
@@ -326,7 +426,7 @@ class UDP(APRS):
         :type frame: str
         """
         self._logger.info('Sending frame="%s"', frame)
-        content = "\n".join([self._auth, str(frame)])
+        content = b"\n".join([self._auth, str(frame)])
         return self.interface.sendto(content, self._addr)
 
 
@@ -334,7 +434,8 @@ class HTTP(APRS):
 
     """APRS-IS HTTP Class."""
 
-    def __init__(self, user, password='-1', url=None, headers=None):
+    def __init__(self, user: bytes, password: bytes=b'-1', url: bytes=b'',
+                 headers=None) -> None:
         super(HTTP, self).__init__(user, password)
         self.url = url or aprs.APRSIS_URL
         self.headers = headers or aprs.APRSIS_HTTP_HEADERS
@@ -346,14 +447,97 @@ class HTTP(APRS):
         """
         self.interface = requests.post
 
-    def send(self, frame):
+    def send(self, frame: bytes) -> bool:
         """
         Sends frame to APRS-IS.
 
         :param frame: Frame to send to APRS-IS.
         :type frame: str
         """
+        if isinstance(frame, str):
+            frame = aprs.parse_frame(frame)
+        if isinstance(frame, aprs.Frame):
+            frame = bytes(frame)
         self._logger.info('Sending frame="%s"', frame)
-        content = "\n".join([self._auth, str(frame)])
+        content = b"\n".join([self._auth, frame])
         result = self.interface(self.url, data=content, headers=self.headers)
         return result.status_code == 204
+
+
+class InformationField(object):
+
+    """
+    Class for APRS 'Information' Field.
+    """
+
+    _logger = logging.getLogger(__name__)  # pylint: disable=R0801
+    if not _logger.handlers:  # pylint: disable=R0801
+        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
+        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
+        _logger.addHandler(_console_handler)  # pylint: disable=R0801
+        _logger.propagate = False  # pylint: disable=R0801
+
+    __slots__ = ['data_type', 'data', 'safe']
+
+    def __init__(self, data: bytes=b'', data_type: bytes=b'undefined',
+                 safe: bool=False) -> None:
+        self.data = data
+        self.data_type = data_type
+        self.safe = safe
+
+    def __repr__(self) -> str:
+        if self.safe:
+            try:
+                decoded_data = self.data.decode('UTF-8')
+            except UnicodeDecodeError as ex:
+                decoded_data = self.data.decode('UTF-8', 'backslashreplace')
+            return decoded_data
+        else:
+            return self.data.decode()
+
+    def __bytes__(self) -> bytes:
+        return self.data
+
+
+class PositionFrame(Frame):
+
+    __slots__ = ['lat', 'lng', 'source', 'destination', 'path', 'table',
+                 'symbol', 'comment', 'ambiguity']
+
+    _logger = logging.getLogger(__name__)  # pylint: disable=R0801
+    if not _logger.handlers:  # pylint: disable=R0801
+        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
+        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
+        _logger.addHandler(_console_handler)  # pylint: disable=R0801
+        _logger.propagate = False  # pylint: disable=R0801
+
+    def __init__(self, source: bytes, destination: bytes, path: typing.List,
+                 table: bytes, symbol: bytes, comment: bytes, lat: float,
+                 lng: float, ambiguity: float) -> None:
+        self.table = table
+        self.symbol = symbol
+        self.comment = comment
+        self.lat = lat
+        self.lng = lng
+        self.ambiguity = ambiguity
+        frame = self.create_frame()
+        super(PositionFrame, self).__init__(source, destination, path, frame)
+
+    def create_frame(self) -> bytes:
+        enc_lat = aprs.dec2dm_lat(self.lat)
+        enc_lat_amb = aprs.ambiguate(enc_lat, self.ambiguity)
+        enc_lng = aprs.dec2dm_lng(self.lng)
+        enc_lng_amb = aprs.ambiguate(enc_lng, self.ambiguity)
+        frame = [
+            b'=',
+            enc_lat_amb,
+            self.table,
+            enc_lng_amb,
+            self.symbol,
+            self.comment
+        ]
+        return b''.join(frame)

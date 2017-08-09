@@ -21,30 +21,6 @@ class APRSTest(aprs_test_classes.APRSTestClass):  # pylint: disable=R0904
 
     """Tests for Python APRS-IS Bindings."""
 
-    def setUp(self):  # pylint: disable=C0103
-        self.fake_server = ''.join([
-            'http://localhost:',
-            self.random(4, constants.POSITIVE_NUMBERS),
-            '/'
-        ])
-
-        self.fake_callsign = ''.join([
-            self.random(1, 'KWN'),
-            self.random(1, constants.NUMBERS),
-            self.random(3, constants.ALPHABET),
-            '-',
-            self.random(1, constants.POSITIVE_NUMBERS)
-        ])
-
-        self.real_server = 'http://localhost:14580'
-        self.real_callsign = '-'.join(['W2GMD', self.random(1, '123456789')])
-
-        self._logger.debug(
-            "fake_server=%s fake_callsign=%s",
-            self.fake_server,
-            self.fake_callsign
-        )
-
     @httpretty.httprettified
     def test_fake_good_auth(self):
         """
@@ -62,13 +38,15 @@ class APRSTest(aprs_test_classes.APRSTestClass):  # pylint: disable=R0904
         )
         aprs_conn.start()
 
-        msg = '>'.join([
-            self.fake_callsign,
-            'APRS,TCPIP*:=3745.00N/12227.00W-Simulated Location'
-        ])
-        self._logger.debug(locals())
+        frame = aprs.parse_frame(
+            '>'.join([
+                self.fake_callsign,
+                'APRS,TCPIP*:=3745.00N/12227.00W-test_fake_good_auth'
+            ])
+        )
+        self._logger.debug('frame="%s"', frame)
 
-        result = aprs_conn.send(msg)
+        result = aprs_conn.send(frame)
 
         self.assertTrue(result)
 

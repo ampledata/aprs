@@ -29,6 +29,47 @@ class APRSTestClass(unittest.TestCase):  # pylint: disable=R0904
         _logger.addHandler(_console_handler)  # pylint: disable=R0801
         _logger.propagate = False  # pylint: disable=R0801
 
+    def setUp(self):  # pylint: disable=C0103
+        """Setup."""
+        self.test_frames = open(constants.TEST_FRAMES, 'rb')
+        self.test_frame = self.test_frames.read()#lines()[0].strip()
+        self.test_hex_frame = bytes.fromhex(constants.TEST_HEX_FRAME)
+
+        self.fake_callsign = ''.join([
+            self.random(1, 'KWN'),
+            self.random(1, constants.NUMBERS),
+            self.random(3, constants.ALPHABET).upper(),
+            '-',
+            self.random(1, constants.POSITIVE_NUMBERS)
+        ])
+
+        self.real_callsign = '-'.join(
+            ['W2GMD', self.random(1, constants.POSITIVE_NUMBERS)])
+
+        self.fake_server = ''.join([
+            'http://localhost:',
+            self.random(4, constants.POSITIVE_NUMBERS),
+            '/'
+        ])
+
+        self.real_server = 'http://localhost:14580'
+
+        self._logger.debug(
+            "fake_callsign=%s real_callsign=%s",
+            self.fake_callsign,
+            self.real_callsign
+        )
+
+        self._logger.debug(
+            "fake_server=%s real_server=%s",
+            self.fake_server,
+            self.real_server
+        )
+
+    def tearDown(self):  # pylint: disable=C0103
+        """Teardown."""
+        self.test_frames.close()
+
     @classmethod
     def random(cls, length=8, alphabet=constants.ALPHANUM):
         """
