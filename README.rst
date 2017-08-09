@@ -6,21 +6,15 @@ receiving, parsing and sending APRS Frames.
 
 Included are several Interface Classes:
 
-* APRS - Abstract Class from which all other Interfaces are inherited.
-* TCP - Interfaces Class for connecting to APRS-IS via TCP. Can send or receive APRS Frames.
-* UDP - Interfaces Class for connecting to APRS-IS via UDP. Only supports sending APRS Frames.
-* HTTP - Interfaces Class for connecting to APRS-IS via HTTP. Currently only supports sending APRS Frames.
+* APRS - Abstract Class from which all other Connection Interfaces are inherited.
+* TCP - Connection Interface Class for connecting to APRS-IS via TCP. Can send or receive APRS Frames.
+* UDP - Connection Interface Class for connecting to APRS-IS via UDP. Only supports sending APRS Frames.
+* HTTP - Connection Interface Class for connecting to APRS-IS via HTTP. Currently only supports sending APRS Frames.
 
-Additional Interface Classes for connecting to KISS Interfaces are included:
-
-* SerialKISS - Interface Class for connecting to KISS Serial devices. Can send or receive APRS Frames.
-* TCPKISS - Interface Class for connecting to KISS TCP Hosts. Can send or receive APRS Frames.
-
-Finally, Frame and Callsign classes are included:
+Frame and Callsign classes are included:
 
 * Frame - Describes the components of an APRS Frame.
 * Callsign - Describes the components of an APRS Callsign.
-
 
 Versions
 ========
@@ -74,7 +68,7 @@ Example 2 Code
 
     import aprs
 
-    frame = aprs.Frame('W2GMD>APRS:>Hello World!')
+    frame = aprs.parse_frame('W2GMD>APRS:>Hello World!')
 
     a = aprs.TCP('W2GMD', '12345')
     a.start()
@@ -86,6 +80,13 @@ Testing
 Run nosetests from a Makefile target::
 
     make test
+
+Errata
+======
+
+7.0.0rc1 - Currently setting/getting digi flag on KISS frames is broken. Expect it to
+be fixed in final release of 7.0.0.
+
 
 See Also
 ========
@@ -140,6 +141,15 @@ Copyright 2017 Greg Albrecht and Contributors
 
 `Automatic Packet Reporting System (APRS) <http://www.aprs.org/>`_ is Copyright Bob Bruninga WB4APR wb4apr@amsat.org
 
+fcs.py - Copyright (c) 2013 Christopher H. Casebeer. All rights reserved.
+
+decimaldegrees.py - Copyright (C) 2006-2013 by Mateusz Łoskot <mateusz@loskot.net>
+
+
 License
 =======
 Apache License, Version 2.0. See LICENSE for details.
+
+fcs.py - BSD 2-clause Simplified License
+
+decimaldegrees.py - BSD 3-clause License

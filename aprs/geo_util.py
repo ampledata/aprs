@@ -10,7 +10,7 @@ __copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'  # NOQA pylint: 
 __license__ = 'Apache License, Version 2.0'  # NOQA pylint: disable=R0801
 
 
-def dec2dm_lat(dec):
+def dec2dm_lat(dec: float) -> str:
     """
     Converts DecDeg to APRS Coord format.
 
@@ -41,7 +41,7 @@ def dec2dm_lat(dec):
     return "%02d%05.2f%s" % (abs_deg, dec_min[1], suffix)
 
 
-def dec2dm_lng(dec):
+def dec2dm_lng(dec: float) -> str:
     """
     Converts DecDeg to APRS Coord format.
 
@@ -68,6 +68,33 @@ def dec2dm_lng(dec):
         suffix = 'E'
 
     return "%03d%05.2f%s" % (abs_deg, dec_min[1], suffix)
+
+
+def ambiguate(pos: float, ambiguity: int) -> str:
+    """
+    Adjust ambiguity of position.
+
+    Derived from @asdil12's `process_ambiguity()`.
+
+    >>> pos = '12345.67N'
+    >>> ambiguate(pos, 0)
+    '12345.67N'
+    >>> ambiguate(pos, 1)
+    '12345.6 N'
+    >>> ambiguate(pos, 2)
+    '12345.  N'
+    >>> ambiguate(pos, 3)
+    '1234 .  N'
+    """
+    num = bytearray(pos, 'UTF-8')
+    for i in range(0, ambiguity):
+        if i > 1:
+            # skip the dot
+            i += 1
+        # skip the direction
+        i += 2
+        num[-i] = ord(' ')
+    return num.decode()
 
 
 def run_doctest():  # pragma: no cover

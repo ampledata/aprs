@@ -16,7 +16,7 @@ import sys
 import setuptools
 
 __title__ = 'aprs'
-__version__ = '7.0.0b1'
+__version__ = '7.0.0rc1'
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'  # NOQA pylint: disable=R0801
 __copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'  # NOQA pylint: disable=R0801
 __license__ = 'Apache License, Version 2.0'  # NOQA pylint: disable=R0801
@@ -54,7 +54,12 @@ setuptools.setup(
     ],
     install_requires=[
         'kiss > 6.9',
+<<<<<<< HEAD
         'requests >= 2.7.0'
+=======
+        'requests >= 2.7.0',
+        'bitarray >= 0.8.1'
+>>>>>>> feature/7_python3_support
     ],
     classifiers=[
         'Topic :: Communications :: Ham Radio',
