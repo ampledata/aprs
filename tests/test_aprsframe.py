@@ -77,7 +77,7 @@ class FrameTestCase(aprs_test_classes.APRSTestClass):  # pylint: disable=R0904
 
         self.assertEqual(encoded_frame[0], 126)
         self.assertEqual(encoded_frame[-1:], aprs.AX25_FLAG)
-        self.assertEqual(encoded_frame[-3:-1], b'\xf0\x07')
+        self.assertEqual(encoded_frame[-3:-1], b'\xff\x07')
         self.assertEqual(str(aprs.parse_callsign_ax25(encoded_frame[1:8])), 'APRX24')
         self.assertEqual(str(aprs.parse_callsign_ax25(encoded_frame[8:15])), 'W2GMD-6')
         self.assertEqual(str(aprs.parse_callsign_ax25(encoded_frame[15:22])), 'WIDE1-1')
@@ -88,13 +88,14 @@ class FrameTestCase(aprs_test_classes.APRSTestClass):  # pylint: disable=R0904
             bytearray(b'!3745.75NI12228.05W#W2GMD-6 Inner Sunset, SF iGate/Digipeater http://w2gmd.org')
         )
 
-        decoded_frame = aprs.Frame(encoded_frame)
+        decoded_frame = aprs.parse_frame(encoded_frame)
+
         self.assertEqual(str(decoded_frame.source), 'W2GMD-6')
         self.assertEqual(str(decoded_frame.destination), 'APRX24')
         self.assertEqual(str(decoded_frame.path[0]), 'WIDE1-1')
         self.assertEqual(str(decoded_frame.path[1]), 'WIDE2-1')
         self.assertEqual(
-            decoded_frame.text,
+            str(decoded_frame.info),
             '!3745.75NI12228.05W#W2GMD-6 Inner Sunset, SF iGate/Digipeater http://w2gmd.org'
         )
 
@@ -106,10 +107,8 @@ class FrameTestCase(aprs_test_classes.APRSTestClass):  # pylint: disable=R0904
         frame = 'W2GMD-1>APRY07:>test_ax25_decode'
         aprs_frame = aprs.parse_frame(frame)
         encoded_frame = aprs_frame.encode_ax25()
-        print('encoded_frame={}'.format(encoded_frame))
 
         decoded_frame = aprs.Frame(encoded_frame)
-        print('decoded_frame={}'.format(decoded_frame))
 
 
 

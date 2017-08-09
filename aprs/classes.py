@@ -88,23 +88,23 @@ class Frame(object):
         """
         Encodes an APRS Frame as AX.25.
         """
-        encoded_frame = bytearray()
-        encoded_frame.extend(aprs.AX25_FLAG)
-        encoded_frame.extend(self.destination.encode_ax25())
-        encoded_frame.extend(self.source.encode_ax25())
+        encoded_frame = []
+        encoded_frame.append(aprs.AX25_FLAG)
+        encoded_frame.append(self.destination.encode_ax25())
+        encoded_frame.append(self.source.encode_ax25())
         for path_call in self.path:
-            encoded_frame.extend(path_call.encode_ax25())
-        encoded_frame.extend(aprs.ADDR_INFO_DELIM)
-        encoded_frame.extend([ord(t) for t in self.info])
+            encoded_frame.append(path_call.encode_ax25())
+        encoded_frame.append(aprs.ADDR_INFO_DELIM)
+        encoded_frame.append(bytes(self.info))
 
         fcs = aprs.FCS()
         for bit in encoded_frame:
             fcs.update_bit(bit)
 
-        encoded_frame.extend(fcs.digest())
-        encoded_frame.extend(aprs.AX25_FLAG)
+        encoded_frame.append(fcs.digest())
+        encoded_frame.append(aprs.AX25_FLAG)
 
-        return encoded_frame
+        return b''.join(encoded_frame)
 
 
 class Callsign(object):
@@ -191,7 +191,7 @@ class Callsign(object):
         Encodes Callsign as AX.25.
         """
         _callsign = self.callsign
-        encoded_callsign = bytearray()
+        encoded_callsign = []
 
         encoded_ssid = (int(self.ssid) << 1) | 0x60
 
@@ -201,14 +201,14 @@ class Callsign(object):
 
         # Pad the callsign to at least 6 characters.
         while len(_callsign) < 6:
-            _callsign += b'0'
+            _callsign += b' '
 
         for pos in _callsign:
-            encoded_callsign.append(pos << 1)
+            encoded_callsign.append(bytes([pos << 1]))
 
-        encoded_callsign.append(encoded_ssid)
+        encoded_callsign.append(bytes([encoded_ssid]))
 
-        return encoded_callsign
+        return b''.join(encoded_callsign)
 
 
 class APRS(object):
@@ -477,7 +477,7 @@ class InformationField(object):
         self.data_type = data_type
 
     def __repr__(self) -> str:
-        return str(self.data)
+        return self.data.decode()
 
     def __bytes__(self) -> bytes:
         return self.data
