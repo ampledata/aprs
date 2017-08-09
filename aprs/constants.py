@@ -36,6 +36,23 @@ APRSIS_URL = os.environ.get('APRSIS_URL', 'http://srvr.aprs-is.net:8080')
 
 RECV_BUFFER = int(os.environ.get('RECV_BUFFER', 1024))
 
-UI_PROTOCOL_ID = b'\xF0'
-FLAG = b'\x7E'
-CONTROL_FIELD = b'\x03'
+DEFAULT_TOCALL = b'APYT70'
+
+# AX.25 Flag — The flag field at each end of the frame is the bit sequence
+#              0x7E that separates each frame.
+AX25_FLAG = b'\x7E'
+# AX.25 Control Field — This field is set to 0x03 (UI-frame).
+AX25_CONTROL_FIELD = b'\x03'
+# AX.25 Protocol ID — This field is set to 0xf0 (no layer 3 protocol).
+AX25_PROTOCOL_ID = b'\xF0'
+# A good place to split AX.25 Address from Information fields.
+ADDR_INFO_DELIM = AX25_CONTROL_FIELD + AX25_PROTOCOL_ID
+
+DATA_TYPE_MAP = {
+    b'>': b'status',
+    b'!': b'position_nots_nomsg',
+    b'=': b'position_nots_msg',
+    b'T': b'telemetry',
+    b';': b'object',
+    b'`': b'old_mice'
+}

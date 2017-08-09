@@ -18,7 +18,9 @@ Python APRS Module.
 from .constants import (LOG_FORMAT, LOG_LEVEL, APRSIS_SW_VERSION,  # NOQA
                         APRSIS_HTTP_HEADERS, APRSIS_SERVERS,
                         APRSIS_FILTER_PORT, APRSIS_RX_PORT, RECV_BUFFER,
-                        APRSIS_URL)
+                        APRSIS_URL, DEFAULT_TOCALL, AX25_FLAG,
+                        AX25_CONTROL_FIELD, AX25_PROTOCOL_ID, ADDR_INFO_DELIM,
+                        DATA_TYPE_MAP)
 
 from .exceptions import BadCallsignError  # NOQA
 
@@ -28,10 +30,10 @@ from .geo_util import dec2dm_lat, dec2dm_lng  # NOQA
 
 from .fcs import FCS  # NOQA
 
-from .classes import (Frame, Callsign, APRS, TCP, UDP, HTTP,  # NOQA
-                      InformationField)
+from .functions import parse_frame, parse_callsign, parse_callsign_ax25, parse_info_field  # NOQA
 
-#from .kiss_classes import Frame, TCPKISS, SerialKISS  # NOQA
+from .classes import (Frame, Callsign, APRS, TCP, UDP, HTTP,  # NOQA
+                      InformationField, PositionFrame)
 
 __author__ = 'Greg Albrecht W2GMD <oss@undef.net>'  # NOQA pylint: disable=R0801
 __copyright__ = 'Copyright 2017 Greg Albrecht and Contributors'  # NOQA pylint: disable=R0801

@@ -8,8 +8,8 @@ import itertools
 import logging
 import socket
 import time
+import typing
 
-import bitarray
 import pkg_resources
 import requests
 
@@ -25,11 +25,10 @@ class Frame(object):
     """
     Frame Class.
 
-    Defines the components of an APRS Frame and can decode a frame
-    from either plain-text or AX.25.
+    Defines the components of an AX.25/APRS Frame.
     """
 
-    __slots__ = ['frame', 'source', 'destination', 'path', 'info']
+    __slots__ = ['source', 'destination', 'path', 'info']
 
     _logger = logging.getLogger(__name__)  # pylint: disable=R0801
     if not _logger.handlers:  # pylint: disable=R0801
@@ -40,15 +39,14 @@ class Frame(object):
         _logger.addHandler(_console_handler)  # pylint: disable=R0801
         _logger.propagate = False  # pylint: disable=R0801
 
-    def __init__(self, frame=None):
-        self.source = ''
-        self.destination = aprs.Callsign('APYT70')
-        self.path = []
-        self.info = aprs.InformationField()
-        if frame is not None:
-            self.parse(frame)
+    def __init__(self, source: bytes=b'', destination: bytes=b'',
+                 path: list=[], info: bytes=b'') -> None:
+        self.source = aprs.Callsign(source)
+        self.destination = aprs.Callsign(destination)
+        self.path = path
+        self.info = aprs.InformationField(info)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Returns a string representation of this Object.
         """
@@ -61,7 +59,7 @@ class Frame(object):
         )
         return frame
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         full_path = [bytes(self.destination)]
         full_path.extend([bytes(p) for p in self.path])
         frame = b"%s>%s:%s" % (
@@ -71,100 +69,32 @@ class Frame(object):
         )
         return frame
 
-    def set_source(self, source):
-        self.source = aprs.Callsign(source)
-        return self.source
+    def set_source(self, source) -> None:
+        self.source = aprs.parse_callsign(source)
 
-    def set_destination(self, destination='APYT70'):
-        self.destination = aprs.Callsign(destination)
-        return self.destination
+    def set_destination(self, destination) -> None:
+        self.destination = aprs.parse_callsign(destination)
 
-    def set_path(self, path=[]):
-        self.path = [aprs.Callsign(pth) for pth in path]
-        return self.path
-    def set_info(self, info):
-        self.info = aprs.InformationField(info)
-        return self.info
+    def set_path(self, path=[]) -> None:
+        self.path = [aprs.parse_callsign(pth) for pth in path]
 
-    def parse(self, frame=None):
+    def update_path(self, update: bytes) -> None:
+        self.path.append(aprs.parse_callsign(update))
+
+    def set_info(self, info) -> None:
+        self.info = aprs.parse_info_field(info)
+
+    def encode_ax25(self) -> bytearray:
         """
-        Parses an Frame from either plain-text or AX.25.
-        """
-        if isinstance(frame, bytearray):
-            self.parse_ax25(frame)
-        else:
-            self.parse_text(frame)
-
-        if not self.source or not self.destination:
-            self._logger.info(
-                'Cannot decode frame=%s', frame)
-
-    def parse_text(self, frame=None):
-        """
-        Parses and Extracts the components of a plain-text Frame.
-        """
-        # Source>Destination
-        sd_delim = frame.index(b'>')
-        self.set_source(frame[:sd_delim].decode('UTF-8'))
-        self._logger.debug('self.source="%s"', self.source)
-
-        path = []
-        # Path:Info
-        pi_delim = frame.index(b':')
-        parsed_path = frame[sd_delim + 1:pi_delim]
-        if b',' in parsed_path:
-            for path in parsed_path.split(b','):
-                decoded_path = aprs.Callsign(path.decode('UTF-8'))
-                self._logger.debug('decoded_path=%s', decoded_path)
-                self.path.append(decoded_path)
-            self.set_destination(self.path.pop(0))
-        else:
-            self.set_destination(_path)
-
-        self.set_info(frame[pi_delim + 1:])
-
-    def parse_ax25(self, frame=None):
-        """
-        Parses and Extracts the components of an KISS-Encoded Frame.
-        """
-        frame = frame.strip(b'\x7E')
-
-        # Control Field — This field is set to 0x03 (UI-frame)
-        control_field = b'\x03'
-        # Protocol ID — This field is set to 0xf0 (no layer 3 protocol).
-        protocol_id = b'\xF0'
-        # Use these two fields as the address/information delimiter
-        frame_addressing, frame_information = frame.split(
-            control_field + protocol_id)
-
-        self.info = ''.join([chr(x) for x in frame_information[:-2]])
-
-        self._logger.debug('frame_addressing="%s"', frame_addressing)
-        self._logger.debug('self.info="%s"', self.info)
-
-        self.destination = aprs.Callsign(frame_addressing)
-        self.source = aprs.Callsign(frame_addressing[7:])
-
-        paths = frame_addressing[7+7:]
-        n_paths = int(len(paths) / 7)
-        n = 0
-        while n < n_paths:
-            self.path.append(aprs.Callsign(paths[:7]))
-            paths = paths[7:]
-            n += 1
-
-    def encode_ax25(self):
-        """
-        Encodes an Frame as AX.25.
+        Encodes an APRS Frame as AX.25.
         """
         encoded_frame = bytearray()
-        encoded_frame.append(0x7E)
+        encoded_frame.extend(aprs.AX25_FLAG)
         encoded_frame.extend(self.destination.encode_ax25())
         encoded_frame.extend(self.source.encode_ax25())
         for path_call in self.path:
             encoded_frame.extend(path_call.encode_ax25())
-        encoded_frame.append(0x03)
-        encoded_frame.append(0xF0)
+        encoded_frame.extend(aprs.ADDR_INFO_DELIM)
         encoded_frame.extend([ord(t) for t in self.info])
 
         fcs = aprs.FCS()
@@ -172,7 +102,8 @@ class Frame(object):
             fcs.update_bit(bit)
 
         encoded_frame.extend(fcs.digest())
-        encoded_frame.append(0x7E)
+        encoded_frame.extend(aprs.AX25_FLAG)
+
         return encoded_frame
 
 
@@ -195,23 +126,26 @@ class Callsign(object):
 
     __slots__ = ['callsign', 'ssid', 'digi']
 
-    def __init__(self, callsign=None):
-        self.callsign = ''  # Unicode
-        self.ssid = str(0)  # Unicode
-        self.digi = False
-        if callsign is not None:
-            self.parse(callsign)
+    def __init__(self, callsign: bytes=b'', ssid: bytes=b'0',
+                 digi: bool=False) -> None:
+        self.callsign: bytes = callsign
+        self.ssid: bytes = ssid
+        self.digi: bool = digi
 
-    def __repr__(self):
-        call_repr = self.callsign
+    def __repr__(self) -> str:
+        _callsign = self.callsign.decode()
+        _ssid = self.ssid.decode()
+        call_repr = _callsign
 
         # Don't print callsigns with ssid 0.
-        try:
-            if int(self.ssid) > 0:
-                call_repr = '-'.join([self.callsign, str(self.ssid)])
-        except ValueError:
-            if self.ssid != 0:
-                call_repr = '-'.join([self.callsign, str(self.ssid)])
+        if _ssid:
+            try:
+                if int(_ssid) > 0:
+                    call_repr = '-'.join([_callsign, _ssid])
+            except ValueError:
+                if _ssid != 0:
+                    call_repr = '-'.join([_callsign, _ssid])
+
 
         # If callsign was digipeated, append '*'.
         if self.digi:
@@ -219,90 +153,45 @@ class Callsign(object):
         else:
             return call_repr
 
-    def __bytes__(self):
-        # Unicode Sandwich: Send our Unicode as bytes.
-        return bytes(str(self), encoding='UTF-8')
+    def __bytes__(self) -> bytes:
+        _callsign = self.callsign
+        _ssid = self.ssid
+        call_repr = _callsign
 
-    def parse(self, callsign):
-        """
-        Parse and extract the components of a Callsign from ASCII or KISS.
-        """
-        if isinstance(callsign, bytearray):
-            self.parse_ax25(callsign)
+        # Don't print callsigns with ssid 0.
+        if _ssid:
+            try:
+                if int(_ssid) > 0:
+                    call_repr = b'-'.join([_callsign, _ssid])
+            except ValueError:
+                if _ssid != 0:
+                    call_repr = b'-'.join([_callsign, _ssid])
+
+
+        # If callsign was digipeated, append '*'.
+        if self.digi:
+            return b''.join([call_repr, b'*'])
         else:
-            self.parse_text(callsign)
+            return call_repr
 
-        if not self.callsign:
-            raise aprs.BadCallsignError(
-                'Could not extract callsign from %s' %
-                self.callsign)
+    def set_callsign(self, callsign: bytes) -> None:
+        self.callsign = callsign
 
-    def parse_text(self, callsign):
+    def set_ssid(self, ssid: bytes=b'0') -> None:
+        if isinstance(ssid, bytes):
+            self.ssid = ssid
+        else:
+            self.ssid = bytes(str(ssid), 'UTF-8')
+
+    def set_digi(self, digi: bool) -> None:
+        self.digi = digi
+
+    def encode_ax25(self) -> bytearray:
         """
-        Parses and extracts a Callsign and SSID from plain-text APRS
-        Callsign or Callsign-SSID.
-
-        :param callsign: ASCII-Encoded APRS Callsign
-        :type callsign: str
+        Encodes Callsign as AX.25.
         """
-        self._logger.debug('callsign="%s"', callsign)
-        _callsign = str(callsign).lstrip().rstrip()
-        ssid = str(0)
-
-        if '*' in str(_callsign):
-            _callsign = _callsign.strip('*')
-            self.digi = True
-
-        if '-' in _callsign:
-            _callsign, ssid = _callsign.split('-')
-
-        self.callsign = _callsign
-        self.ssid = ssid.lstrip().rstrip()
-
-    def parse_ax25(self, callsign):
-        """
-        Extracts a Callsign and SSID from a AX.25 Encoded APRS Frame.
-
-        :param frame: AX.25 Encoded APRS Frame.
-        :type frame: str
-        """
-        self._logger.debug('callsign="%s"', callsign)
-        self._logger.debug('type callsign="%s"', type(callsign))
-        if not len(callsign) >= 6:
-            raise aprs.BadCallsignError('Callsign is too short.')
-
-        for _chunk in callsign[:6]:
-            chunk = _chunk & 0xFF
-            if chunk & 1:
-                # aprx: /* Bad address-end flag ? */
-                raise aprs.BadCallsignError('Bad address-end flag.')
-
-            # Shift by one bit:
-            chunk = chunk >> 1
-            self._logger.debug('chunk={}'.format(chunk))
-            chr_chunk = chr(chunk)
-
-            if chr_chunk.isalnum():
-                self.callsign += chr_chunk
-            #else:
-            #    raise aprs.BadCallsignError('Invalid characters in callsign.')
-
-        self._logger.debug('self.callsign=%s', self.callsign)
-
-        # 7th byte carries SSID or digi:
-        seven_chunk = callsign[6] & 0xFF
-        self.ssid = str((seven_chunk >> 1) & 0x0F)
-        self._logger.debug('self.ssid=%s', self.ssid)
-
-        if seven_chunk & 0x80:
-            self.digi = True
-        self._logger.debug('self.digi=%s', self.digi)
-
-    def encode_ax25(self):
-        """
-        Encodes Callsign (or Callsign-SSID) as AX.25.
-        """
-        encoded_callsign = bytearray(self.callsign, encoding='UTF-8')
+        _callsign = self.callsign
+        encoded_callsign = bytearray()
 
         encoded_ssid = (int(self.ssid) << 1) | 0x60
 
@@ -311,15 +200,15 @@ class Callsign(object):
             encoded_ssid |= 0x80
 
         # Pad the callsign to at least 6 characters.
-        while len(encoded_callsign) < 6:
-            encoded_callsign.append(0)
+        while len(_callsign) < 6:
+            _callsign += b'0'
 
-        ec = bytearray()
-        for pos in encoded_callsign:
-            ec.append(pos << 1)
+        for pos in _callsign:
+            encoded_callsign.append(pos << 1)
 
-        ec.append(encoded_ssid)
-        return ec
+        encoded_callsign.append(encoded_ssid)
+
+        return encoded_callsign
 
 
 class APRS(object):
@@ -364,7 +253,7 @@ class APRS(object):
         """
         pass
 
-    def receive(self, callback=None, frame_handler=Frame):
+    def receive(self, callback=None, frame_handler=aprs.parse_frame):
         """
         Abstract method for receiving messages from APRS-IS.
         """
@@ -450,7 +339,7 @@ class TCP(APRS):
 
         return self.interface.send(_frame)
 
-    def receive(self, callback=None, frame_handler=Frame):
+    def receive(self, callback=None, frame_handler=aprs.parse_frame):
         """
         Receives from APRS-IS.
 
@@ -581,69 +470,56 @@ class InformationField(object):
         _logger.addHandler(_console_handler)  # pylint: disable=R0801
         _logger.propagate = False  # pylint: disable=R0801
 
-    __slots__ = ['data_type', 'data', 'decoded_data']
+    __slots__ = ['data_type', 'data']
 
-    def __init__(self, data=None):
-        data = data or bytes()
-        if isinstance(data, bytes):
-            self.data = data  # Bytes
-        else:
-            self.data = bytes(data, 'UTF-8')
-        self.data_type = 'undefined'  # Unicode
-        self.decoded_data = ''  # Unicode-ish
-        if self.data:
-            self.find_data_type()
+    def __init__(self, data: bytes=b'', data_type: bytes=b'undefined') -> None:
+        self.data = data
+        self.data_type = data_type
 
-    def __repr__(self):
-        return self.decoded_data
+    def __repr__(self) -> str:
+        return str(self.data)
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         return self.data
 
-    def _handle_data_type_undefined(self):
-        """
-        Handler for Undefined Data Types.
-        """
-        try:
-            self.decoded_data = self.data.decode('UTF-8')
-        except UnicodeDecodeError as ex:
-            self._logger.exception(ex)
-            self._logger.warn(
-                'Error decoding data as UTF-8, forcing "backslashreplace".')
-            self.decoded_data = self.data.decode('UTF-8', 'backslashreplace')
 
-    def find_data_type(self):
-        dtf = self.data[0]
-        if '>' in dtf:
-            self.data_type = 'status'
-        if '!' in dtf:
-            self.data_type = 'position_nots_nomsg'
-        if '=' in dtf:
-            self.data_type = 'position_nots_msg'
-        elif 'T' in dtf:
-            self.data_type = 'telemetry'
-        elif ';' in dtf:
-            self.data_type = 'object'
-        elif '`' in dtf:
-            self.data_type = 'old_mice'
+class PositionFrame(Frame):
 
-        return self.handle_data_type()
+    __slots__ = ['lat', 'lng', 'source', 'destination', 'path', 'table',
+                 'symbol', 'comment', 'ambiguity']
 
-    def handle_data_type(self):
-        handler = getattr(
-            self,
-            "_handle_data_type_%s" % self.data_type,
-            None
-        )
+    _logger = logging.getLogger(__name__)  # pylint: disable=R0801
+    if not _logger.handlers:  # pylint: disable=R0801
+        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
+        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
+        _logger.addHandler(_console_handler)  # pylint: disable=R0801
+        _logger.propagate = False  # pylint: disable=R0801
 
-        self._logger.debug('handler="%s"', handler)
+    def __init__(self, source: bytes, destination: bytes, path: typing.List,
+                 table: bytes, symbol: bytes, comment: bytes, lat: float,
+                 lng: float, ambiguity: float) -> None:
+        self.table = table
+        self.symbol = symbol
+        self.comment = comment
+        self.lat = lat
+        self.lng = lng
+        self.ambiguity = ambiguity
+        frame = self.create_frame()
+        super(PositionFrame, self).__init__(source, destination, path, frame)
 
-        if handler is not None:
-            self._logger.debug(
-                'Handling data_type="%s" with handler="%s"',
-                self.data_type, handler)
-            return handler()
-        else:
-            self._logger.warn(
-                'Received Unhandled data_type="%s"', self.data_type)
-            return self._handle_data_type_undefined()
+    def create_frame(self) -> bytes:
+        enc_lat = encode_lat(self.lat)
+        enc_lat_amb = process_ambiguity(enc_lat, self.ambiguity)
+        enc_lng = encode_lng(self.lng)
+        enc_lng_amb = process_ambiguity(enc_lng, self.ambiguity)
+        frame = [
+            b'=',
+            enc_lat_amb,
+            self.table,
+            enc_lng_amb,
+            self.symbol,
+            self.comment
+        ]
+        return b''.join(frame)
