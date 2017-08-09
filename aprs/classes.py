@@ -470,14 +470,23 @@ class InformationField(object):
         _logger.addHandler(_console_handler)  # pylint: disable=R0801
         _logger.propagate = False  # pylint: disable=R0801
 
-    __slots__ = ['data_type', 'data']
+    __slots__ = ['data_type', 'data', 'safe']
 
-    def __init__(self, data: bytes=b'', data_type: bytes=b'undefined') -> None:
+    def __init__(self, data: bytes=b'', data_type: bytes=b'undefined',
+                 safe: bool=False) -> None:
         self.data = data
         self.data_type = data_type
+        self.safe = safe
 
     def __repr__(self) -> str:
-        return self.data.decode()
+        if self.safe:
+            try:
+                decoded_data = self.data.decode('UTF-8')
+            except UnicodeDecodeError as ex:
+                decoded_data = self.data.decode('UTF-8', 'backslashreplace')
+            return decoded_data
+        else:
+            return self.data.decode()
 
     def __bytes__(self) -> bytes:
         return self.data
