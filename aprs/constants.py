@@ -56,3 +56,7 @@ DATA_TYPE_MAP = {
     b';': b'object',
     b'`': b'old_mice'
 }
+
+# KISS Command Codes
+# http://en.wikipedia.org/wiki/KISS_(TNC)#Command_Codes
+KISS_DATA_FRAME = b'\x00'

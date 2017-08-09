@@ -75,7 +75,7 @@ def ambiguate(pos: float, ambiguity: int) -> str:
     Adjust ambiguity of position.
 
     Derived from @asdil12's `process_ambiguity()`.
-    
+
     >>> pos = '12345.67N'
     >>> ambiguate(pos, 0)
     '12345.67N'

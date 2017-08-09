@@ -20,7 +20,7 @@ from .constants import (LOG_FORMAT, LOG_LEVEL, APRSIS_SW_VERSION,  # NOQA
                         APRSIS_FILTER_PORT, APRSIS_RX_PORT, RECV_BUFFER,
                         APRSIS_URL, DEFAULT_TOCALL, AX25_FLAG,
                         AX25_CONTROL_FIELD, AX25_PROTOCOL_ID, ADDR_INFO_DELIM,
-                        DATA_TYPE_MAP)
+                        DATA_TYPE_MAP, KISS_DATA_FRAME)
 
 from .exceptions import BadCallsignError  # NOQA
 
@@ -30,7 +30,8 @@ from .geo_util import dec2dm_lat, dec2dm_lng, ambiguate  # NOQA
 
 from .fcs import FCS  # NOQA
 
-from .functions import parse_frame, parse_callsign, parse_callsign_ax25, parse_info_field  # NOQA
+from .functions import (parse_frame, parse_callsign,   # NOQA
+                        parse_callsign_ax25, parse_info_field)
 
 from .classes import (Frame, Callsign, APRS, TCP, UDP, HTTP,  # NOQA
                       InformationField, PositionFrame)

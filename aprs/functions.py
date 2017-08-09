@@ -62,16 +62,18 @@ def parse_frame_text(raw_frame: bytes) -> AprsFrame:
 
 def parse_frame_ax25(raw_frame: bytes) -> AprsFrame:
     """
-    Parses and Extracts the components of an KISS-Encoded Frame.
+    Parses and Extracts the components of an AX.25-Encoded Frame.
     """
     parsed_frame = aprs.Frame()
 
     _frame = raw_frame.strip(aprs.AX25_FLAG)
+    _frame = _frame.lstrip(aprs.KISS_DATA_FRAME)
+    _frame = _frame.rstrip(aprs.KISS_DATA_FRAME)
 
     # Use these two fields as the address/information delimiter
     frame_addressing, frame_information = _frame.split(aprs.ADDR_INFO_DELIM)
 
-    info_field = frame_information[:-2]
+    info_field = frame_information.rstrip(b'\xFF\x07')
 
     destination = parse_callsign_ax25(frame_addressing)
     source = parse_callsign_ax25(frame_addressing[7:])
@@ -105,6 +107,7 @@ def parse_callsign(raw_callsign: bytes) -> AprsCallsign:
             return parse_callsign_text(bytes(raw_callsign, 'UTF-8'))
         else:
             return parse_callsign_text(raw_callsign)
+
 
 def parse_callsign_text(raw_callsign: bytes) -> AprsCallsign:
     """
@@ -155,8 +158,11 @@ def parse_callsign_ax25(raw_callsign: bytes) -> AprsCallsign:
 
     # 7th byte carries SSID or digi:
     seven_chunk = raw_callsign[6] & 0xFF
-    ssid = (seven_chunk >> 1) & 0x0F
+    ssid = (seven_chunk >> 1) & 0x0F  # Limit it to 4 bits.
 
+    # FIXME gba@20170809: This works for KISS frames, but not otherwise.
+    # Should consult: https://github.com/chrissnell/GoBalloon/blob/master/ax25/encoder.go
+    # if seven_chunk >> 1 & 0x80:
     if seven_chunk & 0x80:
         digi = True
 

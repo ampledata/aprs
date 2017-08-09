@@ -222,6 +222,10 @@ class APRS(object):
         _logger.propagate = False  # pylint: disable=R0801
 
     def __init__(self, user: bytes, password: bytes=b'-1') -> None:
+        if isinstance(user, str):
+            user = bytes(user, 'UTF-8')
+        if isinstance(password, str):
+            password = bytes(password, 'UTF-8')
         self.user = user
 
         try:
@@ -232,7 +236,7 @@ class APRS(object):
         version_str = b'Python APRS Module v' + version
 
         self._auth = b' '.join(
-            ['user', user, 'pass', password, 'vers', version_str])
+            [b'user', user, b'pass', password, b'vers', version_str])
 
         self._full_auth = None
         self.interface = None
@@ -266,6 +270,8 @@ class TCP(APRS):
         super(TCP, self).__init__(user, password)
         servers = servers or aprs.APRSIS_SERVERS  # Unicode
         aprs_filter = aprs_filter or b'/'.join([b'p', user])  # Unicode
+        if isinstance(aprs_filter, str):
+            aprs_filter = bytes(aprs_filter, 'UTF-8')
 
         # Unicode
         self._full_auth = b' '.join([self._auth, b'filter', aprs_filter])
@@ -280,8 +286,8 @@ class TCP(APRS):
         """
         while not self._connected:
             servers = next(self.servers)
-            if ':' in servers:
-                server, port = servers.split(':')
+            if b':' in servers:
+                server, port = servers.split(b':')
                 port = int(port)
             else:
                 server = servers
@@ -307,8 +313,7 @@ class TCP(APRS):
                 self._logger.info(
                     "Auth To %s:%i", addr_info[0][4][0], port)
 
-                # Unicode Sandwich: Send our unicode as bytes.
-                _full_auth = bytes(self._full_auth + '\n\r', 'UTF-8')
+                _full_auth = self._full_auth + b'\n\r'
 
                 self.interface.sendall(_full_auth)
 
@@ -429,7 +434,8 @@ class HTTP(APRS):
 
     """APRS-IS HTTP Class."""
 
-    def __init__(self, user, password='-1', url=None, headers=None):
+    def __init__(self, user: bytes, password: bytes=b'-1', url: bytes=b'',
+                 headers=None) -> None:
         super(HTTP, self).__init__(user, password)
         self.url = url or aprs.APRSIS_URL
         self.headers = headers or aprs.APRSIS_HTTP_HEADERS
@@ -441,15 +447,19 @@ class HTTP(APRS):
         """
         self.interface = requests.post
 
-    def send(self, frame):
+    def send(self, frame: bytes) -> bool:
         """
         Sends frame to APRS-IS.
 
         :param frame: Frame to send to APRS-IS.
         :type frame: str
         """
+        if isinstance(frame, str):
+            frame = aprs.parse_frame(frame)
+        if isinstance(frame, aprs.Frame):
+            frame = bytes(frame)
         self._logger.info('Sending frame="%s"', frame)
-        content = b"\n".join([bytes(self._auth, 'UTF-8'), bytes(frame, 'UTF-8')])
+        content = b"\n".join([self._auth, frame])
         result = self.interface(self.url, data=content, headers=self.headers)
         return result.status_code == 204
 

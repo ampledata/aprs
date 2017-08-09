@@ -134,6 +134,15 @@ Copyright 2017 Greg Albrecht and Contributors
 
 `Automatic Packet Reporting System (APRS) <http://www.aprs.org/>`_ is Copyright Bob Bruninga WB4APR wb4apr@amsat.org
 
+fcs.py - Copyright (c) 2013 Christopher H. Casebeer. All rights reserved.
+
+decimaldegrees.py - Copyright (C) 2006-2013 by Mateusz Łoskot <mateusz@loskot.net>
+
+
 License
 =======
 Apache License, Version 2.0. See LICENSE for details.
+
+fcs.py - BSD 2-clause Simplified License
+
+decimaldegrees.py - BSD 3-clause License
