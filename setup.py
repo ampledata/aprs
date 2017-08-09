@@ -54,12 +54,8 @@ setuptools.setup(
     ],
     install_requires=[
         'kiss > 6.9',
-<<<<<<< HEAD
-        'requests >= 2.7.0'
-=======
         'requests >= 2.7.0',
         'bitarray >= 0.8.1'
->>>>>>> feature/7_python3_support
     ],
     classifiers=[
         'Topic :: Communications :: Ham Radio',
