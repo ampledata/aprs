@@ -65,18 +65,22 @@ def parse_frame_ax25(raw_frame: bytes) -> AprsFrame:
     Parses and Extracts the components of an AX.25-Encoded Frame.
     """
     parsed_frame = aprs.Frame()
+    kiss_call = False
 
     _frame = raw_frame.strip(aprs.AX25_FLAG)
-    _frame = _frame.lstrip(aprs.KISS_DATA_FRAME)
-    _frame = _frame.rstrip(aprs.KISS_DATA_FRAME)
+    if (_frame.startswith(aprs.KISS_DATA_FRAME) or
+            _frame.endswith(aprs.KISS_DATA_FRAME)):
+        _frame = _frame.lstrip(aprs.KISS_DATA_FRAME)
+        _frame = _frame.rstrip(aprs.KISS_DATA_FRAME)
+        kiss_call = True
 
     # Use these two fields as the address/information delimiter
     frame_addressing, frame_information = _frame.split(aprs.ADDR_INFO_DELIM)
 
     info_field = frame_information.rstrip(b'\xFF\x07')
 
-    destination = parse_callsign_ax25(frame_addressing)
-    source = parse_callsign_ax25(frame_addressing[7:])
+    destination = parse_callsign_ax25(frame_addressing, kiss_call)
+    source = parse_callsign_ax25(frame_addressing[7:], kiss_call)
 
     paths = frame_addressing[7+7:]
     n_paths = int(len(paths) / 7)
@@ -132,7 +136,7 @@ def parse_callsign_text(raw_callsign: bytes) -> AprsCallsign:
     return parsed_callsign
 
 
-def parse_callsign_ax25(raw_callsign: bytes) -> AprsCallsign:
+def parse_callsign_ax25(raw_callsign: bytes, kiss_call: bool=False) -> AprsCallsign:
     """
     Extracts a Callsign and SSID from a AX.25 Encoded APRS Frame.
 
@@ -162,9 +166,12 @@ def parse_callsign_ax25(raw_callsign: bytes) -> AprsCallsign:
 
     # FIXME gba@20170809: This works for KISS frames, but not otherwise.
     # Should consult: https://github.com/chrissnell/GoBalloon/blob/master/ax25/encoder.go
-    # if seven_chunk >> 1 & 0x80:
-    if seven_chunk & 0x80:
-        digi = True
+    if kiss_call:
+        if seven_chunk >> 1 & 0x80:
+            digi = True
+    else:
+        if seven_chunk & 0x80:
+            digi = True
 
     parsed_callsign.set_callsign(_callsign)
     parsed_callsign.set_ssid(ssid)
@@ -173,21 +180,26 @@ def parse_callsign_ax25(raw_callsign: bytes) -> AprsCallsign:
     return parsed_callsign
 
 
-def parse_info_field(data: bytes, handler=None) -> bytes:
-    data_type = b''
-    data_type_field = chr(data[0])
-    data_type = aprs.DATA_TYPE_MAP.get(data_type_field)
+def parse_info_field(raw_data: bytes, handler=None) -> bytes:
+    if not raw_data:
+        return bytes()
+    elif isinstance(raw_data, aprs.InformationField):
+        return raw_data
+    elif isinstance(raw_data, bytes) or isinstance(raw_data, bytearray):
+        data_type = b''
+        data_type_field = chr(raw_data[0])
+        data_type = aprs.DATA_TYPE_MAP.get(data_type_field)
 
-    if data_type:
-        if handler:
-            handler_func = getattr(
-                handler,
-                "handle_data_type_%s" % data_type,
-                None
-            )
-            return handler_func(data, data_type)
+        if data_type:
+            if handler:
+                handler_func = getattr(
+                    handler,
+                    "handle_data_type_%s" % data_type,
+                    None
+                )
+                return handler_func(raw_data, data_type)
 
-    return aprs.InformationField(data, data_type, safe=True)
+        return aprs.InformationField(raw_data, data_type, safe=True)
 
 
 def default_data_handler(data: bytes, data_type: bytes) -> bytes:

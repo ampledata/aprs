@@ -54,8 +54,10 @@ class FrameTestCase(aprs_test_classes.APRSTestClass):  # pylint: disable=R0904
             "%s>APOTC1,WIDE1-1,WIDE2-1:!3745.94N/12228.05W>118/010/"
             "A=000269 http://w2gmd.org/ Twitter: @ampledata" %
             self.real_callsign)
+        self._logger.info('frame=%s', frame)
 
         aprs_frame = aprs.parse_frame(frame)
+        self._logger.info('aprs_frame=%s', aprs_frame)
 
         self.assertEqual(str(aprs_frame), frame)
         self.assertEqual(str(aprs_frame.source), self.real_callsign)
