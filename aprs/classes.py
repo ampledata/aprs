@@ -40,10 +40,11 @@ class Frame(object):
 
     def __init__(self, source: bytes=b'', destination: bytes=b'',
                  path: list=[], info: bytes=b'') -> None:
-        self.source = aprs.Callsign(source)
-        self.destination = aprs.Callsign(destination)
+        self.source = aprs.parse_callsign(source)
+        self.destination = aprs.parse_callsign(destination)
+        # TODO: Add parse_path function
         self.path = path
-        self.info = aprs.InformationField(info)
+        self.info = aprs.parse_info_field(info)
 
     def __repr__(self) -> str:
         """
@@ -524,14 +525,14 @@ class PositionFrame(Frame):
         self.lat = lat
         self.lng = lng
         self.ambiguity = ambiguity
-        frame = self.create_frame()
-        super(PositionFrame, self).__init__(source, destination, path, frame)
+        info = self.create_info_field()
+        super(PositionFrame, self).__init__(source, destination, path, info)
 
-    def create_frame(self) -> bytes:
+    def create_info_field(self) -> bytes:
         enc_lat = aprs.dec2dm_lat(self.lat)
-        enc_lat_amb = aprs.ambiguate(enc_lat, self.ambiguity)
+        enc_lat_amb = bytes(aprs.ambiguate(enc_lat, self.ambiguity), 'UTF-8')
         enc_lng = aprs.dec2dm_lng(self.lng)
-        enc_lng_amb = aprs.ambiguate(enc_lng, self.ambiguity)
+        enc_lng_amb = bytes(aprs.ambiguate(enc_lng, self.ambiguity), 'UTF-8')
         frame = [
             b'=',
             enc_lat_amb,
