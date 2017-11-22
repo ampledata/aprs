@@ -340,7 +340,7 @@ class TCP(APRS):
         self._logger.info('Sending frame="%s"', frame)
 
         # Unicode Sandwich: Send bytes.
-        _frame = bytes(frame + b'\n\r')
+        _frame = bytes(frame) + b'\n\r'
 
         return self.interface.send(_frame)
 
