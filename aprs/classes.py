@@ -351,12 +351,17 @@ class TCP(APRS):
 
                 self._logger.debug('recv_data="%s"', recv_data.strip())
 
-                if recvd_data.endswith(b'\r\n'):
-                    lines = recvd_data.strip().split(b'\r\n')
-                    recvd_data = bytes()
-                else:
-                    lines = recvd_data.split(b'\r\n')
-                    recvd_data = lines.pop(-1)
+                # There is no guarantee that any received buffer ends with a
+                # newline, as TCP does segmentation as it pleases.  This may
+                # happen especially with high data volumes.  Look up the
+                # last newline, parse all lines before it and leave
+                # remaining partial line in buffer.
+                last_newline = recvd_data.rfind(b'\r\n')
+                if last_newline == -1:
+                    continue
+
+                lines = recvd_data[:last_newline].split(b'\r\n')
+                recvd_data = recvd_data[last_newline+2:]
 
                 for line in lines:
                     if line.startswith(b'#'):
