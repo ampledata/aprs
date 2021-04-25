@@ -323,7 +323,7 @@ class TCP(APRS):
 
         return self.interface.send(_frame)
 
-    def receive(self, callback=None, frame_handler=aprs.parse_frame):
+    def receive(self, callback=None, frame_handler=aprs.parse_frame_text):
         """
         Receives from APRS-IS.
 
