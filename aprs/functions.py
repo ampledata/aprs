@@ -36,24 +36,22 @@ def parse_frame_text(raw_frame: bytes) -> AprsFrame:
     Parses and Extracts the components of a str Frame.
     """
     parsed_frame = aprs.Frame()
-    _path = []
 
     # Source>Destination
     sd_delim = raw_frame.index(b'>')
 
-    parsed_frame.set_source(raw_frame[:sd_delim])
+    parsed_frame.source = aprs.parse_callsign_text(raw_frame[:sd_delim])
 
     # Path:Info
     pi_delim = raw_frame.index(b':')
 
     parsed_path = raw_frame[sd_delim + 1:pi_delim]
     if b',' in parsed_path:
-        for path in parsed_path.split(b','):
-            _path.append(path)
-        parsed_frame.set_destination(_path.pop(0))
-        parsed_frame.set_path(_path)
+        _path = parsed_path.split(b',')
+        parsed_frame.destination  = aprs.parse_callsign_text(_path[0])
+        parsed_frame.path = [aprs.parse_callsign_text(pth) for pth in _path[1:]]
     else:
-        parsed_frame.set_destination(parsed_path)
+        parsed_frame.destination  = aprs.parse_callsign_text(parsed_path)
 
     parsed_frame.set_info(raw_frame[pi_delim + 1:])
 

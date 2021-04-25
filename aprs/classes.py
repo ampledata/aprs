@@ -30,13 +30,6 @@ class Frame(object):
     __slots__ = ['source', 'destination', 'path', 'info']
 
     _logger = logging.getLogger(__name__)  # pylint: disable=R0801
-    if not _logger.handlers:  # pylint: disable=R0801
-        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
-        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
-        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
-        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
-        _logger.addHandler(_console_handler)  # pylint: disable=R0801
-        _logger.propagate = False  # pylint: disable=R0801
 
     def __init__(self, source: bytes=b'', destination: bytes=b'',
                  path: list=[], info: bytes=b'') -> None:
@@ -116,13 +109,6 @@ class Callsign(object):
     """
 
     _logger = logging.getLogger(__name__)  # pylint: disable=R0801
-    if not _logger.handlers:  # pylint: disable=R0801
-        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
-        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
-        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
-        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
-        _logger.addHandler(_console_handler)  # pylint: disable=R0801
-        _logger.propagate = False  # pylint: disable=R0801
 
     __slots__ = ['callsign', 'ssid', 'digi']
 
@@ -214,13 +200,6 @@ class APRS(object):
     """APRS Object."""
 
     _logger = logging.getLogger(__name__)  # pylint: disable=R0801
-    if not _logger.handlers:  # pylint: disable=R0801
-        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
-        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
-        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
-        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
-        _logger.addHandler(_console_handler)  # pylint: disable=R0801
-        _logger.propagate = False  # pylint: disable=R0801
 
     def __init__(self, user: bytes, password: bytes=b'-1') -> None:
         if isinstance(user, str):
@@ -344,7 +323,7 @@ class TCP(APRS):
 
         return self.interface.send(_frame)
 
-    def receive(self, callback=None, frame_handler=aprs.parse_frame):
+    def receive(self, callback=None, frame_handler=aprs.parse_frame_text):
         """
         Receives from APRS-IS.
 
@@ -372,12 +351,17 @@ class TCP(APRS):
 
                 self._logger.debug('recv_data="%s"', recv_data.strip())
 
-                if recvd_data.endswith(b'\r\n'):
-                    lines = recvd_data.strip().split(b'\r\n')
-                    recvd_data = bytes()
-                else:
-                    lines = recvd_data.split(b'\r\n')
-                    recvd_data = lines.pop(-1)
+                # There is no guarantee that any received buffer ends with a
+                # newline, as TCP does segmentation as it pleases.  This may
+                # happen especially with high data volumes.  Look up the
+                # last newline, parse all lines before it and leave
+                # remaining partial line in buffer.
+                last_newline = recvd_data.rfind(b'\r\n')
+                if last_newline == -1:
+                    continue
+
+                lines = recvd_data[:last_newline].split(b'\r\n')
+                recvd_data = recvd_data[last_newline+2:]
 
                 for line in lines:
                     if line.startswith(b'#'):
@@ -472,13 +456,6 @@ class InformationField(object):
     """
 
     _logger = logging.getLogger(__name__)  # pylint: disable=R0801
-    if not _logger.handlers:  # pylint: disable=R0801
-        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
-        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
-        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
-        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
-        _logger.addHandler(_console_handler)  # pylint: disable=R0801
-        _logger.propagate = False  # pylint: disable=R0801
 
     __slots__ = ['data_type', 'data', 'safe']
 
@@ -508,13 +485,6 @@ class PositionFrame(Frame):
                  'symbol', 'comment', 'ambiguity']
 
     _logger = logging.getLogger(__name__)  # pylint: disable=R0801
-    if not _logger.handlers:  # pylint: disable=R0801
-        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
-        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
-        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
-        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
-        _logger.addHandler(_console_handler)  # pylint: disable=R0801
-        _logger.propagate = False  # pylint: disable=R0801
 
     def __init__(self, source: bytes, destination: bytes, path: typing.List,
                  table: bytes, symbol: bytes, comment: bytes, lat: float,

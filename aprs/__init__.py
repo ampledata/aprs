@@ -30,8 +30,8 @@ from .geo_util import dec2dm_lat, dec2dm_lng, ambiguate  # NOQA
 
 from .fcs import FCS  # NOQA
 
-from .functions import (parse_frame, parse_callsign,   # NOQA
-                        parse_callsign_ax25, parse_info_field)
+from .functions import (parse_frame, parse_frame_text, parse_callsign,   # NOQA
+                        parse_callsign_ax25, parse_callsign_text, parse_info_field)
 
 from .classes import (Frame, Callsign, APRS, TCP, UDP, HTTP,  # NOQA
                       InformationField, PositionFrame)
