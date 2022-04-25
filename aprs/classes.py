@@ -542,3 +542,58 @@ class PositionFrame(Frame):
             self.comment
         ]
         return b''.join(frame)
+
+
+class WeatherFrame(Frame):
+
+    __slots__ = [
+        "wind_dir",
+        "wind_speed",
+        "wind_gust",
+        "temp",
+        "rain_last_hr",
+        "rain_last_24hr",
+        "rain_today",
+        "humidity",
+        "pressure",
+    ]
+
+    _logger = logging.getLogger(__name__)  # pylint: disable=R0801
+    if not _logger.handlers:  # pylint: disable=R0801
+        _logger.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler = logging.StreamHandler()  # pylint: disable=R0801
+        _console_handler.setLevel(aprs.LOG_LEVEL)  # pylint: disable=R0801
+        _console_handler.setFormatter(aprs.LOG_FORMAT)  # pylint: disable=R0801
+        _logger.addHandler(_console_handler)  # pylint: disable=R0801
+        _logger.propagate = False  # pylint: disable=R0801
+
+    def pad_reading(reading: str, pad: int):
+        """
+        Pads a reading to occupy a specific length
+        """
+
+        if reading is None:
+            return "." * pad
+        else:
+            reading.rjust(pad, "0")
+
+    def __init__(
+        self,
+        source: bytes,
+        lat: float,
+        lng: float,
+        ambiguity: float,
+        destination: bytes = b"APRS",
+        path: typing.List = ["TCPIP*"],
+        table: bytes = b"/",
+        symbol: bytes = b"-",
+        comment: bytes = b"",
+    ) -> None:
+        self.table = table
+        self.symbol = symbol
+        self.comment = comment
+        self.lat = lat
+        self.lng = lng
+        self.ambiguity = ambiguity
+        info = self.create_info_field()
+        super(PositionFrame, self).__init__(source, destination, path, info)
