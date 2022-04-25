@@ -43,9 +43,12 @@ Example 1 Code
 
     import aprs
 
-    def p(x): print(x)
 
-    a = aprs.TCP('W2GMD', '12345')
+    def p(x):
+        print(x)
+
+
+    a = aprs.TCP(b"W2GMD", b"12345")
     a.start()
 
     a.receive(callback=p)
@@ -68,9 +71,9 @@ Example 2 Code
 
     import aprs
 
-    frame = aprs.parse_frame('W2GMD>APRS:>Hello World!')
+    frame = aprs.parse_frame("W2GMD>APRS:>Hello World!")
 
-    a = aprs.TCP('W2GMD', '12345')
+    a = aprs.TCP(b"W2GMD", b"12345")
     a.start()
 
     a.send(frame)
